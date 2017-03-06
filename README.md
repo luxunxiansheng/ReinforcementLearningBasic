@@ -7,7 +7,8 @@ The recommended resources are listed as below:
 1.  The MOOC :  Reinforcement learning from Udacity .  https://cn.udacity.com/course/reinforcement-learning--ud600
 2.  The book:    Reinforcement learning: an introduction 2nd Edition.   http://webdocs.cs.ualberta.ca/~sutton/book/the-book-2nd.html
      It is highly recommended to run the source code programmed for this book and take your own experiments.  
-     
+3.  The lecture given by David Silver: http://www0.cs.ucl.ac.uk/staff/D.Silver/web/Teaching.html  David silver now seems working in 
+    DeepMind team. 
      
  
 # The programming language
