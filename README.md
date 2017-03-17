@@ -14,3 +14,6 @@ The recommended resources are listed as below:
 # The programming language
  The programming lauguage is not decided yet but Python will be the first option.  Today, Python is supported by most of the machine learning  frameworks and becomes a de facto standard programming language in this domain. There are lots of python code bases and ML libraries  that could be leveraged.  
  
+# The materials
+
+Contraction mapping is one of the most important theorems applied in RL. Bellman equation is built on it.   
