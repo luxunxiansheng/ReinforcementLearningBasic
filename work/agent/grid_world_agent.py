@@ -7,11 +7,11 @@ from policy.tabular_policy.random_policy import Random_Policy
 
 class Grid_World_Agent(Base_Agent):
     def __init__(self):
-        self._policy = Random_Policy()
-        self._env    = GridworldEnv([4,4])
+        self.policy = Random_Policy()
+        self.env    = GridworldEnv([4,4])
 
     def make_decision(self,observation):
-        return self._policy(observation)   
+        return self._policy.select_action(observation)   
 
     
     def evaluate_policy(self):
@@ -31,10 +31,10 @@ class Grid_World_Agent(Base_Agent):
         LEFT = 3
 
         while not it.finished:
-            s = it.iterindex
+            state_index = it.iterindex
             row_index, col_index = it.multi_index
             
-            
+            self.policy.Q_table(state_index) = 
 
 
            

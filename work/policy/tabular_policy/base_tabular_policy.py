@@ -10,7 +10,7 @@ class Base_Tabular_Policy(Base_Policy):
     def __init__(self, env):
         
         #A dictionary that maps from state to  action values
-        self._Q_table = defaultdict(lambda: np.zeros(env.action_space.n))
+        self.Q_table = defaultdict(lambda: np.zeros(env.action_space.n))
 
 
     def select_action(self, observation):

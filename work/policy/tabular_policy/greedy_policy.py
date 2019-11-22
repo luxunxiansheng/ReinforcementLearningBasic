@@ -11,7 +11,7 @@ class Greedy_Policy(Base_Tabular_Policy):
 
         """
 
-        action_values = self._Q_table[observation]
+        action_values = self.Q_table[observation]
         num_actions = len(action_values)
 
         action_probs = np.zeros(num_actions, dtype=float)
