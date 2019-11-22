@@ -2,8 +2,10 @@ import gym
 from gym import spaces
 from gym.utils import seeding
 
-def cmp(a, b):
+
+def compare(a, b):
     return int((a > b)) - int((a < b))
+
 
 # 1 = Ace, 2-10 = Number cards, Jack/Queen/King = 10
 deck = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10]
@@ -23,7 +25,7 @@ def usable_ace(hand):  # Does this hand have a usable ace?
 
 def sum_hand(hand):  # Return current hand total
     if usable_ace(hand):
-            return sum(hand) + 10
+        return sum(hand) + 10
     return sum(hand)
 
 
@@ -64,6 +66,7 @@ class BlackjackEnv(gym.Env):
     by Sutton and Barto (1998).
     https://webdocs.cs.ualberta.ca/~sutton/book/the-book.html
     """
+
     def __init__(self, natural=False):
         self.action_space = spaces.Discrete(2)
         self.observation_space = spaces.Tuple((
@@ -76,7 +79,7 @@ class BlackjackEnv(gym.Env):
         # Ref: http://www.bicyclecards.com/how-to-play/blackjack/
         self.natural = natural
         # Start the first game
-        self._reset()        # Number of 
+        self._reset()        # Number of
         self.nA = 2
 
     def _seed(self, seed=None):
@@ -97,7 +100,7 @@ class BlackjackEnv(gym.Env):
             done = True
             while sum_hand(self.dealer) < 17:
                 self.dealer.append(draw_card(self.np_random))
-            reward = cmp(score(self.player), score(self.dealer))
+            reward = compare(score(self.player), score(self.dealer))
             if self.natural and is_natural(self.player) and reward == 1:
                 reward = 1.5
         return self._get_obs(), reward, done, {}

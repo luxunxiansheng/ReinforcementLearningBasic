@@ -3,8 +3,6 @@ import sys
 from collections import defaultdict
 
 import numpy as np
-
-sys.path.append('/home/ornot/GymRL')
 from lib import utility
 
 

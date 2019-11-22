@@ -10,7 +10,9 @@ from collections import defaultdict
 import matplotlib
 import numpy as np
 
-sys.path.append('/home/ornot/GymRL')
+
+
+
 from algorithm import (mc_offline_policy_control, mc_online_policy_control,
                        q_learning, sarsa)
 from env import blackjack
