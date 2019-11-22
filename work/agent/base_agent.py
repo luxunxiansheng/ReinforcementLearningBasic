@@ -16,5 +16,12 @@ class Base_Agent(ABC):
             an action 
         
         """ 
-        
+        pass
+
+    @abstractclassmethod
+    def evaluate_policy(self):
+        pass
+
+    @abstractclassmethod
+    def improve_policy(self):
         pass

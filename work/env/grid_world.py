@@ -18,20 +18,16 @@
  """
 import logging
 import math
-import gym
 import sys
-from gym import spaces
-from gym.utils import seeding
+import io
+
+import gym
 import numpy as np
+from gym import spaces
 from gym.envs.toy_text import discrete
+from gym.utils import seeding
 
 logger = logging.getLogger(__name__)
-
-UP = 0
-RIGHT = 1
-DOWN = 2
-LEFT = 3
-
 
 
 class GridworldEnv(discrete.DiscreteEnv):
@@ -39,6 +35,8 @@ class GridworldEnv(discrete.DiscreteEnv):
     metadata = {
         'render.modes': ['human', 'ansi']
     }
+
+
 
     def __init__(self, shape=[10, 10]):
         if not isinstance(shape, (list, tuple)) or not len(shape) == 2:
@@ -48,13 +46,27 @@ class GridworldEnv(discrete.DiscreteEnv):
 
         nS = np.prod(shape)
         nA = 4
+         
+        P = self._build_transitions(nS,nA,shape)
+                
+        # Initial state distribution is uniform
+        isd = np.ones(nS) / nS
+        super().__init__(nS, nA, P, isd)
+   
+    
+    def _build_transitions(self,nS,nA,shape):
+         # Transition prob matrix 
+        P = {}
+        grid = np.arange(nS).reshape(shape)
+        it = np.nditer(grid, flags=['multi_index'])
 
         MAX_Y = shape[0]
         MAX_X = shape[1]
 
-        P = {}
-        grid = np.arange(nS).reshape(shape)
-        it = np.nditer(grid, flags=['multi_index'])
+        UP = 0
+        RIGHT = 1
+        DOWN = 2
+        LEFT = 3
 
         while not it.finished:
             s = it.iterindex
@@ -63,6 +75,7 @@ class GridworldEnv(discrete.DiscreteEnv):
             P[s] = {a: [] for a in range(nA)}
 
             def is_done(s): return s == 0 or s == (nS - 1)
+
             reward = 0.0 if is_done(s) else -1.0
 
             # We're stuck in a terminal state
@@ -84,22 +97,12 @@ class GridworldEnv(discrete.DiscreteEnv):
 
             it.iternext()
 
-        # Initial state distribution is uniform
-        isd = np.ones(nS) / nS
+        return P
 
-        # We expose the model of the environment for educational purposes
-        # This should not be used in any model-free learning algorithm
-        self.P = P
+    def render(self, mode='human'):
+        outfile = io.StringIO() if mode == 'ansi' else sys.stdout
 
-        super(GridworldEnv, self).__init__(nS, nA, P, isd)
-
-    def _render(self, mode='human', close=False):
-        if close:
-            return
-
-        outfile = StringIO() if mode == 'ansi' else sys.stdout
-
-        grid = np.arange(self.nS).reshape(self.shape)
+        grid = np.arange(self.nS).reshape(self._shape)
         it = np.nditer(grid, flags=['multi_index'])
         while not it.finished:
             s = it.iterindex
@@ -114,14 +117,12 @@ class GridworldEnv(discrete.DiscreteEnv):
 
             if x == 0:
                 output = output.lstrip()
-            if x == self.shape[1] - 1:
+            if x == self._shape[1] - 1:
                 output = output.rstrip()
 
             outfile.write(output)
 
-            if x == self.shape[1] - 1:
+            if x == self._shape[1] - 1:
                 outfile.write("\n")
 
             it.iternext()
-
-    
