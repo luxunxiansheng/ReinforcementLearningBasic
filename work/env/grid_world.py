@@ -102,7 +102,7 @@ class GridworldEnv(discrete.DiscreteEnv):
     def render(self, mode='human'):
         outfile = io.StringIO() if mode == 'ansi' else sys.stdout
 
-        grid = np.arange(self.nS).reshape(self._shape)
+        grid = np.arange(self.nS).reshape(self.shape)
         it = np.nditer(grid, flags=['multi_index'])
         while not it.finished:
             s = it.iterindex
@@ -117,12 +117,12 @@ class GridworldEnv(discrete.DiscreteEnv):
 
             if x == 0:
                 output = output.lstrip()
-            if x == self._shape[1] - 1:
+            if x == self.shape[1] - 1:
                 output = output.rstrip()
 
             outfile.write(output)
 
-            if x == self._shape[1] - 1:
+            if x == self.shape[1] - 1:
                 outfile.write("\n")
 
             it.iternext()

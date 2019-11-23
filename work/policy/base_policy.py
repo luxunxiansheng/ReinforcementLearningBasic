@@ -1,26 +1,20 @@
 from abc import ABC, abstractmethod
 
+import numpy as np
+
+
 class Base_Policy(ABC):
     """
     Essentially, a policy is a probability distribution of action at specific state. 
     The distribution can be built either with a Q table or function approximator    
     """
-        
     @abstractmethod
     def select_action(self, observation):
-        """
-        Return a action at a specific state by sampling the probability distribution 
+        pass 
         
-        Arguments:
-            observation {Observation } -- based on the state
-        """
-        
+
+    @abstractmethod
+    def get_probability_at_state(self, observation):
         pass
- 
-     
 
-
-    
-
-        
 
