@@ -21,6 +21,5 @@ class Base_Tabular_Policy(Base_Policy):
 
         """
         action_probs = self.get_probability_at_state(observation)
-        action_index = np.random.choice(
-            np.arange(len(action_probs)), p=action_probs)
+        action_index = np.random.choice(np.arange(len(action_probs)), p=action_probs)
         return action_index
