@@ -36,32 +36,29 @@ class GridworldEnv(discrete.DiscreteEnv):
         'render.modes': ['human', 'ansi']
     }
 
-
-
     def __init__(self, shape=[10, 10]):
         if not isinstance(shape, (list, tuple)) or not len(shape) == 2:
             raise ValueError('shape argument must be a list/tuple of length 2')
 
         self.shape = shape
-
         nS = np.prod(shape)
+        self.grid = np.arange(nS).reshape(shape)
+
         nA = 4
-         
-        P = self._build_transitions(nS,nA,shape)
-                
+        self.P = self._build_transitions(nA)
+
         # Initial state distribution is uniform
         isd = np.ones(nS) / nS
-        super().__init__(nS, nA, P, isd)
-   
-    
-    def _build_transitions(self,nS,nA,shape):
-         # Transition prob matrix 
-        P = {}
-        grid = np.arange(nS).reshape(shape)
-        it = np.nditer(grid, flags=['multi_index'])
+        super().__init__(nS, nA, self.P, isd)
 
-        MAX_Y = shape[0]
-        MAX_X = shape[1]
+    def _build_transitions(self, nA):
+         # Transition prob matrix
+        P = {}
+
+        it = np.nditer(self.grid, flags=['multi_index'])
+
+        MAX_Y = self.grid[0]
+        MAX_X = self.grid[1]
 
         UP = 0
         RIGHT = 1
@@ -74,7 +71,7 @@ class GridworldEnv(discrete.DiscreteEnv):
 
             P[s] = {a: [] for a in range(nA)}
 
-            def is_done(s): return s == 0 or s == (nS - 1)
+            def is_done(s): return s == 0 or s == (self.nS - 1)
 
             reward = 0.0 if is_done(s) else -1.0
 
@@ -101,9 +98,7 @@ class GridworldEnv(discrete.DiscreteEnv):
 
     def render(self, mode='human'):
         outfile = io.StringIO() if mode == 'ansi' else sys.stdout
-
-        grid = np.arange(self.nS).reshape(self.shape)
-        it = np.nditer(grid, flags=['multi_index'])
+        it = np.nditer(self.grid, flags=['multi_index'])
         while not it.finished:
             s = it.iterindex
             y, x = it.multi_index
@@ -126,3 +121,14 @@ class GridworldEnv(discrete.DiscreteEnv):
                 outfile.write("\n")
 
             it.iternext()
+
+    def __iter__(self):
+        ''' Returns the Iterator object '''
+        return self
+
+    def __next__(self):
+        it = np.nditer(self.grid, flags=['multi_index'])
+        while not it.finished:
+            s = it.iterindex
+            it.iternext()
+            return s
