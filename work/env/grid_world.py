@@ -31,10 +31,8 @@ logger = logging.getLogger(__name__)
 
 
 class GridworldEnv(discrete.DiscreteEnv):
-
-    metadata = {
-        'render.modes': ['human', 'ansi']
-    }
+    
+    metadata = {'render.modes': ['human', 'ansi']}
 
     def __init__(self, shape=[10, 10]):
         if not isinstance(shape, (list, tuple)) or not len(shape) == 2:
@@ -44,21 +42,22 @@ class GridworldEnv(discrete.DiscreteEnv):
         nS = np.prod(shape)
         self.grid = np.arange(nS).reshape(shape)
 
+     
         nA = 4
-        self.P = self._build_transitions(nA)
+        self.P = self._build_transitions(nS,nA)
 
         # Initial state distribution is uniform
         isd = np.ones(nS) / nS
         super().__init__(nS, nA, self.P, isd)
 
-    def _build_transitions(self, nA):
+    def _build_transitions(self,nS,nA):
          # Transition prob matrix
         P = {}
 
         it = np.nditer(self.grid, flags=['multi_index'])
 
-        MAX_Y = self.grid[0]
-        MAX_X = self.grid[1]
+        MAX_Y = self.grid.shape[0]
+        MAX_X = self.grid.shape[1]
 
         UP = 0
         RIGHT = 1
@@ -71,7 +70,7 @@ class GridworldEnv(discrete.DiscreteEnv):
 
             P[s] = {a: [] for a in range(nA)}
 
-            def is_done(s): return s == 0 or s == (self.nS - 1)
+            def is_done(s): return s == 0 or s == (nS - 1)
 
             reward = 0.0 if is_done(s) else -1.0
 
@@ -121,14 +120,7 @@ class GridworldEnv(discrete.DiscreteEnv):
                 outfile.write("\n")
 
             it.iternext()
+    
+    
 
-    def __iter__(self):
-        ''' Returns the Iterator object '''
-        return self
-
-    def __next__(self):
-        it = np.nditer(self.grid, flags=['multi_index'])
-        while not it.finished:
-            s = it.iterindex
-            it.iternext()
-            return s
+    

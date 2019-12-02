@@ -5,8 +5,6 @@ import numpy as np
 
 
 class Action_Selector(ABC):
-
-  
     def select_action(self, action_values):
         action_probs = self.get_probability_distribution(action_values)
         action_index = np.random.choice(np.arange(len(action_probs)), p=action_probs)
