@@ -81,6 +81,8 @@ class Tabular_Implicit_Policy(Policy):
         action_values = self.Q_table[state]
         return self.action_selector.get_probability(action_values,action_index)
         
+    def set_action_selector(self,action_selector):
+        self.action_selector = action_selector
 
 
     

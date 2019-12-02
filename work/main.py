@@ -8,6 +8,7 @@ def main():
 
     for _ in tqdm(range(10)):
         grid_world_agent.evaluate_policy()
+        grid_world_agent.improve_policy()
         grid_world_agent.show_state_values()
 
 

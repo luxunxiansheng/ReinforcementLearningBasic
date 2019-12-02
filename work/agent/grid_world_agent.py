@@ -20,7 +20,7 @@ class Grid_World_Agent(Base_Agent):
         dynamic_programming.policy_evaluate(self.policy,self.env)
         
     def improve_policy(self):
-        pass
+        self.policy.
 
 
     def show_state_values(self):
