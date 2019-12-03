@@ -19,9 +19,11 @@ class Grid_World_Agent(Base_Agent):
     def evaluate_policy(self):
         dynamic_programming.policy_evaluate(self.policy,self.env)
         
-    def improve_policy(self):
-        self.policy.
+    def value_iteration(self):
+        dynamic_programming.value_iteration(self.policy,self.env)
 
+    def improve_policy(self):
+        dynamic_programming.policy_improve(self.policy)
 
     def show_state_values(self):
         outfile = sys.stdout
@@ -30,9 +32,10 @@ class Grid_World_Agent(Base_Agent):
             s = it.iterindex
 
             value_of_state = dynamic_programming.get_value_of_state(self.policy,s)
-            output = str(value_of_state)+"*****"
+            output = "{0:.1f} ******".format(value_of_state) 
+           
             
-            y, x = it.multi_index
+            _, x = it.multi_index
 
             if x == 0:
                 output = output.lstrip()
