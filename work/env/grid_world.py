@@ -100,7 +100,7 @@ class GridworldEnv(discrete.DiscreteEnv):
         it = np.nditer(self.grid, flags=['multi_index'])
         while not it.finished:
             s = it.iterindex
-            y, x = it.multi_index
+            _, x = it.multi_index
 
             if self.s == s:
                 output = " x "

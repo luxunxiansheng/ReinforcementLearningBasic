@@ -25,14 +25,39 @@ class Grid_World_Agent(Base_Agent):
     def improve_policy(self):
         dynamic_programming.policy_improve(self.policy)
 
-    def show_state_values(self):
+    def show_state_value(self):
         outfile = sys.stdout
         it = np.nditer(self.env.grid, flags=['multi_index'])
         while not it.finished:
             s = it.iterindex
 
-            value_of_state = dynamic_programming.get_value_of_state(self.policy,s)
-            output = "{0:.1f} ******".format(value_of_state) 
+            optimal_value_of_state = dynamic_programming.get_value_of_state(self.policy,s)
+            output = "{0:.2f} ******".format(optimal_value_of_state) 
+           
+            
+            _, x = it.multi_index
+
+            if x == 0:
+                output = output.lstrip()
+            if x == self.env.shape[1] - 1:
+                output = output.rstrip()
+
+            outfile.write(output)
+
+            if x == self.env.shape[1] - 1:
+                outfile.write("\n")
+
+            it.iternext()
+
+
+    def show_optimal_state_values(self):
+        outfile = sys.stdout
+        it = np.nditer(self.env.grid, flags=['multi_index'])
+        while not it.finished:
+            s = it.iterindex
+
+            optimal_value_of_state = dynamic_programming.get_optimal_value_of_state(self.policy,s)
+            output = "{0:.2f} ******".format(optimal_value_of_state) 
            
             
             _, x = it.multi_index

@@ -4,6 +4,8 @@ import copy
 from tqdm import tqdm
 
 from policy.policy import Tabular_Implicit_Policy,Greedy_Action_Selector
+import pysnooper
+
 
 
 def policy_evaluate(tabular_implict_policy, discrte_env):
@@ -17,31 +19,19 @@ def policy_evaluate(tabular_implict_policy, discrte_env):
     assert isinstance(tabular_implict_policy, Tabular_Implicit_Policy)
 
     new_q_table = copy.deepcopy(tabular_implict_policy.Q_table)
-
     for state in range(discrte_env.nS):  # For each state in env
         # For each action in current state
         for action_index_of_current_state in range(len(tabular_implict_policy.Q_table[state])):
-            current_env_transition = discrte_env.P[state][action_index_of_current_state]
             # the reward is also related to the next state
-            value_of_action = get_value_of_action(current_env_transition, tabular_implict_policy)
+            value_of_action = get_value_of_action(tabular_implict_policy,discrte_env,state,action_index_of_current_state)
             new_q_table[state][action_index_of_current_state] = value_of_action
-
     tabular_implict_policy.Q_table = new_q_table
 
 
-def get_value_of_action(current_env_transition, tabular_implict_policy):
-    """
-    Refer to the equation 4.6 in Sutton's book 2nd edition
-    
-    Arguments:
-        current_env_transition  -- transiton when taking the action at state 
-        tabular_implict_policy  -- policy followed
-    
-    Returns:
-        value_of_action-- action value 
-    """
-
+def get_value_of_action(tabular_implict_policy,discrte_env, state,action):
+   
     value_of_action = 0
+    current_env_transition = discrte_env.P[state][action]
     for transition_prob, next_state, reward, _ in current_env_transition:  # For each next state
         value_of_next_state = get_value_of_state(tabular_implict_policy, next_state)
         value_of_action += transition_prob*(value_of_next_state+reward)
@@ -60,8 +50,6 @@ def get_value_of_state(tabular_implict_policy, state):
 def policy_improve(tabular_implict_policy):
     tabular_implict_policy.set_action_selector(Greedy_Action_Selector())
 
-
-
 def value_iteration(tabular_implict_policy, discrte_env):
     assert isinstance(tabular_implict_policy, Tabular_Implicit_Policy)
     new_q_table = copy.deepcopy(tabular_implict_policy.Q_table)
@@ -69,14 +57,14 @@ def value_iteration(tabular_implict_policy, discrte_env):
     for state in range(discrte_env.nS):  # For each state in env
         # For each action in current state
         for action_index_of_current_state in range(len(tabular_implict_policy.Q_table[state])):
-            current_env_transition = discrte_env.P[state][action_index_of_current_state]
-            optimal_value_of_action = get_optimal_value_of_action(current_env_transition, tabular_implict_policy)  
+            optimal_value_of_action = get_optimal_value_of_action(tabular_implict_policy,discrte_env,state,action_index_of_current_state)  
             new_q_table[state][action_index_of_current_state] = optimal_value_of_action
-
+    
     tabular_implict_policy.Q_table = new_q_table
 
 
-def get_optimal_value_of_action(current_env_transition, tabular_implict_policy):
+def get_optimal_value_of_action(tabular_implict_policy,discrte_env,state,action):
+    current_env_transition = discrte_env.P[state][action]
     optimal_value_of_action = 0
     for transition_prob, next_state, reward, _ in current_env_transition:  # For each next state
         optimal_value_of_next_state = get_optimal_value_of_state(tabular_implict_policy, next_state)
@@ -86,4 +74,5 @@ def get_optimal_value_of_action(current_env_transition, tabular_implict_policy):
 
 
 def get_optimal_value_of_state(tabular_implict_policy, state):
-    return max(tabular_implict_policy.Q_table[state])
+    action_values_of_state = tabular_implict_policy.Q_table[state]
+    return max(action_values_of_state)

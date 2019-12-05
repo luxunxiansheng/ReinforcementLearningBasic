@@ -36,7 +36,7 @@ class Greedy_Action_Selector(Action_Selector):
         
 
 
-class e_Greed_Action_Selector(Action_Selector):
+class e_Greedy_Action_Selector(Action_Selector):
     def __init__(self, epsilon):
         self.epsilon = epsilon
 
