@@ -28,13 +28,13 @@ def policy_evaluate(tabular_implict_policy, discrte_env):
     tabular_implict_policy.Q_table = new_q_table
 
 
-def get_value_of_action(tabular_implict_policy,discrte_env, state,action):
+def get_value_of_action(tabular_implict_policy,discrte_env, state,action,discount=1.0):
    
     value_of_action = 0
     current_env_transition = discrte_env.P[state][action]
     for transition_prob, next_state, reward, _ in current_env_transition:  # For each next state
         value_of_next_state = get_value_of_state(tabular_implict_policy, next_state)
-        value_of_action += transition_prob*(value_of_next_state+reward)
+        value_of_action += transition_prob*(discount*value_of_next_state+reward)
     return value_of_action
 
 
@@ -63,13 +63,13 @@ def value_iteration(tabular_implict_policy, discrte_env):
     tabular_implict_policy.Q_table = new_q_table
 
 
-def get_optimal_value_of_action(tabular_implict_policy,discrte_env,state,action):
+def get_optimal_value_of_action(tabular_implict_policy,discrte_env,state,action,discount=1.0):
     current_env_transition = discrte_env.P[state][action]
     optimal_value_of_action = 0
     for transition_prob, next_state, reward, _ in current_env_transition:  # For each next state
         optimal_value_of_next_state = get_optimal_value_of_state(tabular_implict_policy, next_state)
         # the reward is also related to the next state
-        optimal_value_of_action += transition_prob*(optimal_value_of_next_state+reward)
+        optimal_value_of_action += transition_prob*(discount*optimal_value_of_next_state+reward)
     return optimal_value_of_action
 
 
