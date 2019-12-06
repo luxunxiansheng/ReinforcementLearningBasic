@@ -15,8 +15,8 @@
     You can take actions in each direction (UP=0, RIGHT=1, DOWN=2, LEFT=3).
     Actions going off the edge leave you in your current state.
     You receive a reward of -1 at each step until you reach a terminal state.
- """
-import logging
+
+"""
 import math
 import sys
 import io
@@ -27,7 +27,6 @@ from gym import spaces
 from gym.envs.toy_text import discrete
 from gym.utils import seeding
 
-logger = logging.getLogger(__name__)
 
 
 class GridworldEnv(discrete.DiscreteEnv):
@@ -49,6 +48,13 @@ class GridworldEnv(discrete.DiscreteEnv):
         # Initial state distribution is uniform
         isd = np.ones(nS) / nS
         super().__init__(nS, nA, self.P, isd)
+    
+    def build_Q_table(self):
+        Q_table = {}
+        for state_index in range(self.nS):
+            Q_table[state_index] = {action_index: 0.0 for action_index in range(self.nA)}
+        return Q_table
+
 
     def _build_transitions(self,nS,nA):
          # Transition prob matrix

@@ -19,9 +19,9 @@ class Base_Agent(ABC):
         pass
 
     @abstractclassmethod
-    def evaluate_policy(self):
+    def evaluate_policy_once(self):
         pass
 
     @abstractclassmethod
-    def improve_policy(self):
+    def improve_policy_once(self):
         pass

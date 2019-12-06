@@ -69,10 +69,10 @@ class Tabular_Implicit_Policy(Policy):
     The policy is implicit for the action is selected from tabular value funciton.
     """
     
-    def __init__(self, num_actions, action_selector):
-        self.Q_table = defaultdict(lambda: np.zeros(num_actions))
+    def __init__(self,q_table,action_selector=Random_Action_Selector()):
+        self.Q_table = q_table
         self.action_selector=action_selector
-
+        
     def select_action(self, state):
         action_values=self.Q_table[state]
         return self.action_selector.select_action(action_values)
@@ -83,6 +83,3 @@ class Tabular_Implicit_Policy(Policy):
         
     def set_action_selector(self,action_selector):
         self.action_selector = action_selector
-
-
-    

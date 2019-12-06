@@ -2,17 +2,15 @@ import gym
 from gym import spaces
 from gym.utils import seeding
 
-
-def compare(a, b):
-    return int((a > b)) - int((a < b))
-
+def cmp(a, b):
+    return float(a > b) - float(a < b)
 
 # 1 = Ace, 2-10 = Number cards, Jack/Queen/King = 10
 deck = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10]
 
 
 def draw_card(np_random):
-    return np_random.choice(deck)
+    return int(np_random.choice(deck))
 
 
 def draw_hand(np_random):
@@ -43,6 +41,7 @@ def is_natural(hand):  # Is this hand a natural blackjack?
 
 class BlackjackEnv(gym.Env):
     """Simple blackjack environment
+
     Blackjack is a card game where the goal is to obtain cards that sum to as
     near as possible to 21 without going over.  They're playing against a fixed
     dealer.
@@ -51,42 +50,45 @@ class BlackjackEnv(gym.Env):
     This game is placed with an infinite deck (or with replacement).
     The game starts with each (player and dealer) having one face up and one
     face down card.
+
     The player can request additional cards (hit=1) until they decide to stop
     (stick=0) or exceed 21 (bust).
+
     After the player sticks, the dealer reveals their facedown card, and draws
     until their sum is 17 or greater.  If the dealer goes bust the player wins.
+
     If neither player nor dealer busts, the outcome (win, lose, draw) is
     decided by whose sum is closer to 21.  The reward for winning is +1,
     drawing is 0, and losing is -1.
+
     The observation of a 3-tuple of: the players current sum,
     the dealer's one showing card (1-10 where 1 is ace),
     and whether or not the player holds a usable ace (0 or 1).
+
     This environment corresponds to the version of the blackjack problem
     described in Example 5.1 in Reinforcement Learning: An Introduction
-    by Sutton and Barto (1998).
-    https://webdocs.cs.ualberta.ca/~sutton/book/the-book.html
+    by Sutton and Barto.
+    http://incompleteideas.net/book/the-book-2nd.html
     """
-
     def __init__(self, natural=False):
         self.action_space = spaces.Discrete(2)
         self.observation_space = spaces.Tuple((
             spaces.Discrete(32),
             spaces.Discrete(11),
             spaces.Discrete(2)))
-        self._seed()
+        self.seed()
 
         # Flag to payout 1.5 on a "natural" blackjack win, like casino rules
         # Ref: http://www.bicyclecards.com/how-to-play/blackjack/
         self.natural = natural
         # Start the first game
-        self._reset()        # Number of
-        self.nA = 2
+        self.reset()
 
-    def _seed(self, seed=None):
+    def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
-    def _step(self, action):
+    def step(self, action):
         assert self.action_space.contains(action)
         if action:  # hit: add a card to players hand and return
             self.player.append(draw_card(self.np_random))
@@ -100,7 +102,7 @@ class BlackjackEnv(gym.Env):
             done = True
             while sum_hand(self.dealer) < 17:
                 self.dealer.append(draw_card(self.np_random))
-            reward = compare(score(self.player), score(self.dealer))
+            reward = cmp(score(self.player), score(self.dealer))
             if self.natural and is_natural(self.player) and reward == 1:
                 reward = 1.5
         return self._get_obs(), reward, done, {}
@@ -108,12 +110,7 @@ class BlackjackEnv(gym.Env):
     def _get_obs(self):
         return (sum_hand(self.player), self.dealer[0], usable_ace(self.player))
 
-    def _reset(self):
+    def reset(self):
         self.dealer = draw_hand(self.np_random)
         self.player = draw_hand(self.np_random)
-
-        # Auto-draw another card if the score is less than 12
-        while sum_hand(self.player) < 12:
-            self.player.append(draw_card(self.np_random))
-
         return self._get_obs()
