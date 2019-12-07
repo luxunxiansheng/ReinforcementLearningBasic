@@ -2,11 +2,10 @@
 import copy
 
 import numpy as np
+import pysnooper
 from tqdm import tqdm
 
-from policy.policy import Tabular_Implicit_Policy,Greedy_Action_Selector
-import pysnooper
-
+from policy.policy import Greedy_Action_Selector, Tabular_Implicit_Policy
 
 
 def policy_evaluate(tabular_implict_policy, discrte_env):
@@ -51,17 +50,34 @@ def get_value_of_state(tabular_implict_policy, state_index):
 def policy_improve(tabular_implict_policy):
     tabular_implict_policy.set_action_selector(Greedy_Action_Selector())
 
-def value_iteration(tabular_implict_policy, discrte_env):
-    assert isinstance(tabular_implict_policy, Tabular_Implicit_Policy)
+
+
+def value_iteration(tabular_implict_policy,discrte_env,delta=1e-9):
+    q_table_history = []
+    while True:
+        q_table_history.append(tabular_implict_policy.Q_table)
+        discrte_env.show_optimal_value_state(tabular_implict_policy)
+        delta= value_iteration_once(tabular_implict_policy,discrte_env)
+        
+        if delta < 1e-9:
+            break
+    
+
+def value_iteration_once(tabular_implict_policy, discrte_env):
+    
+    delta= 1e-10
     new_q_table = copy.deepcopy(tabular_implict_policy.Q_table)
 
     for state_index in range(discrte_env.nS):  # For each state in env
         # For each action in current state
         for action_index_of_current_state in range(len(tabular_implict_policy.Q_table[state_index])):
             optimal_value_of_action = get_optimal_value_of_action(tabular_implict_policy,discrte_env,state_index,action_index_of_current_state)  
+            delta = max(abs(new_q_table[state_index][action_index_of_current_state]-optimal_value_of_action),delta)
             new_q_table[state_index][action_index_of_current_state] = optimal_value_of_action
-    
     tabular_implict_policy.Q_table = new_q_table
+
+    return delta
+    
 
 
 def get_optimal_value_of_action(tabular_implict_policy,discrte_env,state_index,action_index,discount=1.0):
@@ -76,5 +92,4 @@ def get_optimal_value_of_action(tabular_implict_policy,discrte_env,state_index,a
 
 def get_optimal_value_of_state(tabular_implict_policy, state_index):
     action_values_of_state = tabular_implict_policy.Q_table[state_index]
-
-    return action_values_of_state[np.argmax(action_values_of_state)]
+    return max(action_values_of_state.values())

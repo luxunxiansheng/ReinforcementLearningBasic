@@ -19,7 +19,7 @@ class Grid_World_Agent(Base_Agent):
         dynamic_programming.policy_evaluate(self.policy,self.env)
         
     def value_iteration_once(self):
-        dynamic_programming.value_iteration(self.policy,self.env)
+        dynamic_programming.value_iteration_once(self.policy,self.env)
 
     def improve_policy_once(self):
         dynamic_programming.policy_improve(self.policy)
