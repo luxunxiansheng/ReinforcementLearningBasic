@@ -18,10 +18,4 @@ class Base_Agent(ABC):
         """ 
         pass
 
-    @abstractclassmethod
-    def evaluate_policy_once(self):
-        pass
-
-    @abstractclassmethod
-    def improve_policy_once(self):
-        pass
+    
