@@ -26,7 +26,7 @@ class Gamblers_Problem_Agent(Base_Agent):
         dynamic_programming.policy_evaluate(self.policy,self.env)
         
     def value_iteration(self):
-        dynamic_programming.value_iteration(self.policy,self.env)
+        dynamic_programming.q_value_iteration(self.policy,self.env)
 
     
     def make_decision(self):

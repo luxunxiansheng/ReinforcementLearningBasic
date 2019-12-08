@@ -52,28 +52,26 @@ def policy_improve(tabular_implict_policy):
 
 
 
-def value_iteration(tabular_implict_policy,discrte_env,delta=1e-9):
-    q_table_history = []
+def q_value_iteration(tabular_implict_policy,discrte_env,delta=1e-9):
     while True:
-        q_table_history.append(tabular_implict_policy.Q_table)
-        discrte_env.show_optimal_value_state(tabular_implict_policy)
-        delta= value_iteration_once(tabular_implict_policy,discrte_env)
+        discrte_env.show_optimal_value_of_action(tabular_implict_policy)
+        delta= q_value_iteration_once(tabular_implict_policy,discrte_env)
         
         if delta < 1e-9:
             break
     
 
-def value_iteration_once(tabular_implict_policy, discrte_env):
+def q_value_iteration_once(tabular_implict_policy, discrte_env):
     
     delta= 1e-10
     new_q_table = copy.deepcopy(tabular_implict_policy.Q_table)
 
     for state_index in range(discrte_env.nS):  # For each state in env
         # For each action in current state
-        for action_index_of_current_state in range(len(tabular_implict_policy.Q_table[state_index])):
-            optimal_value_of_action = get_optimal_value_of_action(tabular_implict_policy,discrte_env,state_index,action_index_of_current_state)  
-            delta = max(abs(new_q_table[state_index][action_index_of_current_state]-optimal_value_of_action),delta)
-            new_q_table[state_index][action_index_of_current_state] = optimal_value_of_action
+        for action_index in range(len(tabular_implict_policy.Q_table[state_index])):
+            optimal_value_of_action = get_optimal_value_of_action(tabular_implict_policy,discrte_env,state_index,action_index)  
+            delta = max(abs(tabular_implict_policy.Q_table[state_index][action_index]-optimal_value_of_action),delta)
+            new_q_table[state_index][action_index] = optimal_value_of_action
     tabular_implict_policy.Q_table = new_q_table
 
     return delta
