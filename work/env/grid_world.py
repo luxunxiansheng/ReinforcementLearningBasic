@@ -21,15 +21,15 @@ import math
 import sys
 import io
 
-import gym
+
 import numpy as np
 from gym import spaces
-from gym.envs.toy_text import discrete
+from env.base_discrete_env import Base_Discrete_Env
 from gym.utils import seeding
 
 
 
-class GridworldEnv(discrete.DiscreteEnv):
+class GridworldEnv(Base_Discrete_Env):
     
     metadata = {'render.modes': ['human', 'ansi']}
 
@@ -49,12 +49,7 @@ class GridworldEnv(discrete.DiscreteEnv):
         isd = np.ones(nS) / nS
         super().__init__(nS, nA, self.P, isd)
     
-    def build_Q_table(self):
-        Q_table = {}
-        for state_index in range(self.nS):
-            Q_table[state_index] = {action_index: 0.0 for action_index in range(self.nA)}
-        return Q_table
-
+    
 
     def _build_transitions(self,nS,nA):
          # Transition prob matrix
@@ -128,6 +123,6 @@ class GridworldEnv(discrete.DiscreteEnv):
             it.iternext()
     
     
-       
+
 
     

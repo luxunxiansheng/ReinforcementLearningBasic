@@ -54,9 +54,8 @@ def policy_improve(tabular_implict_policy):
 
 def q_value_iteration(tabular_implict_policy,discrte_env,delta=1e-9):
     while True:
-        discrte_env.show_optimal_value_of_action(tabular_implict_policy)
+        tabular_implict_policy.show_q_table()
         delta= q_value_iteration_once(tabular_implict_policy,discrte_env)
-        
         if delta < 1e-9:
             break
     

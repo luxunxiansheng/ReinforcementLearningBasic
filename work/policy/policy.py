@@ -1,3 +1,4 @@
+import sys
 from abc import ABC, abstractmethod
 from collections import defaultdict
 
@@ -83,3 +84,16 @@ class Tabular_Implicit_Policy(Policy):
         
     def set_action_selector(self,action_selector):
         self.action_selector = action_selector
+
+    
+    def show_q_table(self):
+       
+        outfile = sys.stdout
+        for state_index, action_values in self.Q_table.items():
+            outfile.write("state_index {}:".format(state_index))
+            for action_index,action_value in action_values.items():
+                output = "{0:.2f} ******".format(action_value) 
+            outfile.write("\n")
+        outfile.write('----------------------------------------------\n')
+ 
+
