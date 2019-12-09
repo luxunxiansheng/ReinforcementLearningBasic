@@ -17,20 +17,17 @@
     You receive a reward of -1 at each step until you reach a terminal state.
 
 """
-import math
-import sys
-import io
 
+import io
+import sys
 
 import numpy as np
-from gym import spaces
-from env.base_discrete_env import Base_Discrete_Env
-from gym.utils import seeding
 
+from env.base_discrete_env import Base_Discrete_Env
 
 
 class GridworldEnv(Base_Discrete_Env):
-    
+
     metadata = {'render.modes': ['human', 'ansi']}
 
     def __init__(self, shape=[10, 10]):
@@ -41,17 +38,14 @@ class GridworldEnv(Base_Discrete_Env):
         nS = np.prod(shape)
         self.grid = np.arange(nS).reshape(shape)
 
-     
         nA = 4
-        self.P = self._build_transitions(nS,nA)
+        self.P = self._build_transitions(nS, nA)
 
         # Initial state distribution is uniform
         isd = np.ones(nS) / nS
         super().__init__(nS, nA, self.P, isd)
-    
-    
 
-    def _build_transitions(self,nS,nA):
+    def _build_transitions(self, nS, nA):
          # Transition prob matrix
         P = {}
 
@@ -121,8 +115,3 @@ class GridworldEnv(Base_Discrete_Env):
                 outfile.write("\n")
 
             it.iternext()
-    
-    
-
-
-    

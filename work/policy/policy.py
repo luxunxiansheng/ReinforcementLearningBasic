@@ -90,10 +90,10 @@ class Tabular_Implicit_Policy(Policy):
        
         outfile = sys.stdout
         for state_index, action_values in self.Q_table.items():
-            outfile.write("state_index {}:".format(state_index))
+            outfile.write("\n\nstate_index {:2d}\n".format(state_index))
             for action_index,action_value in action_values.items():
-                output = "{0:.2f} ******".format(action_value) 
+                outfile.write("        action_index {:2d} : value {}     ".format(action_index,action_value))
             outfile.write("\n")
-        outfile.write('----------------------------------------------\n')
+        outfile.write('--------------------------------------------------------------------------\n')
  
 
