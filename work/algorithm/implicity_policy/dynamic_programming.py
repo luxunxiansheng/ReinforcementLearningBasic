@@ -51,11 +51,10 @@ def policy_improve(tabular_implict_policy):
 
 
 def q_value_iteration(tabular_implict_policy,discrte_env,delta=1e-9):
-    while True:
+    for _ in range(100):
         tabular_implict_policy.show_q_table()
         delta= q_value_iteration_once(tabular_implict_policy,discrte_env)
-        if delta < 1e-9:
-            break
+        
     
 
 def q_value_iteration_once(tabular_implict_policy, discrte_env):
@@ -75,7 +74,7 @@ def q_value_iteration_once(tabular_implict_policy, discrte_env):
  
 
 
-def get_optimal_value_of_action(tabular_implict_policy,discrte_env,state_index,action_index,discount=1.0):
+def get_optimal_value_of_action(tabular_implict_policy,discrte_env,state_index,action_index,discount=0.9):
     current_env_transition = discrte_env.P[state_index][action_index]
     optimal_value_of_action = 0
     for transition_prob, next_state_index, reward, done in current_env_transition:  # For each next state

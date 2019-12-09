@@ -13,8 +13,9 @@ from env.base_discrete_env import Base_Discrete_Env
 UP = 0
 LEFT = 1
 RIGHT = 2
+DOWN = 3
 
-REWARD_NON_TERMINALS = -0.04
+REWARD_NON_TERMINALS = 0
 
 
 class GridWorldWithWallsBlockEnv(Base_Discrete_Env):
