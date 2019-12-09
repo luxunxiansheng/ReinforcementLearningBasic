@@ -14,7 +14,7 @@ UP = 0
 LEFT = 1
 RIGHT = 2
 
-REWARD_NON_TERMINALS = -2.0
+REWARD_NON_TERMINALS = -0.04
 
 
 class GridWorldWithWallsBlockEnv(Base_Discrete_Env):

@@ -31,9 +31,8 @@ def get_value_of_action(tabular_implict_policy,discrte_env,state_index,action_in
    
     value_of_action = 0
     current_env_transition = discrte_env.P[state_index][action_index]
-    for transition_prob, next_state_index, reward, _ in current_env_transition:  # For each next state
-        
-        value_of_next_state = get_value_of_state(tabular_implict_policy, next_state_index)
+    for transition_prob, next_state_index, reward, done in current_env_transition:  # For each next state
+        value_of_next_state = 0 if done else get_value_of_state(tabular_implict_policy, next_state_index)
         value_of_action += transition_prob*(discount*value_of_next_state+reward)
     return value_of_action
 
@@ -51,7 +50,7 @@ def policy_improve(tabular_implict_policy):
     tabular_implict_policy.set_action_selector(Greedy_Action_Selector())
 
 
-def q_value_iteration(tabular_implict_policy,discrte_env,delta=1e-4):
+def q_value_iteration(tabular_implict_policy,discrte_env,delta=1e-9):
     while True:
         tabular_implict_policy.show_q_table()
         delta= q_value_iteration_once(tabular_implict_policy,discrte_env)
@@ -79,8 +78,8 @@ def q_value_iteration_once(tabular_implict_policy, discrte_env):
 def get_optimal_value_of_action(tabular_implict_policy,discrte_env,state_index,action_index,discount=1.0):
     current_env_transition = discrte_env.P[state_index][action_index]
     optimal_value_of_action = 0
-    for transition_prob, next_state_index, reward, _ in current_env_transition:  # For each next state
-        optimal_value_of_next_state = get_optimal_value_of_state(tabular_implict_policy, next_state_index)
+    for transition_prob, next_state_index, reward, done in current_env_transition:  # For each next state
+        optimal_value_of_next_state = 0 if done else get_optimal_value_of_state(tabular_implict_policy, next_state_index)   
         # the reward is also related to the next state
         optimal_value_of_action += transition_prob*(discount*optimal_value_of_next_state+reward)
     return optimal_value_of_action
