@@ -6,13 +6,13 @@ import numpy as np
 
 
 class Action_Selector(ABC):
-    def select_action(self, action_values):
-        action_probs = self.get_probability_distribution(action_values)
-        action_index = np.random.choice(np.arange(len(action_probs)), p=action_probs)
+    def select_action(self, values):
+        value_probs = self.get_probability_distribution(values)
+        action_index = np.random.choice(np.arange(len(value_probs)), p=value_probs)
         return action_index
     
-    def get_probability(self,action_values,action_index):
-        return self.get_probability_distribution(action_values)[action_index]
+    def get_probability(self,values,action_index):
+        return self.get_probability_distribution(values)[action_index]
     
     @abstractmethod
     def get_probability_distribution(self,action_values):
@@ -20,20 +20,20 @@ class Action_Selector(ABC):
 
 
 class Random_Action_Selector(Action_Selector):
-    def get_probability_distribution(self,action_values):
-        num_actions = len(action_values)
-        action_probs = np.ones(num_actions, dtype=float) / num_actions
-        return action_probs
+    def get_probability_distribution(self,values):
+        num_values = len(values)
+        value_probs = np.ones(num_values, dtype=float) / num_values
+        return value_probs
         
 
 class Greedy_Action_Selector(Action_Selector):
 
-    def get_probability_distribution(self,action_values):
-        num_actions = len(action_values)
-        action_probs = np.zeros(num_actions, dtype=float)
-        best_action_index = np.argmax(action_values)
-        action_probs[best_action_index] = 1.0
-        return action_probs
+    def get_probability_distribution(self,values):
+        num_values = len(values)
+        value_probs = np.zeros(num_values, dtype=float)
+        best_action_index = np.argmax(values)
+        value_probs[best_action_index] = 1.0
+        return value_probs
         
 
 
@@ -41,12 +41,12 @@ class e_Greedy_Action_Selector(Action_Selector):
     def __init__(self, epsilon):
         self.epsilon = epsilon
 
-    def get_probability_distribution(self,action_values):
-        num_actions = len(action_values)
-        action_probs = np.ones(num_actions, dtype=float) *self.epsilon / num_actions
-        best_action = np.argmax(action_values)
-        action_probs[best_action] += (1.0 - self.epsilon)
-        return action_probs
+    def get_probability_distribution(self,values):
+        num_values = len(values)
+        value_probs = np.ones(num_values, dtype=float) *self.epsilon / num_values
+        best_action_index = np.argmax(values)
+        value_probs[best_action_index] += (1.0 - self.epsilon)
+        return value_probs
 
 class Policy(ABC):
     """
@@ -65,10 +65,30 @@ class Policy(ABC):
         pass
 
 
-class Tabular_Implicit_Policy(Policy):
-    """
-    The policy is implicit for the action is selected from tabular value funciton.
-    """
+class Tabular_Policy(Policy):
+    def __init__(self,pi,method):
+        self.policy_table= pi
+        self.method = method
+
+    def select_action(self,state):
+        action_probs = list(self.policy_table[state].values())
+        action_index = np.random.choice(np.arange(len(action_probs)), p=action_probs)
+        return action_index     
+
+    
+    def evaluate(self):
+        self.method.evaluate(self.policy_table)
+
+    
+    def improve (self):
+        self.method.improve(self.policy_table)
+    
+    
+
+
+
+""" class Tabular_Implicit_Policy(Policy):
+    
     
     def __init__(self,q_table,action_selector=Random_Action_Selector()):
         self.Q_table = q_table
@@ -97,3 +117,36 @@ class Tabular_Implicit_Policy(Policy):
         outfile.write('--------------------------------------------------------------------------\n')
  
 
+
+
+class V_Tabular_Implicit_Policy(Policy):
+   
+    
+    def __init__(self,v_table,action_selector=Random_Action_Selector()):
+        self.V_table = v_table
+        self.action_selector=action_selector
+        
+    def select_action(self, ):
+        action_values=self._table[state]
+        return self.action_selector.select_action(action_values)
+    
+    def get_probability(self,state,action_index):
+        action_values = self.Q_table[state]
+        return self.action_selector.get_probability(action_values,action_index)
+        
+    def set_action_selector(self,action_selector):
+        self.action_selector = action_selector
+
+    
+    def show_v_table(self):
+       
+        outfile = sys.stdout
+        for state_index, action_values in self.Q_table.items():
+            outfile.write("\n\nstate_index {:2d}\n".format(state_index))
+            for action_index,action_value in action_values.items():
+                outfile.write("        action_index {:2d} : value {}     ".format(action_index,action_value))
+            outfile.write("\n")
+        outfile.write('--------------------------------------------------------------------------\n')
+ 
+
+ """

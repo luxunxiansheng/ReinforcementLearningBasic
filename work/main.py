@@ -1,30 +1,29 @@
 from tqdm import tqdm
 
-from agent.dp_agent import DP_Agent
-from env.grid_world import GridworldEnv
+
 from env.grid_world_with_walls_block import GridWorldWithWallsBlockEnv
-from env.room import RoomEnv
-from policy.policy import (Greedy_Action_Selector, Random_Action_Selector,
-                           Tabular_Implicit_Policy, e_Greedy_Action_Selector)
+from policy.policy import Tabular_Policy
+from algorithm.dynamic_programming.q_value_iteration_method import Q_Value_Iteration_Method
 
 
 def main():
    
-    """
-    room_env = RoomEnv()
-    room_agent= DP_Agent(room_env)
-    room_agent.q_value_iteration() 
+    grid_world_with_walls_block_env = GridWorldWithWallsBlockEnv()
+    
+    q_table = grid_world_with_walls_block_env.build_Q_table()
+    transition_table= grid_world_with_walls_block_env.build_transitions()
+    policy_table = grid_world_with_walls_block_env.build_policy_table()
+
+    rl_method = Q_Value_Iteration_Method(q_table,transition_table)
+    rl_method.improve()
+    
     
 
-    grid_world_env=GridworldEnv([4,4])
-    grid_word_agent = DP_Agent(grid_world_env)
-    grid_word_agent.q_value_iteration()
 
-    """
+    table_policy= Tabular_Policy(policy_table,rl_method)
+    table_policy.improve()
+    
 
-    grid_world_with_walls_block_env = GridWorldWithWallsBlockEnv()
-    grid_world_with_walls_block_agent = DP_Agent(grid_world_with_walls_block_env)
-    grid_world_with_walls_block_agent.q_value_iteration()
 
     
 

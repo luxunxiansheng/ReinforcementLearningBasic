@@ -25,11 +25,11 @@ class GridWorldWithWallsBlockEnv(Base_Discrete_Env):
         self.grid = np.arange(nS).reshape(self.shape)
 
         nA = 3  # up, left and right
-        self.P = self._build_transitions(nS, nA)
+        self.P = self.build_transitions()
         isd = np.ones(nS)/nS
         super().__init__(nS, nA, self.P, isd)
 
-    def _build_transitions(self, nS, nA):
+    def build_transitions(self):
         P = {
             0: {
                 UP:   [(1.0, 0, REWARD_NON_TERMINALS, False)],
@@ -138,3 +138,53 @@ class GridWorldWithWallsBlockEnv(Base_Discrete_Env):
                  }
         }
         return Q_table
+
+    def build_policy_table(self):
+        pi_table = {
+            0: {UP:    0.0,
+                LEFT:  0.0,
+                RIGHT: 0.0
+                },
+            1: {UP:    0.0,
+                LEFT:  0.0,
+                RIGHT: 0.0
+                },
+            2: {UP:    0.0,
+                LEFT:  0.0,
+                RIGHT: 0.0
+                },
+            3: {UP:    0.0,
+                LEFT:  0.0,
+                RIGHT: 0.0
+                },
+            4: {UP:    0.0,
+                LEFT:  0.0,
+                RIGHT: 0.0
+                },
+            6: {UP:    0.0,
+                LEFT:  0.0,
+                RIGHT: 0.0
+                },
+            7: {UP:    0.0,
+                LEFT:  0.0,
+                RIGHT: 0.0
+                },   
+            8: {UP:    0.0,
+                LEFT:  0.0,
+                RIGHT: 0.0
+                },
+            9: {UP:    0.0,
+                LEFT:  0.0,
+                RIGHT: 0.0
+                },
+            10: {UP:    0.0,
+                 LEFT:  0.0,
+                 RIGHT: 0.0
+                 },
+            11: {UP:    0.0,
+                 LEFT:  0.0,
+                 RIGHT: 0.0
+                 }
+        }
+        return pi_table
+
