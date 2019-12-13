@@ -82,6 +82,17 @@ class Tabular_Policy(Policy):
     
     def improve (self):
         self.method.improve(self.policy_table)
+
+    
+    def show_policy(self):
+        outfile = sys.stdout
+        for state_index, probability_values in self.policy_table .items():
+            outfile.write("\n\nstate_index {:2d}\n".format(state_index))
+            for action_index,probability_value in probability_values.items():
+                outfile.write("        action_index {:2d} : value {}     ".format(action_index,probability_value))
+            outfile.write("\n")
+        outfile.write('--------------------------------------------------------------------------\n')
+    
     
     
 

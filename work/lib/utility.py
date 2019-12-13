@@ -1,5 +1,28 @@
 import numpy as np
 
+def create_distribution_greedily():
+    def create_fn(values):
+        num_values = len(values)
+        value_probs = np.zeros(num_values, dtype=float)
+        best_action_index = max(values,key=values.get)
+        value_probs[best_action_index] = 1.0
+        return value_probs
+    return create_fn
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

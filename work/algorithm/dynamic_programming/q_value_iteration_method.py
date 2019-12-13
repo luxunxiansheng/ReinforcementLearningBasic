@@ -1,21 +1,29 @@
 import copy
 import sys
 
+from lib.utility import create_distribution_greedily
+
 
 class Q_Value_Iteration_Method:
     def __init__(self,q_table,p,delta=1e-3):
         self.q_table = q_table
         self.transition_table = p
         self.delta=delta
+        self.build_distribution_method = create_distribution_greedily()
         
-    def improve(self):
+    def improve(self,policy):
         while True:
-            delta= self._improve_once()
+            delta= self._bellman_optimize()
             if delta < self.delta:
                 break 
         
+        for state_index, action_values in self.q_table.items():
+            distibution=self.build_distribution_method(action_values)
+            for action_index, _ in action_values.items():
+                policy[state_index][action_index]= distibution[action_index]
+            
     
-    def _improve_once(self):
+    def _bellman_optimize(self):
         delta= 1e-10
         new_q_table = copy.deepcopy(self.q_table)
         for state_index,action_values in self.q_table.items():
@@ -25,6 +33,9 @@ class Q_Value_Iteration_Method:
                 new_q_table[state_index][action_index] = optimal_value_of_action
 
         self.q_table = new_q_table
+
+        self._show_q_table()
+
         return delta
 
     

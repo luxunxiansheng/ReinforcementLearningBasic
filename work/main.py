@@ -15,14 +15,11 @@ def main():
     policy_table = grid_world_with_walls_block_env.build_policy_table()
 
     rl_method = Q_Value_Iteration_Method(q_table,transition_table)
-    rl_method.improve()
-    
-    
-
-
+   
     table_policy= Tabular_Policy(policy_table,rl_method)
     table_policy.improve()
     
+    table_policy.show_policy()
 
 
     
