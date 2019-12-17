@@ -15,7 +15,7 @@ LEFT = 1
 RIGHT = 2
 DOWN = 3
 
-REWARD_NON_TERMINALS = 0
+REWARD_NON_TERMINALS = 0.0
 
 
 class GridWorldWithWallsBlockEnv(Base_Discrete_Env):
@@ -25,11 +25,11 @@ class GridWorldWithWallsBlockEnv(Base_Discrete_Env):
         self.grid = np.arange(nS).reshape(self.shape)
 
         nA = 3  # up, left and right
-        self.P = self.build_transitions()
+        self.P = self._build_transitions()
         isd = np.ones(nS)/nS
         super().__init__(nS, nA, self.P, isd)
 
-    def build_transitions(self):
+    def _build_transitions(self):
         P = {
             0: {
                 UP:   [(1.0, 0, REWARD_NON_TERMINALS, False)],
