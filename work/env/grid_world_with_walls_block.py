@@ -90,6 +90,22 @@ class GridWorldWithWallsBlockEnv(Base_Discrete_Env):
 
         return P
 
+    def build_V_table(self):
+        V_table = {
+            0:0.0,
+            1:0.0,
+            2:0.0,
+            3:0.0,
+            4:0.0,
+            6:0.0,
+            7:0.0,   
+            8:0.0,
+            9:0.0,
+            10:0.0,
+            11:0.0
+        }
+        return V_table
+
     def build_Q_table(self):
         Q_table = {
             0: {UP:    0.0,
