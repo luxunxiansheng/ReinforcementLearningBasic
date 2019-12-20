@@ -5,49 +5,6 @@ from collections import defaultdict
 import numpy as np
 
 
-class Action_Selector(ABC):
-    def select_action(self, values):
-        value_probs = self.get_probability_distribution(values)
-        action_index = np.random.choice(np.arange(len(value_probs)), p=value_probs)
-        return action_index
-    
-    def get_probability(self,values,action_index):
-        return self.get_probability_distribution(values)[action_index]
-    
-    @abstractmethod
-    def get_probability_distribution(self,action_values):
-        pass
-
-
-class Random_Action_Selector(Action_Selector):
-    def get_probability_distribution(self,values):
-        num_values = len(values)
-        value_probs = np.ones(num_values, dtype=float) / num_values
-        return value_probs
-        
-
-class Greedy_Action_Selector(Action_Selector):
-
-    def get_probability_distribution(self,values):
-        num_values = len(values)
-        value_probs = np.zeros(num_values, dtype=float)
-        best_action_index = np.argmax(values)
-        value_probs[best_action_index] = 1.0
-        return value_probs
-        
-
-
-class e_Greedy_Action_Selector(Action_Selector):
-    def __init__(self, epsilon):
-        self.epsilon = epsilon
-
-    def get_probability_distribution(self,values):
-        num_values = len(values)
-        value_probs = np.ones(num_values, dtype=float) *self.epsilon / num_values
-        best_action_index = np.argmax(values)
-        value_probs[best_action_index] += (1.0 - self.epsilon)
-        return value_probs
-
 class Policy(ABC):
     """
     A policy defines the learning agent's way of behaving at a given time. Roughly speaking,
@@ -81,7 +38,7 @@ class Tabular_Policy(Policy):
 
     
     def improve (self):
-        self.method.improve(self.policy_table)
+        return self.method.improve(self.policy_table)
 
     
     def show_policy(self):

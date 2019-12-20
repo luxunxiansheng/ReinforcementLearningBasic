@@ -9,7 +9,22 @@ def create_distribution_greedily():
         return value_probs
     return create_fn
 
+def create_distribution_randomly():
+    def create_fn(values):
+        num_values = len(values)
+        value_probs = np.ones(num_values, dtype=float) / num_values
+        return value_probs
+    return create_fn
 
+def create_distribution_epsilon_greedily(epsilon):
+    def create_fn(values):
+        num_values = len(values)
+        value_probs = np.ones(num_values, dtype=float) *epsilon / num_values
+        best_action_index = np.argmax(values)
+        value_probs[best_action_index] += (1.0 - epsilon)
+        return value_probs
+    return  create_fn
+    
 
 
 
