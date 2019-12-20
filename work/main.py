@@ -1,18 +1,18 @@
-from tqdm import tqdm
-
-from env.grid_world_with_walls_block import GridWorldWithWallsBlockEnv
-from env.grid_world import GridworldEnv
-from policy.policy import Tabular_Policy
+from algorithm.dynamic_programming.policy_iteration_method import Policy_Iteration_Method
 from algorithm.dynamic_programming.q_value_iteration_method import Q_Value_Iteration_Method
 from algorithm.dynamic_programming.v_value_iteration_method import V_Value_Iteration_Method
-from algorithm.dynamic_programming.policy_iteration_method  import Policy_Iteration_Method
+from env.grid_world import GridworldEnv
+from env.grid_world_with_walls_block import GridWorldWithWallsBlockEnv
 from lib.utility import create_distribution_randomly
+from policy.policy import Tabular_Policy
 
 
 def main():
    
     env = GridWorldWithWallsBlockEnv()
     
+    test_q_value_iteration(env)
+    test_v_value_iteration(env)
     test_policy_iteration(env)
 
 
@@ -33,7 +33,7 @@ def test_v_value_iteration(env):
     transition_table= env.P
     policy_table = env.build_policy_table()
 
-    rl_method = Q_Value_Iteration_Method(v_table,transition_table)
+    rl_method = V_Value_Iteration_Method(v_table,transition_table)
    
     table_policy= Tabular_Policy(policy_table,rl_method)
     table_policy.improve()
@@ -62,11 +62,8 @@ def test_policy_iteration(env):
         table_policy.show_policy()
         if current_delta<delta:
             break
-    
-    
+ 
     
 
 if __name__ == "__main__":
     main()
-
-
