@@ -1,28 +1,27 @@
 import sys
 
-import gym
+import matplotlib
+import matplotlib.pyplot as plt
 import numpy as np
-import pysnooper
-from gym import spaces
-from gym.envs.toy_text import discrete
 
-from algorithm.implicity_policy import dynamic_programming
+from env.base_discrete_env import Base_Discrete_Env
 
 
-class GamblersProblemEnv(discrete.DiscreteEnv):
-    GOAL = 100
-    HEAD_PROB = 0.4
+class GamblersProblemEnv(Base_Discrete_Env):
 
-    def __init__(self):
-        nS = GamblersProblemEnv.GOAL+1
-        nA = int(GamblersProblemEnv.GOAL / 2)+1
+    def __init__(self, goal=100, head_prob=0.4):
+        self.goal = goal
+        self.head_prob = head_prob
+
+        nS = self.goal+1
+        nA = int(self.goal/2)+1
         self.P = self._build_transitions(nS)
 
         isd = np.ones(nS) / nS
         super().__init__(nS, nA, self.P, isd)
 
     def _is_done(self, capital):
-        if capital == 100:
+        if capital == self.goal:
             return 1.0, True
 
         if capital == 0:
@@ -47,34 +46,44 @@ class GamblersProblemEnv(discrete.DiscreteEnv):
         P = {}
         for state_index in range(nS):
             actions = np.arange(min(self._get_capital(
-                state_index), GamblersProblemEnv.GOAL-self._get_capital(state_index))+1)
+                state_index), self.goal-self._get_capital(state_index))+1)
             P[state_index] = {action_index: []
                               for action_index in range(len(actions))}
             for action_index in range(len(actions)):
-                P[state_index][action_index] = [(GamblersProblemEnv.HEAD_PROB,   self._get_state_index(self._get_capital(state_index)+self._get_action(action_index)), self._is_done(self._get_capital(state_index)+self._get_action(action_index))[0], self._is_done(self._get_capital(state_index)+self._get_action(action_index))[1]),
-                                                (1-GamblersProblemEnv.HEAD_PROB, self._get_state_index(self._get_capital(state_index)-self._get_action(action_index)), self._is_done(self._get_capital(state_index)-self._get_action(action_index))[0], self._is_done(self._get_capital(state_index)-self._get_action(action_index))[1])]
+                P[state_index][action_index] = [(self.head_prob, 
+                                                 self._get_state_index(self._get_capital(state_index)+self._get_action(action_index)), 
+                                                 self._is_done(self._get_capital(state_index)+self._get_action(action_index))[0],
+                                                 self._is_done(self._get_capital(state_index)+self._get_action(action_index))[1]),
+                                                (1-self.head_prob, 
+                                                self._get_state_index(self._get_capital(state_index)-self._get_action(action_index)),
+                                                self._is_done(self._get_capital(state_index)-self._get_action(action_index))[0],
+                                                self._is_done(self._get_capital(state_index)-self._get_action(action_index))[1])]
 
         return P
 
     def build_Q_table(self):
-
         Q_table = {}
-        for state_index in range(self.nS-1):
+        for state_index in range(self.nS):
             actions = np.arange(min(self._get_capital(
-                state_index), GamblersProblemEnv.GOAL-self._get_capital(state_index))+1)
+                state_index), self.goal-self._get_capital(state_index))+1)
             Q_table[state_index] = {
                 action_index: 0.0 for action_index in range(len(actions))}
-        Q_table[100] = {0:1.0}
+        Q_table[self.nS-1] = {0: 1.0}
         return Q_table
 
-    def show_optimal_value_state(self,policy):
-        outfile = sys.stdout
+    def build_V_table(self):
+        V_table = {}
         for state_index in range(self.nS):
-            optimal_value_of_state = dynamic_programming.get_optimal_value_of_state(policy,state_index)
-            output = "{0:.2f} ******".format(optimal_value_of_state) 
-            outfile.write(output)
+            V_table[state_index] = 0.0
 
-            if state_index % 10== 0 :
-                outfile.write("\n")
+        V_table[self.nS-1] = 1.0
+        return V_table
 
-            
+    def build_policy_table(self):
+        pi_table = {}
+        for state_index in range(self.nS):
+            actions = np.arange(min(self._get_capital(
+                state_index), self.goal-self._get_capital(state_index))+1)
+            pi_table[state_index] = {
+                action_index: 0.0 for action_index in range(len(actions))}
+        return pi_table

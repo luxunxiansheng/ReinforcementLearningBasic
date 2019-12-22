@@ -3,17 +3,18 @@ from algorithm.dynamic_programming.q_value_iteration_method import Q_Value_Itera
 from algorithm.dynamic_programming.v_value_iteration_method import V_Value_Iteration_Method
 from env.grid_world import GridworldEnv
 from env.grid_world_with_walls_block import GridWorldWithWallsBlockEnv
+from env.gamblers_problem import GamblersProblemEnv
 from lib.utility import create_distribution_randomly
 from policy.policy import Tabular_Policy
 
 
 def main():
    
-    env = GridWorldWithWallsBlockEnv()
+    env = GamblersProblemEnv()
     
     test_q_value_iteration(env)
-    test_v_value_iteration(env)
-    test_policy_iteration(env)
+    #test_v_value_iteration(env)
+    #test_policy_iteration(env)
 
 
 def test_q_value_iteration(env):
