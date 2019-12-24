@@ -29,6 +29,7 @@ def test_v_mc_methond(env):
     table_policy = Tabular_Policy(policy_table,rl_method)
 
     table_policy.evaluate()
+    table_policy.show_policy()
 
 def test_q_value_iteration(env):
     q_table = env.build_Q_table()
