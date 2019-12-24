@@ -23,7 +23,7 @@ class Base_Discrete_Env(discrete.DiscreteEnv):
     def build_policy_table(self):
         policy_table = {}
         for state_index in range(self.nS):
-            policy_table[state_index] = {action_index: 0.0 for action_index in range(self.nA)}
+            policy_table[state_index] = {action_index: 1.0/self.nA for action_index in range(self.nA)}
         return policy_table
         
 

@@ -85,5 +85,5 @@ class GamblersProblemEnv(Base_Discrete_Env):
             actions = np.arange(min(self._get_capital(
                 state_index), self.goal-self._get_capital(state_index))+1)
             pi_table[state_index] = {
-                action_index: 0.0 for action_index in range(len(actions))}
+                action_index: 1.0/len(actions) for action_index in range(len(actions))}
         return pi_table

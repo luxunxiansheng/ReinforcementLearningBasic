@@ -14,10 +14,10 @@ def main():
    
     env = GamblersProblemEnv()
     
-    #test_v_mc_methond(env)
+    test_v_mc_methond(env)
     #test_q_value_iteration(env)
     #test_v_value_iteration(env)
-    test_policy_iteration(env)
+    #test_policy_iteration(env)
 
 
 def test_v_mc_methond(env):

@@ -156,50 +156,51 @@ class GridWorldWithWallsBlockEnv(Base_Discrete_Env):
         return Q_table
 
     def build_policy_table(self):
+        default_prob= 1.0/3
         pi_table = {
-            0: {UP:    0.0,
-                LEFT:  0.0,
-                RIGHT: 0.0
+            0: {UP:    default_prob,
+                LEFT:  default_prob,
+                RIGHT: default_prob
                 },
-            1: {UP:    0.0,
-                LEFT:  0.0,
-                RIGHT: 0.0
+            1: {UP:    default_prob,
+                LEFT:  default_prob,
+                RIGHT: default_prob
                 },
-            2: {UP:    0.0,
-                LEFT:  0.0,
-                RIGHT: 0.0
+            2: {UP:    default_prob,
+                LEFT:  default_prob,
+                RIGHT: default_prob
                 },
-            3: {UP:    0.0,
-                LEFT:  0.0,
-                RIGHT: 0.0
+            3: {UP:    default_prob,
+                LEFT:  default_prob,
+                RIGHT: default_prob
                 },
-            4: {UP:    0.0,
-                LEFT:  0.0,
-                RIGHT: 0.0
+            4: {UP:    default_prob,
+                LEFT:  default_prob,
+                RIGHT: default_prob
                 },
-            6: {UP:    0.0,
-                LEFT:  0.0,
-                RIGHT: 0.0
+            6: {UP:    default_prob,
+                LEFT:  default_prob,
+                RIGHT: default_prob
                 },
-            7: {UP:    0.0,
-                LEFT:  0.0,
-                RIGHT: 0.0
+            7: {UP:    default_prob,
+                LEFT:  default_prob,
+                RIGHT: default_prob
                 },   
-            8: {UP:    0.0,
-                LEFT:  0.0,
-                RIGHT: 0.0
+            8: {UP:    default_prob,
+                LEFT:  default_prob,
+                RIGHT: default_prob
                 },
-            9: {UP:    0.0,
-                LEFT:  0.0,
-                RIGHT: 0.0
+            9: {UP:    default_prob,
+                LEFT:  default_prob,
+                RIGHT: default_prob
                 },
-            10: {UP:    0.0,
-                 LEFT:  0.0,
-                 RIGHT: 0.0
+            10: {UP:    default_prob,
+                 LEFT:  default_prob,
+                 RIGHT: default_prob
                  },
-            11: {UP:    0.0,
-                 LEFT:  0.0,
-                 RIGHT: 0.0
+            11: {UP:    default_prob,
+                 LEFT:  default_prob,
+                 RIGHT: default_prob
                  }
         }
         return pi_table
