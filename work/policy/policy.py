@@ -35,11 +35,11 @@ class Tabular_Policy(Policy):
 
     
     def evaluate(self):
-        self.method.evaluate(self.policy_table)
+        self.method.evaluate(self)
 
     
     def improve (self):
-        return self.method.improve(self.policy_table)
+        return self.method.improve(self)
 
     
     def show_policy_on_console(self):

@@ -1,6 +1,8 @@
 from algorithm.dynamic_programming.policy_iteration_method import Policy_Iteration_Method
 from algorithm.dynamic_programming.q_value_iteration_method import Q_Value_Iteration_Method
 from algorithm.dynamic_programming.v_value_iteration_method import V_Value_Iteration_Method
+from algorithm.monte_carlo_method.v_monte_carlo_method import V_Monte_Carlo_Method
+
 from env.grid_world import GridworldEnv
 from env.grid_world_with_walls_block import GridWorldWithWallsBlockEnv
 from env.gamblers_problem import GamblersProblemEnv
@@ -12,10 +14,21 @@ def main():
    
     env = GamblersProblemEnv()
     
-    test_q_value_iteration(env)
+    #test_v_mc_methond(env)
+    #test_q_value_iteration(env)
     #test_v_value_iteration(env)
-    #test_policy_iteration(env)
+    test_policy_iteration(env)
 
+
+def test_v_mc_methond(env):
+    v_table = env.build_V_table()
+    
+    policy_table = env.build_policy_table() 
+
+    rl_method =  V_Monte_Carlo_Method(v_table,env)
+    table_policy = Tabular_Policy(policy_table,rl_method)
+
+    table_policy.evaluate()
 
 def test_q_value_iteration(env):
     q_table = env.build_Q_table()

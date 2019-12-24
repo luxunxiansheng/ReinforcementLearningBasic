@@ -89,6 +89,8 @@ class GridworldEnv(Base_Discrete_Env):
             it.iternext()
 
         return P
+    
+    
 
     def render(self, mode='human'):
         outfile = io.StringIO() if mode == 'ansi' else sys.stdout

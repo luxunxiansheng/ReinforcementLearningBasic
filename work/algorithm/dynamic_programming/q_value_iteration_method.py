@@ -24,7 +24,7 @@ class Q_Value_Iteration_Method:
         for state_index, action_values in self.q_table.items():
             distibution=self.build_distribution_method(action_values)
             for action_index, _ in action_values.items():
-                policy[state_index][action_index]= distibution[action_index]
+                policy.policy_table[state_index][action_index]= distibution[action_index]
             
     
     def _bellman_optimize(self):

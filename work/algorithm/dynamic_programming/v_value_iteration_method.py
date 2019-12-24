@@ -24,7 +24,7 @@ class V_Value_Iteration_Method:
             q_values = self._get_value_of_actions(transitions)
             distibution = self.build_distribution_method(q_values)
             for action_index, _ in transitions.items():
-                policy[state_index][action_index] = distibution[action_index]
+                policy.policy_table[state_index][action_index] = distibution[action_index]
 
     def _bellman_optimize(self):
         delta = 1e-10
