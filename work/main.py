@@ -6,19 +6,23 @@ from algorithm.monte_carlo_method.v_monte_carlo_method import V_Monte_Carlo_Meth
 from env.grid_world import GridworldEnv
 from env.grid_world_with_walls_block import GridWorldWithWallsBlockEnv
 from env.gamblers_problem import GamblersProblemEnv
+from env.blackjack  import BlackjackEnv
+
 from lib.utility import create_distribution_randomly
 from policy.policy import Tabular_Policy
 
 
 def main():
    
-    env = GamblersProblemEnv()
+    env = BlackjackEnv()
     
     test_v_mc_methond(env)
     #test_q_value_iteration(env)
     #test_v_value_iteration(env)
     #test_policy_iteration(env)
 
+    
+    
 
 def test_v_mc_methond(env):
     v_table = env.build_V_table()
@@ -29,7 +33,10 @@ def test_v_mc_methond(env):
     table_policy = Tabular_Policy(policy_table,rl_method)
 
     table_policy.evaluate()
-    table_policy.show_policy()
+   
+    env.show_v_table(v_table)
+    
+
 
 def test_q_value_iteration(env):
     q_table = env.build_Q_table()
@@ -41,7 +48,7 @@ def test_q_value_iteration(env):
     table_policy= Tabular_Policy(policy_table,rl_method)
     table_policy.improve()
     
-    table_policy.show_policy()
+    env.show_policy(table_policy)
 
 def test_v_value_iteration(env):
     v_table = env.build_V_table()
@@ -53,7 +60,7 @@ def test_v_value_iteration(env):
     table_policy= Tabular_Policy(policy_table,rl_method)
     table_policy.improve()
     
-    table_policy.show_policy()
+    env.show_policy(table_policy)
 
 def test_policy_iteration(env):
     v_table = env.build_V_table()
@@ -71,10 +78,11 @@ def test_policy_iteration(env):
     delta = 1e-3
     while True:
         table_policy.evaluate()
-        table_policy.show_policy()
+        
+        env.show_policy(table_policy)
 
         current_delta= table_policy.improve()
-        table_policy.show_policy()
+        env.show_policy(table_policy)
         if current_delta<delta:
             break
  

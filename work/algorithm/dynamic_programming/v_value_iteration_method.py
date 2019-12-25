@@ -1,7 +1,4 @@
 import copy
-import sys
-
-import matplotlib.pyplot as plt
 
 from lib.utility import create_distribution_greedily
 
@@ -36,7 +33,6 @@ class V_Value_Iteration_Method:
             delta = max(
                 abs(self.v_table[state_index]-new_v_table[state_index]), delta)
         self.v_table = new_v_table
-        self._show_v_table()
         return delta
 
     def _get_value_of_actions(self, transitions):
@@ -57,30 +53,3 @@ class V_Value_Iteration_Method:
 
     def _get_optimal_value_of_action(self, q_values):
         return max(q_values.values())
-
-    def _show_v_table(self):
-        x = []
-        y = []
-        for state_index, value in self.v_table.items():
-            x.append(state_index)
-            y.append(value)
-
-        fig, ax = plt.subplots(1, figsize=(8, 6))
-        fig.suptitle('Value of State')
-
-        # Plot the data
-        ax.scatter(x, y)
-
-        # Show the grid lines as dark grey lines
-        plt.grid(b=True, which='major', color='#666666', linestyle='-')
-
-        plt.show()
-
-    def _show_v_table_on_console(self):
-        outfile = sys.stdout
-        for state_index, value in self.v_table.items():
-            outfile.write(
-                "\n\nstate_index {:2d}:\n {:2f}\n".format(state_index, value))
-            outfile.write("\n")
-        outfile.write(
-            '--------------------------------------------------------------------------\n')

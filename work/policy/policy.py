@@ -1,8 +1,6 @@
-import sys
 from abc import ABC, abstractmethod
 from collections import defaultdict
 
-import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -24,48 +22,18 @@ class Policy(ABC):
 
 
 class Tabular_Policy(Policy):
-    def __init__(self,pi,method):
-        self.policy_table= pi
+    def __init__(self, pi, method):
+        self.policy_table = pi
         self.method = method
 
-    def select_action(self,state):
+    def select_action(self, state):
         action_probs = list(self.policy_table[state].values())
-        action_index = np.random.choice(np.arange(len(action_probs)), p=action_probs)
-        return action_index     
+        action_index = np.random.choice(
+            np.arange(len(action_probs)), p=action_probs)
+        return action_index
 
-    
     def evaluate(self):
         self.method.evaluate(self)
 
-    
-    def improve (self):
+    def improve(self):
         return self.method.improve(self)
-
-    
-    def show_policy_on_console(self):
-        outfile = sys.stdout
-        for state_index, probability_values in self.policy_table.items():
-            outfile.write("\n\nstate_index {:2d}\n".format(state_index))
-            for action_index,probability_value in probability_values.items():
-                outfile.write("        action_index {:2d} : value {}     ".format(action_index,probability_value))
-            outfile.write("\n")
-        outfile.write('--------------------------------------------------------------------------\n')
-    
-    def show_policy(self):
-        
-        x=  []
-        y = []
-        for state_index, _ in self.policy_table.items():
-            x.append(state_index)
-            y.append(self.select_action(state_index))  
-        
-        fig, ax = plt.subplots(1, figsize=(8, 6))
-        fig.suptitle('Action taken at state')
-
-        # Plot the data
-        ax.scatter(x,y)
-
-        # Show the grid lines as dark grey lines
-        plt.grid(b=True, which='major', color='#666666', linestyle='-')
-
-        plt.show()

@@ -1,6 +1,12 @@
+from collections import defaultdict
+
 import gym
-from gym import spaces
+from gym import Env, spaces
 from gym.utils import seeding
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+import seaborn as sns
+import numpy as np
 
 def cmp(a, b):
     return float(a > b) - float(a < b)
@@ -39,7 +45,7 @@ def is_natural(hand):  # Is this hand a natural blackjack?
     return sorted(hand) == [1, 10]
 
 
-class BlackjackEnv(gym.Env):
+class BlackjackEnv(Env):
     """Simple blackjack environment
 
     Blackjack is a card game where the goal is to obtain cards that sum to as
@@ -61,21 +67,26 @@ class BlackjackEnv(gym.Env):
     decided by whose sum is closer to 21.  The reward for winning is +1,
     drawing is 0, and losing is -1.
 
-    The observation of a 3-tuple of: the players current sum,
+    The observation of a 3-tuple of: the players current sum, 
     the dealer's one showing card (1-10 where 1 is ace),
     and whether or not the player holds a usable ace (0 or 1).
 
     This environment corresponds to the version of the blackjack problem
     described in Example 5.1 in Reinforcement Learning: An Introduction
     by Sutton and Barto.
-    http://incompleteideas.net/book/the-book-2nd.html
+    
     """
     def __init__(self, natural=False):
+        
+       
         self.action_space = spaces.Discrete(2)
         self.observation_space = spaces.Tuple((
             spaces.Discrete(32),
             spaces.Discrete(11),
             spaces.Discrete(2)))
+
+       
+
         self.seed()
 
         # Flag to payout 1.5 on a "natural" blackjack win, like casino rules
@@ -84,6 +95,36 @@ class BlackjackEnv(gym.Env):
         # Start the first game
         self.reset()
 
+    
+    def build_V_table(self):
+        v_table= {}
+        for sum_index in range(self.observation_space[0].n):
+            for showcard_index in range(self.observation_space[1].n):
+                for usable_ace_index in range(self.observation_space[2].n):
+                    v_table[(sum_index,showcard_index,usable_ace_index)]=0.0
+        
+        return v_table
+
+    def build_Q_table(self):
+        q_table =defaultdict(lambda:{})
+        for sum_index in range(self.observation_space[0].n):
+            for showcard_index in range(self.observation_space[1].n):
+                for usable_ace_index in range(self.observation_space[2].n):
+                    for action_index in range(self.action_space.n):
+                        q_table[((sum_index,showcard_index,usable_ace_index))][action_index]=0.0
+        return q_table
+
+    def build_policy_table(self):
+        policy_table=defaultdict(lambda:{})
+        for sum_index in range(self.observation_space[0].n):
+            for showcard_index in range(self.observation_space[1].n):
+                for usable_ace_index in range(self.observation_space[2].n):
+                    for action_index in range(self.action_space.n):
+                        policy_table[((sum_index,showcard_index,usable_ace_index))][action_index]=1.0/self.action_space.n
+       
+        return policy_table
+
+        
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
@@ -114,3 +155,42 @@ class BlackjackEnv(gym.Env):
         self.dealer = draw_hand(self.np_random)
         self.player = draw_hand(self.np_random)
         return self._get_obs()
+
+    def show_v_table(self,v_table):
+       
+        usable_ace = np.zeros([32,11])
+        no_usable_ace = np.zeros([32,11])
+        
+
+        for obs, value in v_table.items():
+            sum = obs[0]
+            showcard = obs[1]
+            ace= obs[2]
+
+          
+
+            if ace :
+                usable_ace[sum][showcard]= value
+            else :
+                no_usable_ace[sum][showcard]= value
+  
+
+        fig, axes = plt.subplots(1,2,figsize=(8, 6))
+        plt.subplots_adjust(wspace=0.1, hspace=0.2)
+        axes = axes.flatten()
+             
+    
+
+        fig = sns.heatmap(usable_ace, cmap="YlGnBu", ax=axes[0], xticklabels=range(1, 11),
+                          yticklabels=list(reversed(range(1, 32))))
+        fig.set_ylabel('player sum', fontsize=30)
+        fig.set_xlabel('dealer showing', fontsize=30)
+        
+        
+        fig = sns.heatmap(usable_ace, cmap="YlGnBu", ax=axes[1], xticklabels=range(1, 11),
+                          yticklabels=list(reversed(range(1, 32))))
+        fig.set_ylabel('player sum', fontsize=30)
+        fig.set_xlabel('dealer showing', fontsize=30)
+
+
+        plt.show()
