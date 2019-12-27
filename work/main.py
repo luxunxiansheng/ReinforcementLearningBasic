@@ -29,6 +29,18 @@ def test_v_mc_methond(env):
     
     policy_table = env.build_policy_table() 
 
+    for state_index, _ in policy_table.items():
+        card_sum = state_index[0] 
+        if card_sum < 20:
+            policy_table[state_index][BlackjackEnv.HIT]= 1.0 
+            policy_table[state_index][BlackjackEnv.STICK] = 0.0 
+        else:
+            policy_table[state_index][BlackjackEnv.HIT]= 0.0 
+            policy_table[state_index][BlackjackEnv.STICK] = 1.0
+            
+        
+
+
     rl_method =  V_Monte_Carlo_Method(v_table,env)
     table_policy = Tabular_Policy(policy_table,rl_method)
 

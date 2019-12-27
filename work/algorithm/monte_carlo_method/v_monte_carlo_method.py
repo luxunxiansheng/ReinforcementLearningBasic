@@ -2,7 +2,7 @@ import copy
 from tqdm import tqdm
 
 class V_Monte_Carlo_Method:
-    def __init__(self,v_table,env,episodes=1000,discount=1.0):
+    def __init__(self,v_table,env,episodes=50000,discount=1.0):
         self.v_table = v_table
         self.env =env
         self.episodes=episodes

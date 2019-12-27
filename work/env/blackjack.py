@@ -1,15 +1,20 @@
 from collections import defaultdict
 
 import gym
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
 from gym import Env, spaces
 from gym.utils import seeding
-import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-import seaborn as sns
-import numpy as np
+
+
+
+
 
 def cmp(a, b):
     return float(a > b) - float(a < b)
+
 
 # 1 = Ace, 2-10 = Number cards, Jack/Queen/King = 10
 deck = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10]
@@ -74,18 +79,18 @@ class BlackjackEnv(Env):
     This environment corresponds to the version of the blackjack problem
     described in Example 5.1 in Reinforcement Learning: An Introduction
     by Sutton and Barto.
-    
+
     """
+    STICK=0
+    HIT =1 
+
     def __init__(self, natural=False):
-        
-       
+
         self.action_space = spaces.Discrete(2)
         self.observation_space = spaces.Tuple((
             spaces.Discrete(32),
             spaces.Discrete(11),
             spaces.Discrete(2)))
-
-       
 
         self.seed()
 
@@ -95,36 +100,36 @@ class BlackjackEnv(Env):
         # Start the first game
         self.reset()
 
-    
     def build_V_table(self):
-        v_table= {}
+        v_table = {}
         for sum_index in range(self.observation_space[0].n):
             for showcard_index in range(self.observation_space[1].n):
                 for usable_ace_index in range(self.observation_space[2].n):
-                    v_table[(sum_index,showcard_index,usable_ace_index)]=0.0
-        
+                    v_table[(sum_index, showcard_index, usable_ace_index)] = 0.0
+
         return v_table
 
     def build_Q_table(self):
-        q_table =defaultdict(lambda:{})
+        q_table = defaultdict(lambda: {})
         for sum_index in range(self.observation_space[0].n):
             for showcard_index in range(self.observation_space[1].n):
                 for usable_ace_index in range(self.observation_space[2].n):
                     for action_index in range(self.action_space.n):
-                        q_table[((sum_index,showcard_index,usable_ace_index))][action_index]=0.0
+                        q_table[((sum_index, showcard_index,
+                                  usable_ace_index))][action_index] = 0.0
         return q_table
 
     def build_policy_table(self):
-        policy_table=defaultdict(lambda:{})
+        policy_table = defaultdict(lambda: {})
         for sum_index in range(self.observation_space[0].n):
             for showcard_index in range(self.observation_space[1].n):
                 for usable_ace_index in range(self.observation_space[2].n):
                     for action_index in range(self.action_space.n):
-                        policy_table[((sum_index,showcard_index,usable_ace_index))][action_index]=1.0/self.action_space.n
-       
+                        policy_table[((sum_index, showcard_index, usable_ace_index))
+                                     ][action_index] = 1.0/self.action_space.n
+
         return policy_table
 
-        
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
@@ -156,41 +161,35 @@ class BlackjackEnv(Env):
         self.player = draw_hand(self.np_random)
         return self._get_obs()
 
-    def show_v_table(self,v_table):
-       
-        usable_ace = np.zeros([32,11])
-        no_usable_ace = np.zeros([32,11])
-        
+    def show_v_table(self, v_table):
+
+        usable_ace = np.zeros([32, 11])
+        no_usable_ace = np.zeros([32, 11])
 
         for obs, value in v_table.items():
             sum = obs[0]
             showcard = obs[1]
-            ace= obs[2]
+            ace = obs[2]
 
-          
+            if ace:
+                usable_ace[sum][showcard] = value
+            else:
+                no_usable_ace[sum][showcard] = value
 
-            if ace :
-                usable_ace[sum][showcard]= value
-            else :
-                no_usable_ace[sum][showcard]= value
-  
-
-        fig, axes = plt.subplots(1,2,figsize=(8, 6))
+        fig, axes = plt.subplots(1,2, figsize=(16, 12))
         plt.subplots_adjust(wspace=0.1, hspace=0.2)
         axes = axes.flatten()
-             
-    
 
-        fig = sns.heatmap(usable_ace, cmap="YlGnBu", ax=axes[0], xticklabels=range(1, 11),
+        fig = sns.heatmap(np.flipud(usable_ace), cmap="YlGnBu", ax=axes[0], xticklabels=range(1, 11),
                           yticklabels=list(reversed(range(1, 32))))
         fig.set_ylabel('player sum', fontsize=30)
         fig.set_xlabel('dealer showing', fontsize=30)
-        
-        
-        fig = sns.heatmap(usable_ace, cmap="YlGnBu", ax=axes[1], xticklabels=range(1, 11),
+        fig.set_title('Usable Ace', fontsize=30)
+
+        fig = sns.heatmap(np.flipud(no_usable_ace), cmap="YlGnBu", ax=axes[1], xticklabels=range(1, 11),
                           yticklabels=list(reversed(range(1, 32))))
         fig.set_ylabel('player sum', fontsize=30)
         fig.set_xlabel('dealer showing', fontsize=30)
-
+        fig.set_title('No Usable ace', fontsize=30)
 
         plt.show()
