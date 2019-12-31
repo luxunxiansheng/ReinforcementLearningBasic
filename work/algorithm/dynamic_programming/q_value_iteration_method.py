@@ -8,7 +8,7 @@ class Q_Value_Iteration_Method:
         self.q_table = q_table
         self.transition_table = p
         self.delta = delta
-        self.build_distribution_method = create_distribution_greedily()
+        self.create_distribution_greedily = create_distribution_greedily()
 
     def improve(self, policy):
         while True:
@@ -17,9 +17,8 @@ class Q_Value_Iteration_Method:
                 break
 
         for state_index, action_values in self.q_table.items():
-            distibution = self.build_distribution_method(action_values)
-            for action_index, _ in action_values.items():
-                policy.policy_table[state_index][action_index] = distibution[action_index]
+            distibution = self.create_distribution_greedily(action_values)
+            policy.policy_table[state_index]= distibution
 
     def _bellman_optimize(self):
         delta = 1e-10

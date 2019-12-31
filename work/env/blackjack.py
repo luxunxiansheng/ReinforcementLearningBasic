@@ -193,3 +193,34 @@ class BlackjackEnv(Env):
         fig.set_title('No Usable ace', fontsize=30)
 
         plt.show()
+
+    def show_policy(self,table_policy):
+        usable_ace = np.zeros([32, 11])
+        no_usable_ace = np.zeros([32, 11])
+
+        for state, action_values in table_policy.policy_table.items():
+            sum = state[0]
+            showcard = state[1]
+            ace = state[2]
+            if ace :
+                usable_ace[sum][showcard] = min(action_values, key=lambda k: action_values[k])
+            else:
+                no_usable_ace[sum][showcard] = min(action_values, key=lambda k: action_values[k])
+
+        fig, axes = plt.subplots(1,2, figsize=(16, 12))
+        plt.subplots_adjust(wspace=0.1, hspace=0.2)
+        axes = axes.flatten()
+
+        fig = sns.heatmap(np.flipud(usable_ace), cmap="YlGnBu", ax=axes[0], xticklabels=range(0, 11),
+                          yticklabels=list(reversed(range(1, 32))))
+        fig.set_ylabel('player sum', fontsize=30)
+        fig.set_xlabel('dealer showing', fontsize=30)
+        fig.set_title('Usable Ace', fontsize=30)
+
+        fig = sns.heatmap(np.flipud(no_usable_ace), cmap="YlGnBu", ax=axes[1], xticklabels=range(1, 11),
+                          yticklabels=list(reversed(range(1, 32))))
+        fig.set_ylabel('player sum', fontsize=30)
+        fig.set_xlabel('dealer showing', fontsize=30)
+        fig.set_title('No Usable ace', fontsize=30)
+
+        plt.show()

@@ -9,7 +9,7 @@ class V_Value_Iteration_Method:
         self.transition_table = p
         self.delta = delta
         self.discount = discount
-        self.build_distribution_method = create_distribution_greedily()
+        self.create_distribution_greedily = create_distribution_greedily()
 
     def improve(self, policy):
         while True:
@@ -17,30 +17,31 @@ class V_Value_Iteration_Method:
             if delta < self.delta:
                 break
 
-        for state_index, transitions in self.transition_table.items():
-            q_values = self._get_value_of_actions(transitions)
-            distibution = self.build_distribution_method(q_values)
-            for action_index, _ in transitions.items():
-                policy.policy_table[state_index][action_index] = distibution[action_index]
+        for state_index, actions in policy.policy_table.items():
+            q_values={}
+            for action_index, _ in actions.items():
+                transition= self.transition_table[state_index][action_index]
+                q_values[action_index]=self._get_value_of_action(transition)
+            
+            greedy_distibution = self.create_distribution_greedily(q_values)
+            policy.policy_table[state_index]=greedy_distibution 
 
     def _bellman_optimize(self):
         delta = 1e-10
         new_v_table = copy.deepcopy(self.v_table)
         for state_index, transitions in self.transition_table.items():
-            q_values = self._get_value_of_actions(transitions)
-            new_v_table[state_index] = self._get_optimal_value_of_action(
-                q_values)
-            delta = max(
-                abs(self.v_table[state_index]-new_v_table[state_index]), delta)
+            
+            q_values = {}
+            for action_index, transition in transitions.items():
+                value_of_action = self._get_value_of_action(transition)
+                q_values[action_index] = value_of_action
+            
+            new_v_table[state_index] = self._get_optimal_value_of_action(q_values)
+            delta = max(abs(self.v_table[state_index]-new_v_table[state_index]), delta)
         self.v_table = new_v_table
         return delta
 
-    def _get_value_of_actions(self, transitions):
-        q_values = {}
-        for action_index, transition in transitions.items():
-            value_of_action = self._get_value_of_action(transition)
-            q_values[action_index] = value_of_action
-        return q_values
+
 
     def _get_value_of_action(self, transition):
         value_of_action = 0
