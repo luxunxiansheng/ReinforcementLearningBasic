@@ -3,13 +3,12 @@ from abc import ABC, abstractclassmethod
 class Base_Agent(ABC):
     
     @abstractclassmethod
-    def make_decision(self,policy,observation):
+    def select_action(self,observation):
         """
-        Given a policy and the observation , the agent 
+        Given the  observation , the agent 
         decides what action to take in the next step.
         
         Arguments:
-            policy {Policy} -- Tabular or funciton approximator
             observation {Observation} -- fully or partially observed state
         
         Return: 
@@ -17,5 +16,19 @@ class Base_Agent(ABC):
         
         """ 
         pass
+    
+    @abstractclassmethod
+    def evaluate(self):
+        """
+        Given a policy, to predict the value function.
+        """
+        pass  
+    
 
+    @abstractclassmethod
+    def improve(self):
+        """
+        Give the value function, how to get an optimal policy 
+        """
+        pass 
     

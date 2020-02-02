@@ -50,7 +50,7 @@ class Base_Discrete_Env(discrete.DiscreteEnv):
         y = []
         for state_index, _ in policy.policy_table.items():
             x.append(state_index)
-            y.append(policy.select_action(state_index))
+            y.append(policy.get_action(state_index))
 
         fig, ax = plt.subplots(1, figsize=(8, 6))
         fig.suptitle('Action taken at state')

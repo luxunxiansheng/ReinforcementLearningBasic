@@ -18,30 +18,30 @@ class V_Value_Iteration_Method:
                 break
 
         for state_index, actions in policy.policy_table.items():
-            q_values={}
+            q_values = {}
             for action_index, _ in actions.items():
-                transition= self.transition_table[state_index][action_index]
-                q_values[action_index]=self._get_value_of_action(transition)
-            
+                transition = self.transition_table[state_index][action_index]
+                q_values[action_index] = self._get_value_of_action(transition)
+
             greedy_distibution = self.create_distribution_greedily(q_values)
-            policy.policy_table[state_index]=greedy_distibution 
+            policy.policy_table[state_index] = greedy_distibution
 
     def _bellman_optimize(self):
         delta = 1e-10
         new_v_table = copy.deepcopy(self.v_table)
         for state_index, transitions in self.transition_table.items():
-            
+
             q_values = {}
             for action_index, transition in transitions.items():
                 value_of_action = self._get_value_of_action(transition)
                 q_values[action_index] = value_of_action
-            
-            new_v_table[state_index] = self._get_optimal_value_of_action(q_values)
-            delta = max(abs(self.v_table[state_index]-new_v_table[state_index]), delta)
+
+            new_v_table[state_index] = self._get_optimal_value_of_action(
+                q_values)
+            delta = max(
+                abs(self.v_table[state_index]-new_v_table[state_index]), delta)
         self.v_table = new_v_table
         return delta
-
-
 
     def _get_value_of_action(self, transition):
         value_of_action = 0
