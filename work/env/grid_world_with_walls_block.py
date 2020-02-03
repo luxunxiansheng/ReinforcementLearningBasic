@@ -15,11 +15,9 @@ LEFT = 1
 RIGHT = 2
 DOWN = 3
 
-REWARD_NON_TERMINALS = 0.0
-
-
 class GridWorldWithWallsBlockEnv(Base_Discrete_Env):
-    def __init__(self):
+    def __init__(self,reward_non_terminals=-0.01):
+        self.reward_non_terminals = reward_non_terminals
         self.shape = [3, 4]
         nS = np.prod(self.shape)
         self.grid = np.arange(nS).reshape(self.shape)
@@ -32,18 +30,18 @@ class GridWorldWithWallsBlockEnv(Base_Discrete_Env):
     def _build_transitions(self):
         P = {
             0: {
-                UP:   [(1.0, 0, REWARD_NON_TERMINALS, False)],
-                LEFT: [(1.0, 0, REWARD_NON_TERMINALS, False)],
-                RIGHT: [(1.0, 1,REWARD_NON_TERMINALS, False)]
+                UP:   [(1.0, 0, self.reward_non_terminals, False)],
+                LEFT: [(1.0, 0, self.reward_non_terminals, False)],
+                RIGHT: [(1.0, 1,self.reward_non_terminals, False)]
             },
             1: {
-                UP:   [(1.0, 1, REWARD_NON_TERMINALS, False)],
-                LEFT: [(1.0, 0, REWARD_NON_TERMINALS, False)],
-                RIGHT: [(1.0, 2,REWARD_NON_TERMINALS, False)]
+                UP:   [(1.0, 1, self.reward_non_terminals, False)],
+                LEFT: [(1.0, 0, self.reward_non_terminals, False)],
+                RIGHT: [(1.0, 2,self.reward_non_terminals, False)]
             },
             2: {
-                UP:   [(1.0, 2, REWARD_NON_TERMINALS, False)],
-                LEFT: [(1.0, 1, REWARD_NON_TERMINALS, False)],
+                UP:   [(1.0, 2, self.reward_non_terminals, False)],
+                LEFT: [(1.0, 1, self.reward_non_terminals, False)],
                 RIGHT: [(1.0, 3, 1.00, True)]
             },
             3: {
@@ -52,13 +50,13 @@ class GridWorldWithWallsBlockEnv(Base_Discrete_Env):
                 RIGHT: [(1.0,3, 1.00, True)]
             },
             4: {
-                UP:   [(1.0, 0, REWARD_NON_TERMINALS, False)],
-                LEFT: [(1.0, 4, REWARD_NON_TERMINALS, False)],
-                RIGHT: [(1.0,4, REWARD_NON_TERMINALS, False)]
+                UP:   [(1.0, 0, self.reward_non_terminals, False)],
+                LEFT: [(1.0, 4, self.reward_non_terminals, False)],
+                RIGHT: [(1.0,4, self.reward_non_terminals, False)]
             },
             6: {
-                UP:   [(1.0, 2, REWARD_NON_TERMINALS, False)],
-                LEFT: [(1.0, 6, REWARD_NON_TERMINALS, False)],
+                UP:   [(1.0, 2, self.reward_non_terminals, False)],
+                LEFT: [(1.0, 6, self.reward_non_terminals, False)],
                 RIGHT: [(1.0, 7, -1.00, True)]
             },
             7: {
@@ -67,24 +65,24 @@ class GridWorldWithWallsBlockEnv(Base_Discrete_Env):
                 RIGHT: [(1.0,7, -1.00, True)]
             },
             8: {
-                UP:   [(1.0, 4, REWARD_NON_TERMINALS, False)],
-                LEFT: [(1.0, 8, REWARD_NON_TERMINALS, False)],
-                RIGHT: [(1.0, 9,REWARD_NON_TERMINALS, False)]
+                UP:   [(1.0, 4, self.reward_non_terminals, False)],
+                LEFT: [(1.0, 8, self.reward_non_terminals, False)],
+                RIGHT: [(1.0, 9,self.reward_non_terminals, False)]
             },
             9: {
-                UP:   [(1.0, 9, REWARD_NON_TERMINALS, False)],
-                LEFT: [(1.0, 8, REWARD_NON_TERMINALS, False)],
-                RIGHT: [(1.0, 10,REWARD_NON_TERMINALS, False)]
+                UP:   [(1.0, 9, self.reward_non_terminals, False)],
+                LEFT: [(1.0, 8, self.reward_non_terminals, False)],
+                RIGHT: [(1.0, 10,self.reward_non_terminals, False)]
             },
             10: {
-                UP:   [(1.0, 6, REWARD_NON_TERMINALS, False)],
-                LEFT: [(1.0, 9, REWARD_NON_TERMINALS, False)],
-                RIGHT: [(1.0, 11,REWARD_NON_TERMINALS, False)]
+                UP:   [(1.0, 6, self.reward_non_terminals, False)],
+                LEFT: [(1.0, 9, self.reward_non_terminals, False)],
+                RIGHT: [(1.0, 11,self.reward_non_terminals, False)]
             },
             11: {
                 UP:   [(1.0, 7, -1, True)],
-                LEFT: [(1.0, 10,REWARD_NON_TERMINALS, False)],
-                RIGHT: [(1.0, 11,REWARD_NON_TERMINALS, False)]
+                LEFT: [(1.0, 10,self.reward_non_terminals, False)],
+                RIGHT: [(1.0, 11,self.reward_non_terminals, False)]
             }
             }
 

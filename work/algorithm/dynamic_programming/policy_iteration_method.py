@@ -17,29 +17,10 @@ class Policy_Iteration_Method:
             if delta < self.delta:
                 break
 
-    """     
+   
     def evaluate_once(self):
         delta = 1e-10
-        new_v_table = copy.deepcopy(self.v_table)
-
-        for state_index, transitions in self.transition_table.items():
-            value_of_state = 0.0
-            for action_index, transition in transitions.items():
-                value_of_action = self._get_value_of_action(transition)
-                value_of_state += self.policy.policy_table[state_index][action_index] * \
-                    value_of_action
-
-            new_v_table[state_index] = value_of_state
-            delta = max(
-                abs(self.v_table[state_index]-new_v_table[state_index]), delta)
-
-        self.v_table = new_v_table
-        return delta """
-
-    def evaluate_once(self):
-        delta = 1e-10
-        for state_index, _ in self.v_table.items():
-            old_value_of_state = copy.deepcopy(self.v_table[state_index])
+        for state_index, old_value_of_state in self.v_table.items():
             value_of_state = 0.0
             action_transitions = self.transition_table[state_index]
             for action_index, transitions in action_transitions.items():

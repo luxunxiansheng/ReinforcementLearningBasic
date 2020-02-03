@@ -41,6 +41,7 @@ from algorithm.monte_carlo_method.q_monte_carlo_method import Q_Monte_Carlo_Meth
 from algorithm.monte_carlo_method.v_monte_carlo_method import V_Monte_Carlo_Method
 from env.blackjack import BlackjackEnv
 from env.grid_world import GridworldEnv
+from env.grid_world_with_walls_block import GridWorldWithWallsBlockEnv
 
 
 from lib.utility import create_distribution_randomly
@@ -48,14 +49,14 @@ from policy.policy import TabularPolicy
 
 
 def main():
-    env = GridworldEnv()
+    env = GridWorldWithWallsBlockEnv(-0.001)
 
     # test_q_mc_methond(env)
     # test_v_mc_methond(env)
 
-    # test_q_value_iteration(env)
+    #test_q_value_iteration(env)
     test_v_value_iteration(env)
-    # test_policy_iteration(env)
+    #test_policy_iteration(env)
 
 
 def test_policy_iteration(env):

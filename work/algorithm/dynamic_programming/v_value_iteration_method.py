@@ -27,8 +27,7 @@ class V_Value_Iteration_Method:
 
     def _bellman_optimize(self):
         delta = 1e-10
-        for state_index, _ in self.v_table.items():
-            old_value_of_state = copy.deepcopy(self.v_table[state_index])
+        for state_index, old_value_of_state in self.v_table.items():
             q_values = {}
             transitions = self.transition_table[state_index]
             for action_index, transition in transitions.items():

@@ -11,7 +11,7 @@ class Q_Value_Iteration_Method:
         self.delta = delta
         self.create_distribution_greedily = create_distribution_greedily()
 
-    def improve(self, policy):
+    def improve(self):
         while True:
             delta = self._bellman_optimize()
             if delta < self.delta:
@@ -19,20 +19,15 @@ class Q_Value_Iteration_Method:
 
         for state_index, action_values in self.q_table.items():
             distibution = self.create_distribution_greedily(action_values)
-            policy.policy_table[state_index]= distibution
+            self.policy.policy_table[state_index]= distibution
 
     def _bellman_optimize(self):
         delta = 1e-10
-        new_q_table = copy.deepcopy(self.q_table)
         for state_index, action_values in self.q_table.items():
             for action_index, action_value in action_values.items():
-                optimal_value_of_action = self._get_optimal_value_of_action(
-                    state_index, action_index)
+                optimal_value_of_action = self._get_optimal_value_of_action(state_index, action_index)
                 delta = max(abs(action_value-optimal_value_of_action), delta)
-                new_q_table[state_index][action_index] = optimal_value_of_action
-
-        self.q_table = new_q_table
-
+                self.q_table[state_index][action_index] = optimal_value_of_action
         return delta
 
     def _get_optimal_value_of_action(self, state_index, action_index, discount=1.0):
