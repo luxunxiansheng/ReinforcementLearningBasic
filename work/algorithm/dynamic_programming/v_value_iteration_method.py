@@ -18,11 +18,10 @@ class V_Value_Iteration_Method:
             if delta < self.delta:
                 break
 
-        for state_index, actions in self.policy.policy_table.items():
-            q_values = {}
-            for action_index, _ in actions.items():
-                transition = self.transition_table[state_index][action_index]
-                q_values[action_index] = self._get_value_of_action(transition)
+        for state_index, _ in self.v_table.items():
+            q_values = {}  
+            for action_index, transitions in self.transition_table[state_index].items():
+                q_values[action_index]=self._get_value_of_action(transitions)
             greedy_distibution = self.create_distribution_greedily(q_values)
             self.policy.policy_table[state_index] = greedy_distibution
 

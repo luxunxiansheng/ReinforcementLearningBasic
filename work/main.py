@@ -55,7 +55,7 @@ def main():
 
     # test_q_value_iteration(env)
     test_v_value_iteration(env)
-    #test_policy_iteration(env)
+    # test_policy_iteration(env)
 
 
 def test_policy_iteration(env):
@@ -140,12 +140,9 @@ def test_q_value_iteration(env):
     q_table = env.build_Q_table()
     transition_table = env.P
     policy_table = env.build_policy_table()
-
-    rl_method = Q_Value_Iteration_Method(q_table, transition_table)
-
-    table_policy = TabularPolicy(policy_table, rl_method)
-    table_policy.improve()
-
+    table_policy = TabularPolicy(policy_table)
+    rl_method = Q_Value_Iteration_Method(q_table, table_policy, transition_table)
+    rl_method.improve()
     env.show_policy(table_policy)
 
 
@@ -155,7 +152,8 @@ def test_v_value_iteration(env):
     policy_table = env.build_policy_table()
     table_policy = TabularPolicy(policy_table)
 
-    rl_method = V_Value_Iteration_Method(table_policy, v_table, transition_table)
+    rl_method = V_Value_Iteration_Method(
+        table_policy, v_table, transition_table)
 
     rl_method.improve()
 

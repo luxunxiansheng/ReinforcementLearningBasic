@@ -4,8 +4,9 @@ from lib.utility import create_distribution_greedily
 
 
 class Q_Value_Iteration_Method:
-    def __init__(self, q_table, p, delta=1e-8):
+    def __init__(self, q_table, table_policy, p, delta=1e-8):
         self.q_table = q_table
+        self.policy =  table_policy
         self.transition_table = p
         self.delta = delta
         self.create_distribution_greedily = create_distribution_greedily()
