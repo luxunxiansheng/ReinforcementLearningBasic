@@ -54,7 +54,7 @@ def main():
     # test_v_mc_methond(env)
 
     # test_q_value_iteration(env)
-    # test_v_value_iteration(env)
+    #test_v_value_iteration(env)
     test_policy_iteration(env)
 
 
@@ -66,20 +66,25 @@ def test_policy_iteration(env):
     for state_index, action_probablities in policy_table.items():
         distribution = create_distribution_randomly()(action_probablities)
         policy_table[state_index] = distribution
-
     table_policy = TabularPolicy(policy_table)
-    rl_method = Policy_Iteration_Method(v_table, table_policy, transition_table)
+
+    rl_method = Policy_Iteration_Method(
+        v_table, table_policy, transition_table)
 
     delta = 1e-5
+
+    env.show_policy(table_policy)
+
     while True:
 
-        env.show_policy(table_policy)
         rl_method.evaluate()
 
         current_delta = rl_method.improve()
 
         if current_delta < delta:
             break
+
+    env.show_policy(table_policy)
 
 
 def test_q_mc_methond(env):
@@ -148,11 +153,11 @@ def test_v_value_iteration(env):
     v_table = env.build_V_table()
     transition_table = env.P
     policy_table = env.build_policy_table()
+    table_policy = TabularPolicy(policy_table)
 
-    rl_method = V_Value_Iteration_Method(v_table, transition_table)
+    rl_method = V_Value_Iteration_Method(v_table, table_policy, transition_table)
 
-    table_policy = TabularPolicy(policy_table, rl_method)
-    table_policy.improve()
+    rl_method.improve()
 
     env.show_policy(table_policy)
 
