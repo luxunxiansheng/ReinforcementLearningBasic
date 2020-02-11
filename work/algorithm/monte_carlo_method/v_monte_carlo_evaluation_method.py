@@ -39,7 +39,7 @@ from collections import defaultdict
 from tqdm import tqdm
 
 class V_Monte_Carlo_Evaluation_Method:
-    def __init__(self, v_table, policy, env, episodes=500000, discount=1.0):
+    def __init__(self, v_table, policy, env, episodes=10000, discount=1.0):
         self.v_table = v_table
         self.policy  = policy 
         self.env = env
@@ -52,7 +52,7 @@ class V_Monte_Carlo_Evaluation_Method:
         for state_index in self.v_table:
             state_count[state_index] = (0, 0.0)
                 
-        for episode in tqdm(range(1, self.episodes)):
+        for _ in tqdm(range(0, self.episodes)):
             trajectory = self._run_one_episode()
             R = 0.0
             for state_index, reward in trajectory[::-1]:

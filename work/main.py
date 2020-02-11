@@ -53,8 +53,8 @@ from policy.policy import TabularPolicy
 def main():
     env = BlackjackEnv()
 
-    #test_q_mc_method(env)
-    test_v_mc_method(env)
+    test_q_mc_method(env)
+    #test_v_mc_method(env)
 
     # test_q_value_iteration(env)
     # test_v_value_iteration(env)

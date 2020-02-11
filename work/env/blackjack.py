@@ -1,12 +1,12 @@
 from collections import defaultdict
 
-import gym
+
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 from gym import Env, spaces
 from gym.utils import seeding
-from mpl_toolkits.mplot3d import Axes3D
+
 
 
 
@@ -173,30 +173,30 @@ class BlackjackEnv(Env):
 
     def show_v_table(self, v_table):
 
-        usable_ace = np.zeros([32, 11])
-        no_usable_ace = np.zeros([32, 11])
+        ace_usable = np.zeros([32, 11])
+        ace_no_usable = np.zeros([32, 11])
 
         for obs, value in v_table.items():
-            sum = obs[0]
+            sumary = obs[0]
             showcard = obs[1]
             ace = obs[2]
 
             if ace:
-                usable_ace[sum][showcard] = value
+                ace_usable[sumary][showcard] = value
             else:
-                no_usable_ace[sum][showcard] = value
+                ace_no_usable[sumary][showcard] = value
 
         fig, axes = plt.subplots(1,2, figsize=(16, 12))
         plt.subplots_adjust(wspace=0.1, hspace=0.2)
         axes = axes.flatten()
 
-        fig = sns.heatmap(np.flipud(usable_ace), cmap="YlGnBu", ax=axes[0], xticklabels=range(1, 11),
+        fig = sns.heatmap(np.flipud(ace_usable), cmap="YlGnBu", ax=axes[0], xticklabels=range(1, 11),
                           yticklabels=list(reversed(range(1, 32))))
         fig.set_ylabel('player sum', fontsize=30)
         fig.set_xlabel('dealer showing', fontsize=30)
         fig.set_title('Usable Ace', fontsize=30)
 
-        fig = sns.heatmap(np.flipud(no_usable_ace), cmap="YlGnBu", ax=axes[1], xticklabels=range(1, 11),
+        fig = sns.heatmap(np.flipud(ace_no_usable), cmap="YlGnBu", ax=axes[1], xticklabels=range(1, 11),
                           yticklabels=list(reversed(range(1, 32))))
         fig.set_ylabel('player sum', fontsize=30)
         fig.set_xlabel('dealer showing', fontsize=30)
@@ -205,29 +205,29 @@ class BlackjackEnv(Env):
         plt.show()
 
     def show_policy(self,table_policy):
-        usable_ace = np.zeros([32, 11])
-        no_usable_ace = np.zeros([32, 11])
+        ace_usable = np.zeros([32, 11])
+        ace_no_usable = np.zeros([32, 11])
 
         for state, action_values in table_policy.policy_table.items():
-            sum = state[0]
+            summary = state[0]
             showcard = state[1]
             ace = state[2]
             if ace :
-                usable_ace[sum][showcard] = min(action_values, key=lambda k: action_values[k])
+                ace_usable[summary][showcard] = min(action_values, key=lambda k: action_values[k])
             else:
-                no_usable_ace[sum][showcard] = min(action_values, key=lambda k: action_values[k])
+                ace_no_usable[summary][showcard] = min(action_values, key=lambda k: action_values[k])
 
         fig, axes = plt.subplots(1,2, figsize=(16, 12))
         plt.subplots_adjust(wspace=0.1, hspace=0.2)
         axes = axes.flatten()
 
-        fig = sns.heatmap(np.flipud(usable_ace), cmap="YlGnBu", ax=axes[0], xticklabels=range(0, 11),
+        fig = sns.heatmap(np.flipud(ace_usable), cmap="YlGnBu", ax=axes[0], xticklabels=range(0, 11),
                           yticklabels=list(reversed(range(1, 32))))
         fig.set_ylabel('player sum', fontsize=30)
         fig.set_xlabel('dealer showing', fontsize=30)
         fig.set_title('Usable Ace', fontsize=30)
 
-        fig = sns.heatmap(np.flipud(no_usable_ace), cmap="YlGnBu", ax=axes[1], xticklabels=range(1, 11),
+        fig = sns.heatmap(np.flipud(ace_no_usable), cmap="YlGnBu", ax=axes[1], xticklabels=range(1, 11),
                           yticklabels=list(reversed(range(1, 32))))
         fig.set_ylabel('player sum', fontsize=30)
         fig.set_xlabel('dealer showing', fontsize=30)

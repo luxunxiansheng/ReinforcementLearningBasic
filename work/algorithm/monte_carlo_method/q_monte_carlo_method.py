@@ -35,15 +35,13 @@
 
 from collections import defaultdict
 
-import numpy as np
 from tqdm import tqdm
 
-from lib.utility import (create_distribution_greedily,
-                         create_distribution_randomly)
+from lib.utility import create_distribution_greedily
 
 
 class Q_Monte_Carlo_Method:
-    def __init__(self, q_table, table_policy, env, episodes=5000, discount=1.0):
+    def __init__(self, q_table, table_policy, env, episodes=500000, discount=1.0):
         self.q_table = q_table
         self.policy = table_policy
         self.env = env
@@ -52,7 +50,6 @@ class Q_Monte_Carlo_Method:
         self.create_distribution_greedily = create_distribution_greedily()
 
     def improve(self):
-
         state_count = defaultdict(lambda: {})
         for state_index, action_values in self.q_table.items():
             for action_index, _ in action_values.items():
@@ -63,10 +60,8 @@ class Q_Monte_Carlo_Method:
             R = 0.0
             for state_index, action_index, reward in trajectory[::-1]:
                 R = reward+self.discount*R
-                state_count[state_index][action_index] = (
-                    state_count[state_index][action_index][0] + 1, state_count[state_index][action_index][1] + R)
-                self.q_table[state_index][action_index] = state_count[state_index][action_index][1] / \
-                    state_count[state_index][action_index][0]
+                state_count[state_index][action_index] = (state_count[state_index][action_index][0] + 1, state_count[state_index][action_index][1] + R)
+                self.q_table[state_index][action_index] = state_count[state_index][action_index][1] / state_count[state_index][action_index][0]
                 
                 q_values = self.q_table[state_index]
                 distribution = self.create_distribution_greedily(q_values)
