@@ -127,6 +127,16 @@ class BlackjackEnv(Env):
                     for action_index in range(self.action_space.n):
                         policy_table[((sum_index, showcard_index, usable_ace_index))
                                      ][action_index] = 1.0/self.action_space.n
+        
+        # default policy 
+        for state_index, _ in policy_table.items():
+            card_sum = state_index[0]
+            if card_sum < 20:
+                policy_table[state_index][BlackjackEnv.HIT] = 1.0
+                policy_table[state_index][BlackjackEnv.STICK] = 0.0
+            else:
+                policy_table[state_index][BlackjackEnv.HIT] = 0.0
+                policy_table[state_index][BlackjackEnv.STICK] = 1.0
 
         return policy_table
 

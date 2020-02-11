@@ -33,46 +33,35 @@
 #
 # /
 
+
 from collections import defaultdict
 
-import numpy as np
 from tqdm import tqdm
 
-from lib.utility import (create_distribution_greedily,
-                         create_distribution_randomly)
-
-
-class Q_Monte_Carlo_Method:
-    def __init__(self, q_table, table_policy, env, episodes=5000, discount=1.0):
-        self.q_table = q_table
-        self.policy = table_policy
+class V_Monte_Carlo_Evaluation_Method:
+    def __init__(self, v_table, policy, env, episodes=500000, discount=1.0):
+        self.v_table = v_table
+        self.policy  = policy 
         self.env = env
         self.episodes = episodes
         self.discount = discount
-        self.create_distribution_greedily = create_distribution_greedily()
 
-    def improve(self):
 
-        state_count = defaultdict(lambda: {})
-        for state_index, action_values in self.q_table.items():
-            for action_index, _ in action_values.items():
-                state_count[state_index][action_index] = (0, 0.0)
-
-        for _ in tqdm(range(0, self.episodes)):
+    def evaluate(self):
+        state_count = {}
+        for state_index in self.v_table:
+            state_count[state_index] = (0, 0.0)
+                
+        for episode in tqdm(range(1, self.episodes)):
             trajectory = self._run_one_episode()
             R = 0.0
-            for state_index, action_index, reward in trajectory[::-1]:
-                R = reward+self.discount*R
-                state_count[state_index][action_index] = (
-                    state_count[state_index][action_index][0] + 1, state_count[state_index][action_index][1] + R)
-                self.q_table[state_index][action_index] = state_count[state_index][action_index][1] / \
-                    state_count[state_index][action_index][0]
-                
-                q_values = self.q_table[state_index]
-                distribution = self.create_distribution_greedily(q_values)
-                self.policy.policy_table[state_index] = distribution
-                        
+            for state_index, reward in trajectory[::-1]:
+                R = reward + self.discount*R
+                state_count[state_index] = (state_count[state_index][0] + 1, state_count[state_index][1] + R)
+                self.v_table[state_index] = state_count[state_index][1]/state_count[state_index][0]
+        
             
+                
     def _run_one_episode(self):
         trajectory = []
         current_state_index = self.env.reset()
@@ -80,10 +69,10 @@ class Q_Monte_Carlo_Method:
             action_index = self.policy.get_action(current_state_index)
             observation = self.env.step(action_index)
             reward = observation[1]
-            trajectory.append((current_state_index, action_index, reward))
+            trajectory.append((current_state_index, reward))
             done = observation[2]
             if done:
                 break
             current_state_index = observation[0]
-
+        
         return trajectory
