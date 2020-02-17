@@ -39,7 +39,7 @@ from agent.dp_agent import DP_Agent
 from algorithm.dynamic_programming.policy_iteration_method import Policy_Iteration_Method
 from algorithm.dynamic_programming.q_value_iteration_method import Q_Value_Iteration_Method
 from algorithm.dynamic_programming.v_value_iteration_method import V_Value_Iteration_Method
-from algorithm.monte_carlo_method.q_monte_carlo_method import Q_Monte_Carlo_Method
+from algorithm.monte_carlo_method.monte_carlo_es_method import Monte_Carlo_ES_Method
 from algorithm.monte_carlo_method.v_monte_carlo_evaluation_method import V_Monte_Carlo_Evaluation_Method
 from env.blackjack import BlackjackEnv
 from env.grid_world import GridworldEnv
@@ -95,7 +95,7 @@ def test_q_mc_method(env):
     policy_table = env.build_policy_table()
     table_policy = TabularPolicy(policy_table)
 
-    rl_method = Q_Monte_Carlo_Method(q_table, table_policy, env)
+    rl_method = Monte_Carlo_ES_Method(q_table, table_policy, env)
 
     rl_method.improve()
 
@@ -141,12 +141,6 @@ def test_v_value_iteration(env):
     env.show_policy(table_policy)
 
 
-def test_dp_policy_iteration(env):
-
-    policy = TabularPolicy()
-    policy_iteration_method = Policy_Iteration_Method(env, p)
-
-    dp_agent = DP_Agent(env)
 
 
 if __name__ == "__main__":

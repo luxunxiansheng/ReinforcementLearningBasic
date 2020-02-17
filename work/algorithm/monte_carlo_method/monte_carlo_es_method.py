@@ -40,7 +40,10 @@ from tqdm import tqdm
 from lib.utility import create_distribution_greedily
 
 
-class Q_Monte_Carlo_Method:
+class Monte_Carlo_ES_Method:
+    """
+    On Policy methond and the Exploration comes from the random initial states
+    """
     def __init__(self, q_table, table_policy, env, episodes=500000, discount=1.0):
         self.q_table = q_table
         self.policy = table_policy
