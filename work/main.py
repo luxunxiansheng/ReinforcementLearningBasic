@@ -81,14 +81,10 @@ def test_policy_iteration(env):
     env.show_policy(table_policy)
 
     while True:
-
         rl_method.evaluate()
-
         current_delta = rl_method.improve()
-
         if current_delta < delta:
             break
-
     env.show_policy(table_policy)
 
 
@@ -96,11 +92,8 @@ def test_q_mc_es_method(env):
     q_table = env.build_Q_table()
     policy_table = env.build_policy_table()
     table_policy = TabularPolicy(policy_table)
-
     rl_method = Monte_Carlo_ES_Method(q_table, table_policy, env)
-
     rl_method.improve()
-
     env.show_policy(table_policy)
 
 
@@ -108,11 +101,8 @@ def test_mc_onpolicy_method(env):
     q_table = env.build_Q_table()
     policy_table = env.build_policy_table()
     table_policy = TabularPolicy(policy_table)
-
-    rl_method = Monte_Carlo_On_Policy_Method(q_table, table_policy, 0.01, env)
-
+    rl_method = Monte_Carlo_On_Policy_Method(q_table, table_policy, 0.1, env)
     rl_method.improve()
-
     env.show_policy(table_policy)    
 
 
@@ -122,11 +112,8 @@ def test_v_mc_method(env):
     table_policy = TabularPolicy(policy_table)
     rl_method = V_Monte_Carlo_Evaluation_Method(v_table, table_policy, env)
     table_policy = TabularPolicy(policy_table)
-
     env.show_policy(table_policy)
-
     rl_method.evaluate()
-
     env.show_v_table(v_table)
 
 
@@ -146,16 +133,10 @@ def test_v_value_iteration(env):
     transition_table = env.P
     policy_table = env.build_policy_table()
     table_policy = TabularPolicy(policy_table)
-
     rl_method = V_Value_Iteration_Method(
         table_policy, v_table, transition_table)
-
     rl_method.improve()
-
     env.show_policy(table_policy)
-
-
-
 
 if __name__ == "__main__":
     main()
