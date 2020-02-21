@@ -40,6 +40,7 @@ from algorithm.dynamic_programming.policy_iteration_method import Policy_Iterati
 from algorithm.dynamic_programming.q_value_iteration_method import Q_Value_Iteration_Method
 from algorithm.dynamic_programming.v_value_iteration_method import V_Value_Iteration_Method
 from algorithm.monte_carlo_method.monte_carlo_es_method import Monte_Carlo_ES_Method
+from algorithm.monte_carlo_method.monte_carlo_on_policy_method import Monte_Carlo_On_Policy_Method
 from algorithm.monte_carlo_method.v_monte_carlo_evaluation_method import V_Monte_Carlo_Evaluation_Method
 from env.blackjack import BlackjackEnv
 from env.grid_world import GridworldEnv
@@ -53,7 +54,8 @@ from policy.policy import TabularPolicy
 def main():
     env = BlackjackEnv()
 
-    test_q_mc_method(env)
+    #test_q_mc_es_method(env)
+    test_mc_onpolicy_method(env)
     #test_v_mc_method(env)
 
     # test_q_value_iteration(env)
@@ -90,7 +92,7 @@ def test_policy_iteration(env):
     env.show_policy(table_policy)
 
 
-def test_q_mc_method(env):
+def test_q_mc_es_method(env):
     q_table = env.build_Q_table()
     policy_table = env.build_policy_table()
     table_policy = TabularPolicy(policy_table)
@@ -100,6 +102,18 @@ def test_q_mc_method(env):
     rl_method.improve()
 
     env.show_policy(table_policy)
+
+
+def test_mc_onpolicy_method(env):
+    q_table = env.build_Q_table()
+    policy_table = env.build_policy_table()
+    table_policy = TabularPolicy(policy_table)
+
+    rl_method = Monte_Carlo_On_Policy_Method(q_table, table_policy, 0.01, env)
+
+    rl_method.improve()
+
+    env.show_policy(table_policy)    
 
 
 def test_v_mc_method(env):

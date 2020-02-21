@@ -34,29 +34,24 @@
 # /
 
 from collections import defaultdict
-
-from tqdm import tqdm
-
-from lib.utility import create_distribution_greedily
+from tqdm  import tqdm
+from lib.utility import create_distribution_epsilon_greedily
 
 
-class Monte_Carlo_ES_Method:
-    """
-    On Policy method and the Exploration comes from the random initial states
-    """
-    def __init__(self, q_table, table_policy, env, episodes=500000, discount=1.0):
+class Monte_Carlo_On_Policy_Method:
+    def __init__(self, q_table, table_policy, epsilon, env, episodes=1000000, discount=1.0):
         self.q_table = q_table
         self.policy = table_policy
         self.env = env
         self.episodes = episodes
         self.discount = discount
-        self.create_distribution_greedily = create_distribution_greedily()
+        self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(epsilon)
 
     def improve(self):
         state_count = self._init_state_count()
-        
+        init_state_index = self.env.reset()
         for _ in tqdm(range(0, self.episodes)):
-            trajectory = self._run_one_episode()
+            trajectory = self._run_one_episode(init_state_index)
             R = 0.0
             for state_index, action_index, reward in trajectory[::-1]:
                 R = reward+self.discount*R
@@ -64,7 +59,7 @@ class Monte_Carlo_ES_Method:
                 self.q_table[state_index][action_index] = state_count[state_index][action_index][1] / state_count[state_index][action_index][0]
                 
                 q_values = self.q_table[state_index]
-                distribution = self.create_distribution_greedily(q_values)
+                distribution = self.create_distribution_epsilon_greedily(q_values)
                 self.policy.policy_table[state_index] = distribution
                         
     def _init_state_count(self):
@@ -72,12 +67,11 @@ class Monte_Carlo_ES_Method:
         for state_index, action_values in self.q_table.items():
             for action_index, _ in action_values.items():
                 state_count[state_index][action_index] = (0, 0.0)
-        
         return state_count
- 
-    def _run_one_episode(self):
+
+    def _run_one_episode(self,init_state_index):
         trajectory = []
-        current_state_index = self.env.reset()
+        current_state_index = init_state_index
         while True:
             action_index = self.policy.get_action(current_state_index)
             observation = self.env.step(action_index)
