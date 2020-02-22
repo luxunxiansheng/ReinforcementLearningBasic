@@ -33,38 +33,64 @@
 #
 # /
 
+from collections import defaultdict
 
 from tqdm import tqdm
 
-class V_Monte_Carlo_Evaluation_Method:
-    def __init__(self, v_table, policy, env, episodes=10000, discount=1.0):
-        self.v_table = v_table
-        self.policy  = policy 
+
+class Monte_Carlo_Off_Policy_Evaluation_Method:
+    """
+    As described in 5.6 section of Sutton' book 
+
+    1) Weighted importance sampling.
+    2) Incremental implementation
+
+    """
+
+    def __init__(self, q_table, behavior_policy, target_policy, env, episodes=10000, discount=1.0):
+        self.q_table = q_table
+        self.behavior_policy = behavior_policy
+        self.target_policy = target_policy
         self.env = env
         self.episodes = episodes
         self.discount = discount
 
-
     def evaluate(self):
-        state_count = {}
-        for state_index in self.v_table:
-            state_count[state_index] = (0, 0.0)
-                
+        # it is necessary to keep the weight total for every state_action pair
+        C = self._init_weight_total()
         for _ in tqdm(range(0, self.episodes)):
             trajectory = self._run_one_episode()
-            R = 0.0
-            for state_index, reward in trajectory[::-1]:
-                R = reward + self.discount*R
-                state_count[state_index] = (state_count[state_index][0] + 1, state_count[state_index][1] + R)
-                self.v_table[state_index] = state_count[state_index][1]/state_count[state_index][0]
-        
-            
+            G = 0.0
+            W = 1
+            for state_index, action_index, reward in trajectory[::-1]:
                 
+                # The return for current state_action pair               
+                G = reward + self.discount*G
+                
+                # weight total for current state_action pair
+                C[state_index][action_index]=C[state_index][action_index]+W
+                
+                # q_value calculated incrementally with off policy 
+                self.q_table[state_index][action_index] = self.q_table[state_index][action_index] + W/C*(G-self.q_table[state_index][action_index])
+                
+                # probability product 
+                W = W* self.target_policy[state_index][action_index]/self.behavior_policy[state_index][action_index]   
+                
+                if W == 0:
+                    break              
+
+    def _init_weight_total(self):
+        weight_total = defaultdict(lambda: {})
+        for state_index, action_values in self.q_table.items():
+            for action_index, _ in action_values.items():
+                weight_total[state_index][action_index] = 0.0
+        return weight_total
+
     def _run_one_episode(self):
         trajectory = []
         current_state_index = self.env.reset()
         while True:
-            action_index = self.policy.get_action(current_state_index)
+            action_index = self.behavior_policy.get_action(current_state_index)
             observation = self.env.step(action_index)
             reward = observation[1]
             trajectory.append((current_state_index, reward))
@@ -72,5 +98,5 @@ class V_Monte_Carlo_Evaluation_Method:
             if done:
                 break
             current_state_index = observation[0]
-        
+
         return trajectory

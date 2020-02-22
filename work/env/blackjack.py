@@ -164,6 +164,8 @@ class BlackjackEnv(Env):
         self.dealer = draw_hand(self.np_random)
         self.player = draw_hand(self.np_random)
         return self._get_obs()
+    
+    
 
     def show_v_table(self, v_table):
 
