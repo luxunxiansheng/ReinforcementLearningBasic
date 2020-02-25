@@ -77,8 +77,8 @@ class BlackjackEnv(Env):
     by Sutton and Barto.
 
     """
-    STICK=0
-    HIT =1 
+    STICK = 0
+    HIT = 1
 
     def __init__(self, natural=False):
 
@@ -111,7 +111,8 @@ class BlackjackEnv(Env):
             for showcard_index in range(self.observation_space[1].n):
                 for usable_ace_index in range(self.observation_space[2].n):
                     for action_index in range(self.action_space.n):
-                        q_table[((sum_index, showcard_index,usable_ace_index))][action_index] = 0.0
+                        q_table[((sum_index, showcard_index,
+                                  usable_ace_index))][action_index] = 0.0
         return q_table
 
     def build_policy_table(self):
@@ -120,17 +121,8 @@ class BlackjackEnv(Env):
             for showcard_index in range(self.observation_space[1].n):
                 for usable_ace_index in range(self.observation_space[2].n):
                     for action_index in range(self.action_space.n):
-                        policy_table[((sum_index, showcard_index, usable_ace_index))][action_index] = 1.0/self.action_space.n
-        
-        # default policy 
-        for state_index, _ in policy_table.items():
-            card_sum = state_index[0]
-            if card_sum < 20:
-                policy_table[state_index][BlackjackEnv.HIT] = 1.0
-                policy_table[state_index][BlackjackEnv.STICK] = 0.0
-            else:
-                policy_table[state_index][BlackjackEnv.HIT] = 0.0
-                policy_table[state_index][BlackjackEnv.STICK] = 1.0
+                        policy_table[((sum_index, showcard_index, usable_ace_index))
+                                     ][action_index] = 1.0/self.action_space.n
 
         return policy_table
 
@@ -160,12 +152,14 @@ class BlackjackEnv(Env):
     def _get_obs(self):
         return (sum_hand(self.player), self.dealer[0], usable_ace(self.player))
 
-    def reset(self):
-        self.dealer = draw_hand(self.np_random)
-        self.player = draw_hand(self.np_random)
+    def reset(self, randomly=True):
+        if randomly:
+            self.dealer = draw_hand(self.np_random)
+            self.player = draw_hand(self.np_random)
+        else:
+            self.dealer = [2, draw_card(self.np_random)]
+            self.player = [1, 2]
         return self._get_obs()
-    
-    
 
     def show_v_table(self, v_table):
 
@@ -182,7 +176,7 @@ class BlackjackEnv(Env):
             else:
                 ace_no_usable[sumary][showcard] = value
 
-        fig, axes = plt.subplots(1,2, figsize=(16, 12))
+        fig, axes = plt.subplots(1, 2, figsize=(16, 12))
         plt.subplots_adjust(wspace=0.1, hspace=0.2)
         axes = axes.flatten()
 
@@ -200,7 +194,7 @@ class BlackjackEnv(Env):
 
         plt.show()
 
-    def show_policy(self,table_policy):
+    def show_policy(self, table_policy):
         ace_usable = np.zeros([32, 11])
         ace_no_usable = np.zeros([32, 11])
 
@@ -208,12 +202,14 @@ class BlackjackEnv(Env):
             summary = state[0]
             showcard = state[1]
             ace = state[2]
-            if ace :
-                ace_usable[summary][showcard] = min(action_values, key=lambda k: action_values[k])
+            if ace:
+                ace_usable[summary][showcard] = min(
+                    action_values, key=lambda k: action_values[k])
             else:
-                ace_no_usable[summary][showcard] = min(action_values, key=lambda k: action_values[k])
+                ace_no_usable[summary][showcard] = min(
+                    action_values, key=lambda k: action_values[k])
 
-        fig, axes = plt.subplots(1,2, figsize=(16, 12))
+        fig, axes = plt.subplots(1, 2, figsize=(16, 12))
         plt.subplots_adjust(wspace=0.1, hspace=0.2)
         axes = axes.flatten()
 

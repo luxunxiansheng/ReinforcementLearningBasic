@@ -37,7 +37,7 @@
 from tqdm import tqdm
 
 class V_Monte_Carlo_Evaluation_Method:
-    def __init__(self, v_table, policy, env, episodes=10000, discount=1.0):
+    def __init__(self, v_table, policy, env, episodes=500000, discount=1.0):
         self.v_table = v_table
         self.policy  = policy 
         self.env = env

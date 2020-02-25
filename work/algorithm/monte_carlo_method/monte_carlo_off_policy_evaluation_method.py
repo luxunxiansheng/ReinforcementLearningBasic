@@ -63,21 +63,21 @@ class Monte_Carlo_Off_Policy_Evaluation_Method:
             G = 0.0
             W = 1
             for state_index, action_index, reward in trajectory[::-1]:
-                
-                # The return for current state_action pair               
+
+                # The return for current state_action pair
                 G = reward + self.discount*G
-                
+
                 # weight total for current state_action pair
-                C[state_index][action_index]=C[state_index][action_index]+W
-                
-                # q_value calculated incrementally with off policy 
-                self.q_table[state_index][action_index] = self.q_table[state_index][action_index] + W/C*(G-self.q_table[state_index][action_index])
-                
-                # probability product 
-                W = W* self.target_policy[state_index][action_index]/self.behavior_policy[state_index][action_index]   
-                
+                C[state_index][action_index] = C[state_index][action_index]+W
+
+                # q_value calculated incrementally with off policy
+                self.q_table[state_index][action_index] = self.q_table[state_index][action_index] + W/C[state_index][action_index]*(G-self.q_table[state_index][action_index])
+
+                # probability product
+                W = W * self.target_policy.policy_table[state_index][action_index] / self.behavior_policy.policy_table[state_index][action_index]
+
                 if W == 0:
-                    break              
+                    break
 
     def _init_weight_total(self):
         weight_total = defaultdict(lambda: {})
@@ -88,12 +88,12 @@ class Monte_Carlo_Off_Policy_Evaluation_Method:
 
     def _run_one_episode(self):
         trajectory = []
-        current_state_index = self.env.reset()
+        current_state_index = self.env.reset(False)
         while True:
             action_index = self.behavior_policy.get_action(current_state_index)
             observation = self.env.step(action_index)
             reward = observation[1]
-            trajectory.append((current_state_index, reward))
+            trajectory.append((current_state_index, action_index,reward))
             done = observation[2]
             if done:
                 break

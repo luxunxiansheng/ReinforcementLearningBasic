@@ -42,6 +42,7 @@ from algorithm.dynamic_programming.v_value_iteration_method import V_Value_Itera
 from algorithm.monte_carlo_method.monte_carlo_es_method import Monte_Carlo_ES_Method
 from algorithm.monte_carlo_method.monte_carlo_on_policy_method import Monte_Carlo_On_Policy_Method
 from algorithm.monte_carlo_method.v_monte_carlo_evaluation_method import V_Monte_Carlo_Evaluation_Method
+from algorithm.monte_carlo_method.monte_carlo_off_policy_evaluation_method import Monte_Carlo_Off_Policy_Evaluation_Method
 from env.blackjack import BlackjackEnv
 from env.grid_world import GridworldEnv
 from env.grid_world_with_walls_block import GridWorldWithWallsBlockEnv
@@ -55,26 +56,47 @@ def main():
     env = BlackjackEnv()
 
     #test_q_mc_es_method(env)
-    test_mc_onpolicy_method(env)
-    #test_v_mc_method(env)
+    test_mc_offpolicy_evaluation_method(env)
+    #test_v_mc_method_evalution(env)
+    # test_v_mc_method(env)
 
     # test_q_value_iteration(env)
     # test_v_value_iteration(env)
     # test_policy_iteration(env)
 
 
+def test_mc_offpolicy_evaluation_method(env):
+    q_table = env.build_Q_table()
+    
+    # Random behavior policy
+    b_policy_table = env.build_policy_table()
+    b_policy = TabularPolicy(b_policy_table)
+
+    # spcific target policy only for blackjack
+    t_policy_table = env.build_policy_table()
+    for state_index, _ in t_policy_table.items():
+        card_sum = state_index[0]
+        if card_sum < 20:
+            t_policy_table[state_index][BlackjackEnv.HIT] = 1.0
+            t_policy_table[state_index][BlackjackEnv.STICK] = 0.0
+        else:
+            t_policy_table[state_index][BlackjackEnv.HIT] = 0.0
+            t_policy_table[state_index][BlackjackEnv.STICK] = 1.0
+    t_policy = TabularPolicy(t_policy_table)
+
+
+    rl_method = Monte_Carlo_Off_Policy_Evaluation_Method(q_table, b_policy, t_policy, env)
+    rl_method.evaluate()
+
 def test_policy_iteration(env):
     v_table = env.build_V_table()
     transition_table = env.P
     policy_table = env.build_policy_table()
 
-    for state_index, action_probablities in policy_table.items():
-        distribution = create_distribution_randomly()(action_probablities)
-        policy_table[state_index] = distribution
+ 
     table_policy = TabularPolicy(policy_table)
 
-    rl_method = Policy_Iteration_Method(
-        v_table, table_policy, transition_table)
+    rl_method = Policy_Iteration_Method(v_table, table_policy, transition_table)
 
     delta = 1e-5
 
@@ -103,12 +125,15 @@ def test_mc_onpolicy_method(env):
     table_policy = TabularPolicy(policy_table)
     rl_method = Monte_Carlo_On_Policy_Method(q_table, table_policy, 0.1, env)
     rl_method.improve()
-    env.show_policy(table_policy)    
+    env.show_policy(table_policy)
 
 
-def test_v_mc_method(env):
+
+
+def test_v_mc_method_evalution(env):
     v_table = env.build_V_table()
     policy_table = env.build_policy_table()
+    
     table_policy = TabularPolicy(policy_table)
     rl_method = V_Monte_Carlo_Evaluation_Method(v_table, table_policy, env)
     table_policy = TabularPolicy(policy_table)
@@ -137,6 +162,7 @@ def test_v_value_iteration(env):
         table_policy, v_table, transition_table)
     rl_method.improve()
     env.show_policy(table_policy)
+
 
 if __name__ == "__main__":
     main()
