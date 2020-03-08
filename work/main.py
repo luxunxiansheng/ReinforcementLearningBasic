@@ -33,6 +33,8 @@
 #
 # /
 
+import math
+
 from tqdm import tqdm
 
 from agent.dp_agent import DP_Agent
@@ -55,9 +57,9 @@ from policy.policy import TabularPolicy
 def main():
     env = BlackjackEnv()
 
-    #test_q_mc_es_method(env)
-    test_mc_offpolicy_evaluation_method(env)
-    #test_v_mc_method_evalution(env)
+    # test_q_mc_es_method(env)
+    test_mc_offpolicy_evaluation_method_for_blackjack()
+    # test_v_mc_method_evalution(env)
     # test_v_mc_method(env)
 
     # test_q_value_iteration(env)
@@ -65,9 +67,12 @@ def main():
     # test_policy_iteration(env)
 
 
-def test_mc_offpolicy_evaluation_method(env):
+def test_mc_offpolicy_evaluation_method_for_blackjack():
+
+    env = BlackjackEnv()
+
     q_table = env.build_Q_table()
-    
+
     # Random behavior policy
     b_policy_table = env.build_policy_table()
     b_policy = TabularPolicy(b_policy_table)
@@ -84,16 +89,24 @@ def test_mc_offpolicy_evaluation_method(env):
             t_policy_table[state_index][BlackjackEnv.STICK] = 1.0
     t_policy = TabularPolicy(t_policy_table)
 
-
-    rl_method = Monte_Carlo_Off_Policy_Evaluation_Method(q_table, b_policy, t_policy, env)
-    rl_method.evaluate()
+    error = {}
+    init_state = env.reset(False)
+    for episode in range(10000):
+        state_value = 0.0
+        for _ in range(100):
+            rl_method = Monte_Carlo_Off_Policy_Evaluation_Method(q_table, b_policy, t_policy, env, episode)
+            rl_method.evaluate()
+            state_value = state_value + q_table[init_state][BlackjackEnv.HIT]+0.27726
+        error[episode] = state_value*state_value/100
+        print("{}:{:.3f}".format(episode,error[episode]))
+    
 
 def test_policy_iteration(env):
     v_table = env.build_V_table()
     transition_table = env.P
     policy_table = env.build_policy_table()
 
- 
+
     table_policy = TabularPolicy(policy_table)
 
     rl_method = Policy_Iteration_Method(v_table, table_policy, transition_table)
@@ -133,7 +146,7 @@ def test_mc_onpolicy_method(env):
 def test_v_mc_method_evalution(env):
     v_table = env.build_V_table()
     policy_table = env.build_policy_table()
-    
+
     table_policy = TabularPolicy(policy_table)
     rl_method = V_Monte_Carlo_Evaluation_Method(v_table, table_policy, env)
     table_policy = TabularPolicy(policy_table)

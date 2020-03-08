@@ -58,7 +58,7 @@ class Monte_Carlo_Off_Policy_Evaluation_Method:
     def evaluate(self):
         # it is necessary to keep the weight total for every state_action pair
         C = self._init_weight_total()
-        for _ in tqdm(range(0, self.episodes)):
+        for _ in range(0, self.episodes):
             trajectory = self._run_one_episode()
             G = 0.0
             W = 1
