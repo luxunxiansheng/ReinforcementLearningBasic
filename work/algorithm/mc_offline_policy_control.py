@@ -73,8 +73,7 @@ def mc_control_importance_sampling(env, num_episodes, statistics, discount_facto
 
             # Update the action-value function using the incremental update formula (5.7)
             # This also improves our target policy which holds a reference to Q
-            Q[state][action] += (Weight / C[state][action]
-                                 ) * (G - Q[state][action])
+            Q[state][action] += (Weight / C[state][action]) * (G - Q[state][action])
 
             # If the action taken by the behavior policy is not the action
             # taken by the target policy the probability will be 0 and we can break

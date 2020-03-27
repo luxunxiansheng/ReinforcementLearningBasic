@@ -74,7 +74,7 @@ class Monte_Carlo_ES_Method:
                 state_count[state_index][action_index] = (0, 0.0)
         
         return state_count
- 
+
     def _run_one_episode(self):
         trajectory = []
         current_state_index = self.env.reset()

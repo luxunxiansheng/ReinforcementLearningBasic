@@ -33,15 +33,16 @@
 #
 # /
 
+
 from collections import defaultdict
+import numpy as np
 
 from tqdm import tqdm
 
-
-class Monte_Carlo_Off_Policy_Evaluation_Method:
+# ToDo :  to be tested
+class Monte_Carlo_Off_Policy_Control_Method:
     """
-    As described in 5.6 section of Sutton' book 
-
+    As described in 5.7 section of Sutton' book 
     1) Weighted importance sampling.
     2) Incremental implementation
 
@@ -55,7 +56,7 @@ class Monte_Carlo_Off_Policy_Evaluation_Method:
         self.episodes = episodes
         self.discount = discount
 
-    def evaluate(self):
+    def improve(self):
         # it is necessary to keep the weight total for every state_action pair
         C = self._init_weight_total()
         for _ in range(0, self.episodes):
@@ -73,11 +74,14 @@ class Monte_Carlo_Off_Policy_Evaluation_Method:
                 # q_value calculated incrementally with off policy
                 self.q_table[state_index][action_index] += W/C[state_index][action_index]*(G-self.q_table[state_index][action_index])
 
-                # probability product
-                W = W * self.target_policy.policy_table[state_index][action_index] / self.behavior_policy.policy_table[state_index][action_index]
-
-                if W == 0:
+                # If the action taken by the behavior policy is not the action
+                # taken by the target policy the probability will be 0 and we can break
+                if action_index != np.argmax(self.target_policy.policy_table[state_index]:
                     break
+
+                # probability product
+                W = W *1. / self.behavior_policy.policy_table[state_index][action_index]
+
 
     def _init_weight_total(self):
         weight_total = defaultdict(lambda: {})
