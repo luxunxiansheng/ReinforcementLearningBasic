@@ -73,7 +73,7 @@ class RandomWalkingEnv(Base_Discrete_Env):
             P[state_index][LEFT] = [(1.0,  state_index-1, 0, False)]
             P[state_index][RIGHT] = [(1.0, state_index+1, 0, False)]
 
-        P[nS-1][LEFT] = [(1.0, nS-2, 0, False)]
-        P[nS-1][RIGHT] = [(1.0, nS-1, 1, True)]
+        P[nS-1][LEFT] =  [(1.0, nS-2, 0, False)]
+        P[nS-1][RIGHT] = [(1.0, nS-1, 1, True) ]
 
         return P

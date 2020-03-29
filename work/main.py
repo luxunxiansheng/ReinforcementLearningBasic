@@ -65,9 +65,6 @@ def get_env(env):
     if env == 'randomwalking':
         return RandomWalkingEnv()
 
-
-
-
 def test_td0_evaluation_method(env):
     environment = get_env(env)
 

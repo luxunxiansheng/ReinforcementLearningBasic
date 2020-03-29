@@ -37,7 +37,7 @@ from tqdm import tqdm
 
 
 class TD0_Evalutaion_Method:
-    def __init__(self, v_table, policy, env, episodes=100, discount=1.0, step_size=0.1):
+    def __init__(self, v_table, policy, env, episodes=10, discount=1.0, step_size=0.1):
         self.v_table = v_table
         self.policy = policy
         self.env = env
@@ -63,11 +63,15 @@ class TD0_Evalutaion_Method:
             next_state_index = observation[0]
             reward = observation[1]
             done = observation[2]
+    
             if done:
-                self.v_table[current_state_index] = reward
+                delta = reward  - self.v_table[current_state_index]
+                self.v_table[current_state_index] += self.step_size*delta
                 break
             else:
                 delta = reward + self.discount*self.v_table[next_state_index]-self.v_table[current_state_index]
                 self.v_table[current_state_index] += self.step_size*delta
-                current_state_index = next_state_index
+    
+
+            current_state_index = next_state_index
             

@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["test_v_mc_evalution_method","randomwalking"],
+            "args": ["test_td0_evaluation_method","randomwalking"],
             "justMyCode": false          
         }
     ]
