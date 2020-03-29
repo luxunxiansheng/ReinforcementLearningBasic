@@ -37,35 +37,48 @@ import math
 
 from tqdm import tqdm
 
+import fire
+
 from agent.dp_agent import DP_Agent
 from algorithm.dynamic_programming.policy_iteration_method import Policy_Iteration_Method
 from algorithm.dynamic_programming.q_value_iteration_method import Q_Value_Iteration_Method
 from algorithm.dynamic_programming.v_value_iteration_method import V_Value_Iteration_Method
-from algorithm.monte_carlo_method.monte_carlo_es_method import Monte_Carlo_ES_Method
-from algorithm.monte_carlo_method.monte_carlo_on_policy_method import Monte_Carlo_On_Policy_Method
+from algorithm.monte_carlo_method.monte_carlo_es_control_method import Monte_Carlo_ES_Control_Method
+from algorithm.monte_carlo_method.monte_carlo_on_policy_control_method import Monte_Carlo_On_Policy_Control_Method
 from algorithm.monte_carlo_method.v_monte_carlo_evaluation_method import V_Monte_Carlo_Evaluation_Method
 from algorithm.monte_carlo_method.monte_carlo_off_policy_evaluation_method import Monte_Carlo_Off_Policy_Evaluation_Method
+from algorithm.td_method.td0_evaluation_method import TD0_Evalutaion_Method
 from env.blackjack import BlackjackEnv
 from env.grid_world import GridworldEnv
 from env.grid_world_with_walls_block import GridWorldWithWallsBlockEnv
+from env.random_walking import RandomWalkingEnv
 
 
 from lib.utility import create_distribution_randomly
 from policy.policy import TabularPolicy
 
 
-def main():
-    env = BlackjackEnv()
+def get_env(env):
+    if env == 'blackjack':
+        return BlackjackEnv()
 
-    # test_q_mc_es_method(env)
-    test_mc_offpolicy_evaluation_method_for_blackjack()
-    # test_v_mc_method_evalution(env)
-    # test_v_mc_method(env)
+    if env == 'randomwalking':
+        return RandomWalkingEnv()
 
-    # test_q_value_iteration(env)
-    # test_v_value_iteration(env)
-    # test_policy_iteration(env)
 
+
+
+def test_td0_evaluation_method(env):
+    environment = get_env(env)
+
+    v_table = environment.build_V_table()
+
+    b_policy_table = environment.build_policy_table()
+    b_policy = TabularPolicy(b_policy_table)
+
+    td0_method = TD0_Evalutaion_Method(v_table,b_policy,environment)
+
+    td0_method.evaluate()
 
 def test_mc_offpolicy_evaluation_method_for_blackjack():
 
@@ -94,22 +107,26 @@ def test_mc_offpolicy_evaluation_method_for_blackjack():
     for episode in range(10000):
         state_value = 0.0
         for _ in range(100):
-            rl_method = Monte_Carlo_Off_Policy_Evaluation_Method(q_table, b_policy, t_policy, env, episode)
+            rl_method = Monte_Carlo_Off_Policy_Evaluation_Method(
+                q_table, b_policy, t_policy, env, episode)
             rl_method.evaluate()
-            state_value = state_value + q_table[init_state][BlackjackEnv.HIT]+0.27726
+            state_value = state_value + \
+                q_table[init_state][BlackjackEnv.HIT]+0.27726
         error[episode] = state_value*state_value/100
-        print("{}:{:.3f}".format(episode,error[episode]))
-    
+        print("{}:{:.3f}".format(episode, error[episode]))
 
-def test_policy_iteration(env):
+
+def test_policy_iteration(en):
+    
+    env = get_env(en)
+
     v_table = env.build_V_table()
     transition_table = env.P
     policy_table = env.build_policy_table()
-
-
     table_policy = TabularPolicy(policy_table)
 
-    rl_method = Policy_Iteration_Method(v_table, table_policy, transition_table)
+    rl_method = Policy_Iteration_Method(
+        v_table, table_policy, transition_table)
 
     delta = 1e-5
 
@@ -123,27 +140,30 @@ def test_policy_iteration(env):
     env.show_policy(table_policy)
 
 
-def test_q_mc_es_method(env):
+def test_q_mc_es_control_method(en):
+
+    env = get_env(en)
+
     q_table = env.build_Q_table()
     policy_table = env.build_policy_table()
     table_policy = TabularPolicy(policy_table)
-    rl_method = Monte_Carlo_ES_Method(q_table, table_policy, env)
+    rl_method = Monte_Carlo_ES_Control_Method(q_table, table_policy, env)
     rl_method.improve()
     env.show_policy(table_policy)
 
 
-def test_mc_onpolicy_method(env):
+def test_mc_onpolicy_control_method(en):
+    env = get_env(en)
     q_table = env.build_Q_table()
     policy_table = env.build_policy_table()
     table_policy = TabularPolicy(policy_table)
-    rl_method = Monte_Carlo_On_Policy_Method(q_table, table_policy, 0.1, env)
+    rl_method = Monte_Carlo_On_Policy_Control_Method(q_table, table_policy, 0.1, env)
     rl_method.improve()
     env.show_policy(table_policy)
 
 
-
-
-def test_v_mc_method_evalution(env):
+def test_v_mc_evalution_method(en):
+    env = get_env(en)
     v_table = env.build_V_table()
     policy_table = env.build_policy_table()
 
@@ -155,7 +175,8 @@ def test_v_mc_method_evalution(env):
     env.show_v_table(v_table)
 
 
-def test_q_value_iteration(env):
+def test_q_value_iteration(en):
+    env = get_env(en)
     q_table = env.build_Q_table()
     transition_table = env.P
     policy_table = env.build_policy_table()
@@ -166,7 +187,8 @@ def test_q_value_iteration(env):
     env.show_policy(table_policy)
 
 
-def test_v_value_iteration(env):
+def test_v_value_iteration(en):
+    env = get_env(en)
     v_table = env.build_V_table()
     transition_table = env.P
     policy_table = env.build_policy_table()
@@ -178,4 +200,4 @@ def test_v_value_iteration(env):
 
 
 if __name__ == "__main__":
-    main()
+    fire.Fire()

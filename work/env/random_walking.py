@@ -33,11 +33,11 @@
 #
 # /
 
-from base_discrete_env import Base_Discrete_Env
+from env.base_discrete_env import Base_Discrete_Env
 import numpy as np
 
-RIGHT = 0
-LEFT = 1
+RIGHT = 1
+LEFT = 0
 
 
 class RandomWalkingEnv(Base_Discrete_Env):
@@ -45,8 +45,6 @@ class RandomWalkingEnv(Base_Discrete_Env):
     Example 6.2
 
     For convenience, name the state from left to right with number 1 to nS
-
-    
 
     """
 
@@ -58,19 +56,24 @@ class RandomWalkingEnv(Base_Discrete_Env):
         isd = np.ones(nS) / nS
         super().__init__(nS, nA, self.P, isd)
 
+    def reset(self):
+        # always start from the middle location
+        self.s = int((self.nS+1)/2)-1
+        return self.s
+
     def _build_transitions(self, nS, nA):
         P = {}
-        
-        for state_index in range(1, nS+1):
+        for state_index in range(nS):
             P[state_index] = {action_index: [] for action_index in range(nA)}
-        P[1][LEFT]  = [(1.0, 0, 0, True)]
-        P[1][RIGHT] = [(1.0, 2, 0, False)]
-        
-        for state_index in range(2, nS):
+
+        P[0][LEFT] = [(1.0, 0, 0, True)]
+        P[0][RIGHT] = [(1.0, 1, 0, False)]
+
+        for state_index in range(1, nS-1):
             P[state_index][LEFT] = [(1.0,  state_index-1, 0, False)]
             P[state_index][RIGHT] = [(1.0, state_index+1, 0, False)]
-        
-        P[nS][LEFT]  = [(1.0, nS-1, 0, False)]
-        P[nS][RIGHT] = [(1.0, nS+1, 1, True)]
+
+        P[nS-1][LEFT] = [(1.0, nS-2, 0, False)]
+        P[nS-1][RIGHT] = [(1.0, nS-1, 1, True)]
 
         return P
