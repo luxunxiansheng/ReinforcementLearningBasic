@@ -49,7 +49,7 @@ class RandomWalkingEnv(Base_Discrete_Env):
     """
 
     def __init__(self):
-        nS = 5
+        nS = 7
         nA = 2
         self.P = self._build_transitions(nS, nA)
 
@@ -66,14 +66,22 @@ class RandomWalkingEnv(Base_Discrete_Env):
         for state_index in range(nS):
             P[state_index] = {action_index: [] for action_index in range(nA)}
 
-        P[0][LEFT] = [(1.0, 0, 0, True)]
-        P[0][RIGHT] = [(1.0, 1, 0, False)]
+        P[0][LEFT] =  [(1.0, 0, 0, True)]
+        P[0][RIGHT] = [(1.0, 0, 0, True)]
 
-        for state_index in range(1, nS-1):
-            P[state_index][LEFT] = [(1.0,  state_index-1, 0, False)]
+        P[1][LEFT] =  [(1.0, 0, 0, True)]
+        P[1][RIGHT] = [(1.0, 2, 0, False)]
+
+
+        for state_index in range(2, nS-2):
+            P[state_index][LEFT] =  [(1.0, state_index-1, 0, False)]
             P[state_index][RIGHT] = [(1.0, state_index+1, 0, False)]
+        
+        
+        P[nS-2][LEFT]  = [(1.0, nS-3, 0, False)]
+        P[nS-2][RIGHT] = [(1.0, nS-1, 1, True)]
 
-        P[nS-1][LEFT] =  [(1.0, nS-2, 0, False)]
-        P[nS-1][RIGHT] = [(1.0, nS-1, 1, True) ]
+        P[nS-1][LEFT]  = [(1.0, nS-1, 0, True)]
+        P[nS-1][RIGHT] = [(1.0, nS-1, 0, True)]
 
         return P
