@@ -33,55 +33,63 @@
 #
 # /
 
-from collections import defaultdict
-
 from tqdm import tqdm
 
 from lib.utility import create_distribution_epsilon_greedily
 
 
-class Monte_Carlo_On_Policy_Control_Method:
-    def __init__(self, q_table, table_policy, epsilon, env, episodes=6000000, discount=1.0):
+class SARSA():
+    """
+    SARSA algorithm: On-policy TD control. Finds the optimal epsilon-greedy policy.
+    """
+
+    def __init__(self, q_table, table_policy, epsilon, env, step_size=0.1, episodes=1000, discount=1.0):
         self.q_table = q_table
         self.policy = table_policy
         self.env = env
         self.episodes = episodes
+        self.step_size = step_size
         self.discount = discount
-        self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(epsilon)
+        self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(
+            epsilon)
 
     def improve(self):
-        state_count = self._init_state_count()
-        init_state_index = self.env.reset()
         for _ in tqdm(range(0, self.episodes)):
-            trajectory = self._run_one_episode(init_state_index)
-            R = 0.0
-            for state_index, action_index, reward in trajectory[::-1]:
-                R = reward+self.discount*R
-                state_count[state_index][action_index] = (state_count[state_index][action_index][0] + 1, state_count[state_index][action_index][1] + R)
-                self.q_table[state_index][action_index] = state_count[state_index][action_index][1] / state_count[state_index][action_index][0]
-                
-                q_values = self.q_table[state_index]
-                distribution = self.create_distribution_epsilon_greedily(q_values)
-                self.policy.policy_table[state_index] = distribution
-                        
-    def _init_state_count(self):
-        state_count = defaultdict(lambda: {})
-        for state_index, action_values in self.q_table.items():
-            for action_index, _ in action_values.items():
-                state_count[state_index][action_index] = (0, 0.0)
-        return state_count
+            self._run_one_episode()
 
-    def _run_one_episode(self,init_state_index):
-        trajectory = []
-        current_state_index = init_state_index
+    def _run_one_episode(self):
+
+        # S
+        current_state_index = self.env.reset()
+
+        # A
+        current_action_index = self.policy.get_action(current_state_index)
+
         while True:
-            action_index = self.policy.get_action(current_state_index)
-            observation = self.env.step(action_index)
+
+            observation = self.env.step(current_action_index)
+
+            # R
             reward = observation[1]
-            trajectory.append((current_state_index, action_index, reward))
             done = observation[2]
+
+            # S'
+            next_state_index = observation[0]
+
+            # A'
+            next_action_index = self.policy.get_action(next_state_index)
+
+            delta = reward + self.discount * self.q_table[next_state_index][next_action_index] - self.q_table[current_state_index][current_action_index]
+            self.q_table[current_state_index][current_action_index] += self.step_size * delta
+
+            # update policy softly 
+            q_values = self.q_table[current_state_index]
+            distribution = self.create_distribution_epsilon_greedily(q_values)
+            self.policy.policy_table[current_state_index] = distribution
+
             if done:
                 break
-            current_state_index = observation[0]
 
-        return trajectory
+            current_state_index = next_state_index
+            current_action_index = next_action_index
+
