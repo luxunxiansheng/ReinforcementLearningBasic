@@ -41,7 +41,7 @@ from lib.utility import create_distribution_epsilon_greedily
 
 
 class Monte_Carlo_On_Policy_Control_Method:
-    def __init__(self, q_table, table_policy, epsilon, env, episodes=6000000, discount=1.0):
+    def __init__(self, q_table, table_policy, epsilon, env, episodes=1000, discount=1.0):
         self.q_table = q_table
         self.policy = table_policy
         self.env = env

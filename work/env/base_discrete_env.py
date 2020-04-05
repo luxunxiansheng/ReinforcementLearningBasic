@@ -76,12 +76,10 @@ class Base_Discrete_Env(discrete.DiscreteEnv):
                 outfile.write("        action_index {:2d} : value {}     ".format(
                     action_index, probability_value))
             outfile.write("\n")
-        outfile.write(
-            '--------------------------------------------------------------------------\n')
+        outfile.write('--------------------------------------------------------------------------\n')
 
     @abstractmethod
     def show_policy(self, policy):
-
         x = []
         y = []
         for state_index, _ in policy.policy_table.items():
