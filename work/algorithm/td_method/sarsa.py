@@ -59,6 +59,8 @@ class SARSA():
 
     def _run_one_episode(self):
 
+        steps = 0
+
         # S
         current_state_index = self.env.reset()
 
@@ -68,6 +70,7 @@ class SARSA():
         while True:
 
             observation = self.env.step(current_action_index)
+            steps += 1
 
             # R
             reward = observation[1]
@@ -88,6 +91,7 @@ class SARSA():
             self.policy.policy_table[current_state_index] = distribution
 
             if done:
+                print("Total stpes {}".format(steps))
                 break
 
             current_state_index = next_state_index

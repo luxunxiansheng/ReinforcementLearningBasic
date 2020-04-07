@@ -6,12 +6,9 @@ from policy.policy import TabularPolicy
 def test_td0_evaluation_method(env):
 
     v_table = env.build_V_table()
-
     b_policy_table = env.build_policy_table()
     b_policy = TabularPolicy(b_policy_table)
-
     td0_method = TD0_Evalutaion_Method(v_table, b_policy, env)
-
     td0_method.evaluate()
 
 

@@ -63,7 +63,7 @@ def test(algo, env):
         test_td0_evaluation_method(get_env(env))
     
     if algo == "Sarsa":
-        test_sarsa(get_env(env))
+        test_sarsa_method(get_env(env))
 
 
 if __name__ == "__main__":
