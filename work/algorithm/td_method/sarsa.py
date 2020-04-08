@@ -43,7 +43,7 @@ class SARSA():
     SARSA algorithm: On-policy TD control. Finds the optimal epsilon-greedy policy.
     """
 
-    def __init__(self, q_table, table_policy, epsilon,env, statistics,episodes,step_size=0.1,  discount=1.0):
+    def __init__(self, q_table, table_policy, epsilon,env, statistics,episodes,step_size=0.1,discount=1.0):
         self.q_table = q_table
         self.policy = table_policy
         self.env = env

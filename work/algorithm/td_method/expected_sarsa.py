@@ -33,16 +33,21 @@
 #
 # /
 
+from tqdm import tqdm
 
-class  ExpectedSARSA():
-    def __init__(self, q_table, table_policy, epsilon,env, statistics,episodes,step_size=0.1,discount=1.0)
+from lib.utility import create_distribution_epsilon_greedily
+
+
+class ExpectedSARSA():
+    def __init__(self, q_table, table_policy, epsilon, env, statistics, episodes, step_size=0.1, discount=1.0):
         self.q_table = q_table
         self.policy = table_policy
         self.env = env
         self.episodes = episodes
         self.step_size = step_size
         self.discount = discount
-        self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(epsilon)
+        self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(
+            epsilon)
 
         self.statistics = statistics
 
@@ -50,7 +55,7 @@ class  ExpectedSARSA():
         for episode in tqdm(range(0, self.episodes)):
             self._run_one_episode(episode)
 
-    def _run_one_episode(self,episode):
+    def _run_one_episode(self, episode):
         # S
         current_state_index = self.env.reset()
 
@@ -69,17 +74,18 @@ class  ExpectedSARSA():
             # S'
             next_state_index = observation[0]
 
-            
-            # expected Q value 
+            # expected Q value
             expected_next_q = 0
             next_actions = self.policy.policy_table[next_state_index]
             for action, action_prob in enumerate(next_actions):
-                expected_next_q += action_prob * self.q_table[next_state_index][action] 
+                expected_next_q += action_prob * \
+                    self.q_table[next_state_index][action]
 
-            delta = reward + self.discount *expected_next_q- self.q_table[current_state_index][current_action_index]
+            delta = reward + self.discount * expected_next_q - \
+                self.q_table[current_state_index][current_action_index]
             self.q_table[current_state_index][current_action_index] += self.step_size * delta
 
-            # update policy softly 
+            # update policy softly
             q_values = self.q_table[current_state_index]
             distribution = self.create_distribution_epsilon_greedily(q_values)
             self.policy.policy_table[current_state_index] = distribution
@@ -89,5 +95,4 @@ class  ExpectedSARSA():
 
             current_state_index = next_state_index
             current_action_index = next_action_index
-
 
