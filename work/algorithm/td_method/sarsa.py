@@ -35,8 +35,6 @@
 
 from tqdm import tqdm
 
-import matplotlib.pyplot as plt
-
 from lib.utility import create_distribution_epsilon_greedily
 
 
@@ -45,7 +43,7 @@ class SARSA():
     SARSA algorithm: On-policy TD control. Finds the optimal epsilon-greedy policy.
     """
 
-    def __init__(self, q_table, table_policy, epsilon, env, step_size=0.1, episodes=10000, discount=1.0):
+    def __init__(self, q_table, table_policy, epsilon,env, statistics,episodes,step_size=0.1,  discount=1.0):
         self.q_table = q_table
         self.policy = table_policy
         self.env = env
@@ -55,7 +53,7 @@ class SARSA():
         self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(
             epsilon)
 
-        self.episodesteps = {}
+        self.statistics = statistics
         
 
     def improve(self):
@@ -63,7 +61,7 @@ class SARSA():
             self._run_one_episode(episode)
 
     def _run_one_episode(self,episode):
-        steps = 0
+      
    
         # S
         current_state_index = self.env.reset()
@@ -74,11 +72,14 @@ class SARSA():
         while True:
 
             observation = self.env.step(current_action_index)
-            steps += 1
+          
 
             # R
             reward = observation[1]
             done = observation[2]
+
+            self.statistics.episode_rewards[episode] += reward
+            self.statistics.episode_lengths[episode] += 1
 
             # S'
             next_state_index = observation[0]
@@ -95,27 +96,7 @@ class SARSA():
             self.policy.policy_table[current_state_index] = distribution
 
             if done:
-                self.episodesteps[episode] = steps
                 break
 
             current_state_index = next_state_index
             current_action_index = next_action_index
-
-
-    def show_timesteps(self):
-        x = []
-        y = []
-        for episode, steps in self.episodesteps.items():
-            x.append(episode)
-            y.append(steps)
-
-        fig, ax = plt.subplots(1, figsize=(8, 6))
-        fig.suptitle('Steps/Episode')
-
-        # Plot the data
-        ax.plot(x, y)
-
-        # Show the grid lines as dark grey lines
-        plt.grid(b=True, which='major', color='#666666', linestyle='-')
-
-        plt.show()

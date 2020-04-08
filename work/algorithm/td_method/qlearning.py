@@ -33,91 +33,71 @@
 #
 # /
 
-from lib.utility import create_distribution_epsilon_greedily
-from lib.utility import create_distribution_greedily
-
 from tqdm import tqdm
 
-import matplotlib.pyplot as plt
+from lib.utility import (create_distribution_epsilon_greedily,
+                         create_distribution_greedily)
+
 
 class QLearning():
     """
-    
-    
-    
-    """
-    def __init__(self, q_table, behavior_table_policy, epsilon, env, step_size=0.1, episodes=10000, discount=1.0):
+    Q-Learning algorithm: Off-policy TD control. Finds the optimal greedy policy
+    while following an epsilon-greedy policy
+   """
+
+
+    def __init__(self, q_table, behavior_table_policy, epsilon, env, statistics,episodes,step_size=0.1,  discount=1.0):
         self.q_table = q_table
-        self.policy=  behavior_table_policy
+        self.policy = behavior_table_policy
         self.env = env
         self.episodes = episodes
         self.step_size = step_size
         self.discount = discount
-        self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(epsilon)
-        self.create_distribution_greedily         = create_distribution_greedily()
+        self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(
+            epsilon)
+        self.create_distribution_greedily = create_distribution_greedily()
 
-        self.episodesteps = {}
-
+        self.statistics = statistics
 
     def improve(self):
         for episode in tqdm(range(0, self.episodes)):
             self._run_one_episode(episode)
 
-    def _run_one_episode(self,episode):
-        steps = 0
-   
+    def _run_one_episode(self, episode):
         # S
         current_state_index = self.env.reset()
 
-        
         while True:
 
             # A
             current_action_index = self.policy.get_action(current_state_index)
             observation = self.env.step(current_action_index)
-            steps += 1
+            
 
             # R
             reward = observation[1]
             done = observation[2]
+
+            self.statistics.episode_rewards[episode] += reward
+            self.statistics.episode_lengths[episode] += 1
 
             # S'
             next_state_index = observation[0]
 
             q_values_next_state = self.q_table[next_state_index]
             max_value = max(q_values_next_state.values())
-
-
-            delta = reward + self.discount * max_value - self.q_table[current_state_index][current_action_index]
+            delta = reward + self.discount * max_value - \
+                self.q_table[current_state_index][current_action_index]
             self.q_table[current_state_index][current_action_index] += self.step_size * delta
 
-            # update policy softly 
+            # update policy softly
             q_values = self.q_table[current_state_index]
             distribution = self.create_distribution_epsilon_greedily(q_values)
             self.policy.policy_table[current_state_index] = distribution
 
             if done:
-                self.episodesteps[episode] = steps
                 break
 
             current_state_index = next_state_index
-        
 
-
-    def show_timesteps(self):
-        x = []
-        y = []
-        for episode, steps in self.episodesteps.items():
-            x.append(episode)
-            y.append(steps)
-
-        fig, ax = plt.subplots(1, figsize=(8, 6))
-        fig.suptitle('Steps/Episode')
-
-        # Plot the data
-        ax.plot(x, y)
-
-        # Show the grid lines as dark grey lines
-        plt.grid(b=True, which='major', color='#666666', linestyle='-')
-
-        plt.show()
+    
