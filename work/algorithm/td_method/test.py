@@ -18,3 +18,4 @@ def test_sarsa_method(env):
     b_policy = TabularPolicy(b_policy_table)
     sarsa_method = SARSA(q_table, b_policy, 0.1, env)
     sarsa_method.improve()
+    sarsa_method.show_timesteps()

@@ -65,6 +65,7 @@ class WindyGridworldEnv(Base_Discrete_Env):
         return [(1.0, new_state, -1.0, is_done)]
 
     def __init__(self):
+
         self.shape = (7, 10)
 
         nS = np.prod(self.shape)
@@ -95,6 +96,7 @@ class WindyGridworldEnv(Base_Discrete_Env):
 
         super().__init__(nS, nA, P, isd)
 
+
     def render(self, mode="human"):
         outfile = sys.stdout
         for s in range(self.nS):
@@ -114,3 +116,5 @@ class WindyGridworldEnv(Base_Discrete_Env):
 
             outfile.write(output)
         outfile.write("\n")
+    
+
