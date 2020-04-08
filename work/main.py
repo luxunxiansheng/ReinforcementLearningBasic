@@ -33,8 +33,12 @@
 #
 # /
 
-
 import fire
+
+
+from algorithm.td_method.test import test_qlearning_method
+from algorithm.td_method.test import test_sarsa_method
+from algorithm.td_method.test import test_td0_evaluation_method
 
 from env.blackjack import BlackjackEnv
 from env.grid_world import GridworldEnv
@@ -42,9 +46,6 @@ from env.grid_world_with_walls_block import GridWorldWithWallsBlockEnv
 from env.random_walking import RandomWalkingEnv
 from env.windy_gridworld import WindyGridworldEnv
 from lib.utility import create_distribution_randomly
-
-from algorithm.td_method.test import test_td0_evaluation_method
-from algorithm.td_method.test import test_sarsa_method
 
 
 def get_env(env):
@@ -64,6 +65,9 @@ def test(algo, env):
     
     if algo == "Sarsa":
         test_sarsa_method(get_env(env))
+    
+    if algo == "qlearning":
+        test_qlearning_method(get_env(env))
 
 
 if __name__ == "__main__":

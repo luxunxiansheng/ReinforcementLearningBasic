@@ -1,10 +1,10 @@
 from algorithm.td_method.sarsa import SARSA
 from algorithm.td_method.td0_evaluation_method import TD0_Evalutaion_Method
+from algorithm.td_method.qlearning import QLearning
 from policy.policy import TabularPolicy
 
 
 def test_td0_evaluation_method(env):
-
     v_table = env.build_V_table()
     b_policy_table = env.build_policy_table()
     b_policy = TabularPolicy(b_policy_table)
@@ -19,3 +19,11 @@ def test_sarsa_method(env):
     sarsa_method = SARSA(q_table, b_policy, 0.1, env)
     sarsa_method.improve()
     sarsa_method.show_timesteps()
+
+def test_qlearning_method(env):
+    q_table = env.build_Q_table()
+    b_policy_table = env.build_policy_table()
+    b_policy = TabularPolicy(b_policy_table)
+    qlearning_method = QLearning(q_table, b_policy, 0.1, env)
+    qlearning_method.improve()
+    qlearning_method.show_timesteps()

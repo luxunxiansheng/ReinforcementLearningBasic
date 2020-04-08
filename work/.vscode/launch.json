@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["test","Sarsa","windygridworld"],
+            "args": ["test","qlearning","windygridworld"],
             "justMyCode": false          
         }
     ]
