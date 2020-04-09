@@ -34,17 +34,19 @@
 # /
 
 
-import numpy as np
 import sys
-from gym.envs.toy_text import discrete
 
+import numpy as np
+
+from env.base_discrete_env import Base_Discrete_Env
 
 UP = 0
 RIGHT = 1
 DOWN = 2
 LEFT = 3
 
-class CliffWalkingEnv(discrete.DiscreteEnv):
+
+class CliffWalkingEnv(Base_Discrete_Env):
 
     metadata = {'render.modes': ['human', 'ansi']}
 
@@ -60,7 +62,8 @@ class CliffWalkingEnv(discrete.DiscreteEnv):
         new_position = self._limit_coordinates(new_position).astype(int)
         new_state = np.ravel_multi_index(tuple(new_position), self.shape)
         reward = -100.0 if self._cliff[tuple(new_position)] else -1.0
-        is_done = self._cliff[tuple(new_position)] or (tuple(new_position) == (3,11))
+        is_done = self._cliff[tuple(new_position)] or (
+            tuple(new_position) == (3, 11))
         return [(1.0, new_state, reward, is_done)]
 
     def __init__(self):
@@ -77,7 +80,7 @@ class CliffWalkingEnv(discrete.DiscreteEnv):
         P = {}
         for s in range(nS):
             position = np.unravel_index(s, self.shape)
-            P[s] = { a : [] for a in range(nA) }
+            P[s] = {a: [] for a in range(nA)}
             P[s][UP] = self._calculate_transition_prob(position, [-1, 0])
             P[s][RIGHT] = self._calculate_transition_prob(position, [0, 1])
             P[s][DOWN] = self._calculate_transition_prob(position, [1, 0])
@@ -85,22 +88,22 @@ class CliffWalkingEnv(discrete.DiscreteEnv):
 
         # We always start in state (3, 0)
         isd = np.zeros(nS)
-        isd[np.ravel_multi_index((3,0), self.shape)] = 1.0
+        isd[np.ravel_multi_index((3, 0), self.shape)] = 1.0
 
         super(CliffWalkingEnv, self).__init__(nS, nA, P, isd)
 
-    def _render(self, mode='human', close=False):
+    def render(self, mode='human', close=False):
         if close:
             return
 
-        outfile = StringIO() if mode == 'ansi' else sys.stdout
+        outfile = sys.stdout
 
         for s in range(self.nS):
             position = np.unravel_index(s, self.shape)
             # print(self.s)
             if self.s == s:
                 output = " x "
-            elif position == (3,11):
+            elif position == (3, 11):
                 output = " T "
             elif self._cliff[position]:
                 output = " C "
@@ -108,9 +111,9 @@ class CliffWalkingEnv(discrete.DiscreteEnv):
                 output = " o "
 
             if position[1] == 0:
-                output = output.lstrip() 
+                output = output.lstrip()
             if position[1] == self.shape[1] - 1:
-                output = output.rstrip() 
+                output = output.rstrip()
                 output += "\n"
 
             outfile.write(output)

@@ -59,11 +59,14 @@ class ExpectedSARSA():
         # S
         current_state_index = self.env.reset()
 
-        # A
-        current_action_index = self.policy.get_action(current_state_index)
+        
 
         while True:
+            # A
+            current_action_index = self.policy.get_action(current_state_index)
+           
             observation = self.env.step(current_action_index)
+            #self.env.render()
             # R
             reward = observation[1]
             done = observation[2]
@@ -77,7 +80,7 @@ class ExpectedSARSA():
             # expected Q value
             expected_next_q = 0
             next_actions = self.policy.policy_table[next_state_index]
-            for action, action_prob in enumerate(next_actions):
+            for action, action_prob in next_actions.items():
                 expected_next_q += action_prob * \
                     self.q_table[next_state_index][action]
 
@@ -94,5 +97,5 @@ class ExpectedSARSA():
                 break
 
             current_state_index = next_state_index
-            current_action_index = next_action_index
+           
 

@@ -34,13 +34,11 @@
 # /
 
 import fire
-
-
-from algorithm.td_method.test import test_qlearning_method
-from algorithm.td_method.test import test_sarsa_method
-from algorithm.td_method.test import test_td0_evaluation_method
-
+from algorithm.td_method.test import (test_expected_sarsa_method,
+                                      test_qlearning_method, test_sarsa_method,
+                                      test_td0_evaluation_method)
 from env.blackjack import BlackjackEnv
+from env.cliff_walking import CliffWalkingEnv
 from env.grid_world import GridworldEnv
 from env.grid_world_with_walls_block import GridWorldWithWallsBlockEnv
 from env.random_walking import RandomWalkingEnv
@@ -58,16 +56,22 @@ def get_env(env):
     if env == 'windygridworld':
         return WindyGridworldEnv()
 
+    if env == 'cliffwalking':
+        return CliffWalkingEnv()
+
 
 def test(algo, env):
     if algo == "TD0_Evalutaion_Method":
         test_td0_evaluation_method(get_env(env))
-    
+
     if algo == "Sarsa":
         test_sarsa_method(get_env(env))
-    
+
     if algo == "qlearning":
         test_qlearning_method(get_env(env))
+
+    if algo == 'expectedsarsa':
+        test_expected_sarsa_method(get_env(env))
 
 
 if __name__ == "__main__":
