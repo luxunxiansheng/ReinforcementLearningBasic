@@ -37,8 +37,11 @@ from tqdm import tqdm
 
 from lib.utility import create_distribution_epsilon_greedily
 
-
 class ExpectedSARSA():
+    """
+     On policy control for the target policy is learned via behavior policy by averaging the next q values
+
+    """
     def __init__(self, q_table, table_policy, epsilon, env, statistics, episodes, step_size=0.1, discount=1.0):
         self.q_table = q_table
         self.policy = table_policy
