@@ -36,7 +36,7 @@
 import fire
 from algorithm.td_method.test import (test_expected_sarsa_method,
                                       test_qlearning_method, test_sarsa_method,
-                                      test_td0_evaluation_method)
+                                      test_td0_evaluation_method,test_double_q_learning_method)
 from env.blackjack import BlackjackEnv
 from env.cliff_walking import CliffWalkingEnv
 from env.grid_world import GridworldEnv
@@ -72,6 +72,9 @@ def test(algo, env):
 
     if algo == 'expectedsarsa':
         test_expected_sarsa_method(get_env(env))
+    
+    if algo == 'doubleqlearning':
+        test_double_q_learning_method(get_env(env))
 
 
 if __name__ == "__main__":
