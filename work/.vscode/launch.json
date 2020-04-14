@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["test","doubleqlearning","windygridworld"],
+            "args": ["test","TDN_Evalutaion_Method","randomwalking"],
             "justMyCode": false          
         }
     ]
