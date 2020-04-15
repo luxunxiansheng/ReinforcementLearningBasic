@@ -48,7 +48,7 @@ class RandomWalkingEnv(Base_Discrete_Env):
 
     """
     def __init__(self):
-        nS = 7
+        nS = 19
         nA = 2
         self.P = self._build_transitions(nS, nA)
 

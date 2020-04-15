@@ -38,7 +38,7 @@ from tqdm import tqdm
 
 
 class TDN_Evalutaion_Method:
-    def __init__(self,  v_table, policy, env, n_steps, episodes=100, discount=1.0, step_size=0.1):
+    def __init__(self,  v_table, policy, env, n_steps, episodes=1000, discount=1.0, step_size=0.1):
         self.v_table = v_table
         self.policy = policy
         self.env = env
@@ -68,20 +68,20 @@ class TDN_Evalutaion_Method:
                 next_state_index = observation[0]
                 reward = observation[1]
                 done = observation[2]
-                trajectory.append((next_state_index, reward))
+                trajectory.append((current_state_index,reward))
                 if done:
                     final_timestamp = current_timestamp+1
 
             updated_timestamp = current_timestamp-self.steps 
             if updated_timestamp >=0:
                 G = 0
-                for i in range(updated_timestamp , min(updated_timestamp + self.steps , final_timestamp )):
+                for i in range(updated_timestamp , min(updated_timestamp + self.steps , final_timestamp)):
                     G += np.power(self.discount, i - updated_timestamp ) * trajectory[i][1]
                 if updated_timestamp + self.steps < final_timestamp:
                     G += np.power(self.discount, self.steps) * self.v_table[trajectory[updated_timestamp + self.steps][0]]
 
-                delta = G-self.v_table[current_state_index]
-                self.v_table[current_state_index] += self.step_size*delta
+                delta = G-self.v_table[trajectory[updated_timestamp][0]]
+                self.v_table[trajectory[updated_timestamp][0]] += self.step_size*delta
 
                 if updated_timestamp == final_timestamp - 1:
                     break
