@@ -47,7 +47,6 @@ class RandomWalkingEnv(Base_Discrete_Env):
     For convenience, name the state from left to right with number 1 to nS
 
     """
-
     def __init__(self):
         nS = 7
         nA = 2
