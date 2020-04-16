@@ -78,7 +78,7 @@ class TDN_Evalutaion_Method:
                 for i in range(updated_timestamp , min(updated_timestamp + self.steps , final_timestamp)):
                     G += np.power(self.discount, i - updated_timestamp ) * trajectory[i][1]
                 if updated_timestamp + self.steps < final_timestamp:
-                    G += np.power(self.discount, self.steps) * self.v_table[trajectory[updated_timestamp + self.steps][0]]
+                    G += np.power(self.discount, self.steps) * self.v_table[trajectory[current_timestamp][0]]
 
                 delta = G-self.v_table[trajectory[updated_timestamp][0]]
                 self.v_table[trajectory[updated_timestamp][0]] += self.step_size*delta

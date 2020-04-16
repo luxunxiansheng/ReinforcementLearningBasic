@@ -70,10 +70,7 @@ class SARSA():
         current_action_index = self.policy.get_action(current_state_index)
 
         while True:
-
             observation = self.env.step(current_action_index)
-          
-
             # R
             reward = observation[1]
             done = observation[2]

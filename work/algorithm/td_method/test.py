@@ -143,6 +143,6 @@ def test_tdn_evaluaiton_method(env):
     v_table = env.build_V_table()
     b_policy_table = env.build_policy_table()
     b_policy = TabularPolicy(b_policy_table)
-    td0_method = TDN_Evalutaion_Method(v_table, b_policy, env,2)
+    td0_method = TDN_Evalutaion_Method(v_table, b_policy,env,1)
     td0_method.evaluate()
 
