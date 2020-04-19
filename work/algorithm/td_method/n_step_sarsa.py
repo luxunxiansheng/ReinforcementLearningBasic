@@ -69,7 +69,6 @@ class N_Step_SARSA():
         trajectory = []
         # S
         current_state_index = self.env.reset()
-
         # A
         current_action_index = self.policy.get_action(current_state_index)
 
@@ -88,8 +87,8 @@ class N_Step_SARSA():
 
                 # A'
                 next_action_index = self.policy.get_action(next_state_index)
-                trajectory.append((current_state_index, current_action_index,
-                                   reward, next_state_index, next_action_index))
+
+                trajectory.append((current_state_index, current_action_index,reward, next_state_index, next_action_index))
 
                 if done:
                     final_timestamp = current_timestamp + 1
@@ -99,26 +98,17 @@ class N_Step_SARSA():
             if updated_timestamp >= 0:
                 G = 0
                 for i in range(updated_timestamp, min(updated_timestamp + self.steps, final_timestamp)):
-                    G += np.power(self.discount, i -
-                                  updated_timestamp) * trajectory[i][2]
+                    G += np.power(self.discount, i - updated_timestamp) * trajectory[i][2]
                 if updated_timestamp + self.steps < final_timestamp:
-                    G += np.power(self.discount, self.steps) * \
-                        self.q_table[trajectory[current_timestamp]
-                                     [0]][trajectory[current_timestamp][1]]
+                    G += np.power(self.discount, self.steps) * self.q_table[trajectory[current_timestamp][0]][trajectory[current_timestamp][1]]
 
-                delta = G - \
-                    self.q_table[trajectory[updated_timestamp]
-                                 [0]][trajectory[updated_timestamp][1]]
-                self.q_table[trajectory[updated_timestamp][0]
-                             ][trajectory[updated_timestamp][1]] += self.step_size*delta
+                delta = G - self.q_table[trajectory[updated_timestamp][0]][trajectory[updated_timestamp][1]]
+                self.q_table[trajectory[updated_timestamp][0]][trajectory[updated_timestamp][1]] += self.step_size*delta
 
                 # update policy softly
-                q_values = self.q_table[trajectory[updated_timestamp]
-                                        [0]][trajectory[updated_timestamp][1]]
-                distribution = self.create_distribution_epsilon_greedily(
-                    q_values)
-                self.policy.policy_table[trajectory[updated_timestamp]
-                                         [0]] = distribution
+                q_values = self.q_table[trajectory[updated_timestamp][0]][trajectory[updated_timestamp][1]]
+                distribution = self.create_distribution_epsilon_greedily(q_values)
+                self.policy.policy_table[trajectory[updated_timestamp][0]] = distribution
 
                 if updated_timestamp == final_timestamp - 1:
                     break

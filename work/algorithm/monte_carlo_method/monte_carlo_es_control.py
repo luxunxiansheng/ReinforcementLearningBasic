@@ -33,71 +33,56 @@
 #
 # /
 
-
 from collections import defaultdict
-import numpy as np
 
 from tqdm import tqdm
 
-# ToDo :  to be tested
-class Monte_Carlo_Off_Policy_Control_Method:
-    """
-    As described in 5.7 section of Sutton' book 
-    1) Weighted importance sampling.
-    2) Incremental implementation
+from lib.utility import create_distribution_greedily
 
-    """
 
-    def __init__(self, q_table, behavior_policy, target_policy, env, episodes=10000, discount=1.0):
+class Monte_Carlo_ES_Control:
+    """
+    On Policy method and the Exploration comes from the random initial states
+    """
+    def __init__(self, q_table, table_policy, env, episodes=500000, discount=1.0):
         self.q_table = q_table
-        self.behavior_policy = behavior_policy
-        self.target_policy = target_policy
+        self.policy = table_policy
         self.env = env
         self.episodes = episodes
         self.discount = discount
+        self.create_distribution_greedily = create_distribution_greedily()
 
     def improve(self):
-        # it is necessary to keep the weight total for every state_action pair
-        C = self._init_weight_total()
-        for _ in range(0, self.episodes):
+        state_count = self._init_state_count()
+        
+        for _ in tqdm(range(0, self.episodes)):
             trajectory = self._run_one_episode()
-            G = 0.0
-            W = 1
+            R = 0.0
             for state_index, action_index, reward in trajectory[::-1]:
-
-                # The return for current state_action pair
-                G = reward + self.discount*G
-
-                # weight total for current state_action pair
-                C[state_index][action_index]  += W
-
-                # q_value calculated incrementally with off policy
-                self.q_table[state_index][action_index] += W/C[state_index][action_index]*(G-self.q_table[state_index][action_index])
-
-                # If the action taken by the behavior policy is not the action
-                # taken by the target policy the probability will be 0 and we can break
-                if action_index != np.argmax(self.target_policy.policy_table[state_index]:
-                    break
-
-                # probability product
-                W = W *1. / self.behavior_policy.policy_table[state_index][action_index]
-
-
-    def _init_weight_total(self):
-        weight_total = defaultdict(lambda: {})
+                R = reward+self.discount*R
+                state_count[state_index][action_index] = (state_count[state_index][action_index][0] + 1, state_count[state_index][action_index][1] + R)
+                self.q_table[state_index][action_index] = state_count[state_index][action_index][1] / state_count[state_index][action_index][0]
+                
+                q_values = self.q_table[state_index]
+                distribution = self.create_distribution_greedily(q_values)
+                self.policy.policy_table[state_index] = distribution
+                        
+    def _init_state_count(self):
+        state_count = defaultdict(lambda: {})
         for state_index, action_values in self.q_table.items():
             for action_index, _ in action_values.items():
-                weight_total[state_index][action_index] = 0.0
-        return weight_total
+                state_count[state_index][action_index] = (0, 0.0)
+        
+        return state_count
 
     def _run_one_episode(self):
         trajectory = []
-        current_state_index = self.env.reset(False)
+        current_state_index = self.env.reset()
         while True:
-            action_index = self.behavior_policy.get_action(current_state_index)
+            action_index = self.policy.get_action(current_state_index)
             observation = self.env.step(action_index)
             reward = observation[1]
-            trajectory.append((current_state_index, action_index,reward))
+            trajectory.append((current_state_index, action_index, reward))
             done = observation[2]
             if done:
                 break

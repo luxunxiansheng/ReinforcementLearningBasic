@@ -39,7 +39,7 @@ import copy
 from lib.utility import create_distribution_greedily
 
 
-class Policy_Iteration_Method:
+class Policy_Iteration:
     """
      Once a ploicy has been improved to get a new sequence of value of states, we can
      then compute the value of the states to improve the pollicy, monotonically. 

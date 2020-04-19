@@ -37,7 +37,7 @@
 from lib.utility import create_distribution_greedily
 
 
-class Q_Value_Iteration_Method:
+class Q_Value_Iteration:
     """
     One drawback to policy iteration method is that each of its iterations involves policy 
     evalution, which may itself be a protracted iterative computation requiring multiple 

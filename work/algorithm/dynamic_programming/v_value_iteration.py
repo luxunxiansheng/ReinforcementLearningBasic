@@ -36,7 +36,7 @@
 from lib.utility import create_distribution_greedily
 
 
-class V_Value_Iteration_Method:
+class V_Value_Iteration:
     
     """
     One drawback to policy iteration method is that each of its iterations involves policy 

@@ -1,6 +1,6 @@
-from algorithm.dynamic_programming.policy_iteration_method import Policy_Iteration_Method
-from algorithm.dynamic_programming.q_value_iteration_method import Q_Value_Iteration_Method
-from algorithm.dynamic_programming.v_value_iteration_method import V_Value_Iteration_Method
+from algorithm.dynamic_programming.policy_iteration import Policy_Iteration
+from algorithm.dynamic_programming.q_value_iteration import Q_Value_Iteration
+from algorithm.dynamic_programming.v_value_iteration import V_Value_Iteration
 
 from policy.policy import TabularPolicy
 
@@ -11,8 +11,7 @@ def test_policy_iteration(env):
     policy_table = env.build_policy_table()
     table_policy = TabularPolicy(policy_table)
 
-    rl_method = Policy_Iteration_Method(
-        v_table, table_policy, transition_table)
+    rl_method = Policy_Iteration(v_table, table_policy, transition_table)
 
     delta = 1e-5
 
@@ -31,8 +30,7 @@ def test_q_value_iteration(env):
     transition_table = env.P
     policy_table = env.build_policy_table()
     table_policy = TabularPolicy(policy_table)
-    rl_method = Q_Value_Iteration_Method(
-        q_table, table_policy, transition_table)
+    rl_method = Q_Value_Iteration(q_table, table_policy, transition_table)
     rl_method.improve()
     env.show_policy(table_policy)
 
@@ -42,7 +40,6 @@ def test_v_value_iteration(env):
     transition_table = env.P
     policy_table = env.build_policy_table()
     table_policy = TabularPolicy(policy_table)
-    rl_method = V_Value_Iteration_Method(
-        table_policy, v_table, transition_table)
+    rl_method = V_Value_Iteration(table_policy, v_table, transition_table)
     rl_method.improve()
     env.show_policy(table_policy)

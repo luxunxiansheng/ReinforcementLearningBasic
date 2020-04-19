@@ -33,55 +33,42 @@
 #
 # /
 
-from collections import defaultdict
-
 from tqdm import tqdm
 
-from lib.utility import create_distribution_epsilon_greedily
 
-
-class Monte_Carlo_On_Policy_Control_Method:
-    def __init__(self, q_table, table_policy, epsilon, env, episodes=1000, discount=1.0):
-        self.q_table = q_table
-        self.policy = table_policy
+class TD0_Evalutaion:
+    def __init__(self, v_table, policy, env, episodes=1000, discount=1.0, step_size=0.1):
+        self.v_table = v_table
+        self.policy = policy
         self.env = env
         self.episodes = episodes
         self.discount = discount
-        self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(epsilon)
+        self.step_size = step_size
 
-    def improve(self):
-        state_count = self._init_state_count()
-        init_state_index = self.env.reset()
+    def evaluate(self):
         for _ in tqdm(range(0, self.episodes)):
-            trajectory = self._run_one_episode(init_state_index)
-            R = 0.0
-            for state_index, action_index, reward in trajectory[::-1]:
-                R = reward+self.discount*R
-                state_count[state_index][action_index] = (state_count[state_index][action_index][0] + 1, state_count[state_index][action_index][1] + R)
-                self.q_table[state_index][action_index] = state_count[state_index][action_index][1] / state_count[state_index][action_index][0]
-                
-                q_values = self.q_table[state_index]
-                distribution = self.create_distribution_epsilon_greedily(q_values)
-                self.policy.policy_table[state_index] = distribution
-                        
-    def _init_state_count(self):
-        state_count = defaultdict(lambda: {})
-        for state_index, action_values in self.q_table.items():
-            for action_index, _ in action_values.items():
-                state_count[state_index][action_index] = (0, 0.0)
-        return state_count
+            self._run_one_episode()
+        self.env.show_v_table(self.v_table)    
 
-    def _run_one_episode(self,init_state_index):
-        trajectory = []
-        current_state_index = init_state_index
+    def _run_one_episode(self):
+        """
+           Tabular TD(0) for estimating V(pi)
+           book 6.1 section
+        """
+
+        current_state_index = self.env.reset()
         while True:
             action_index = self.policy.get_action(current_state_index)
             observation = self.env.step(action_index)
+            next_state_index = observation[0]
             reward = observation[1]
-            trajectory.append((current_state_index, action_index, reward))
             done = observation[2]
-            if done:
-                break
-            current_state_index = observation[0]
+            
+            delta = reward + self.discount*self.v_table[next_state_index]-self.v_table[current_state_index]
+            self.v_table[current_state_index] += self.step_size*delta
 
-        return trajectory
+            if done:
+                break               
+
+            current_state_index = next_state_index
+            
