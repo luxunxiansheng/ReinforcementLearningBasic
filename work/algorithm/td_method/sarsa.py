@@ -47,6 +47,7 @@ class SARSA():
         self.q_table = q_table
         self.policy = table_policy
         self.env = env
+        
         self.episodes = episodes
         self.step_size = step_size
         self.discount = discount

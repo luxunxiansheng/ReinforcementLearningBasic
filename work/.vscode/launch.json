@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["test","TDN_Evalutaion_Method","randomwalking"],
+            "args": ["test","N_step_sarsa","windygridworld"],
             "justMyCode": false          
         }
     ]

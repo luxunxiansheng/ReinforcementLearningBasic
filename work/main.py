@@ -34,11 +34,13 @@
 # /
 
 import fire
-from algorithm.td_method.test import (test_expected_sarsa_method,
+
+from algorithm.td_method.test import (test_double_q_learning_method,
+                                      test_expected_sarsa_method,
+                                      test_n_steps_sarsa_method,
                                       test_qlearning_method, test_sarsa_method,
                                       test_td0_evaluation_method,
-                                      test_tdn_evaluaiton_method,
-                                      test_double_q_learning_method)
+                                      test_tdn_evaluaiton_method)
 from env.blackjack import BlackjackEnv
 from env.cliff_walking import CliffWalkingEnv
 from env.grid_world import GridworldEnv
@@ -63,23 +65,28 @@ def get_env(env):
 
 
 def test(algo, env):
-    if algo == "TD0_Evalutaion_Method":
-        test_td0_evaluation_method(get_env(env))
+    real_env = get_env(env)
+
+    if algo == "TD0_evalutaion":
+        test_td0_evaluation_method(real_env)
 
     if algo == "Sarsa":
-        test_sarsa_method(get_env(env))
+        test_sarsa_method(real_env)
 
-    if algo == "qlearning":
-        test_qlearning_method(get_env(env))
+    if algo == "Qlearning":
+        test_qlearning_method(real_env)
 
-    if algo == 'expectedsarsa':
-        test_expected_sarsa_method(get_env(env))
+    if algo == 'Expectedsarsa':
+        test_expected_sarsa_method(real_env)
     
-    if algo == 'doubleqlearning':
-        test_double_q_learning_method(get_env(env))
+    if algo == 'Doubleqlearning':
+        test_double_q_learning_method(real_env)
     
-    if algo == 'TDN_Evalutaion_Method':
-        test_tdn_evaluaiton_method(get_env(env))
+    if algo == 'TDN_evalutaion':
+        test_tdn_evaluaiton_method(real_env)
+    
+    if algo == 'N_step_sarsa':
+        test_n_steps_sarsa_method(real_env)
 
 
 if __name__ == "__main__":

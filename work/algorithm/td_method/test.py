@@ -149,6 +149,7 @@ def test_tdn_evaluaiton_method(env):
 
 
 def test_n_steps_sarsa_method(env):
+    
     q_table = env.build_Q_table()
     b_policy_table = env.build_policy_table()
     b_policy = TabularPolicy(b_policy_table)
@@ -156,7 +157,19 @@ def test_n_steps_sarsa_method(env):
     num_episodes = 1000
     sarsa_statistics = plotting.EpisodeStats("sarsa", episode_lengths=np.zeros(
         num_episodes), episode_rewards=np.zeros(num_episodes))
-    sarsa_method = SARSA(q_table, b_policy, 0.1, env,sarsa_statistics, num_episodes)
+    sarsa_method = SARSA(q_table, b_policy, 0.1, env, sarsa_statistics, num_episodes)
     sarsa_method.improve()
-    plotting.plot_episode_stats([sarsa_statistics])
+    
+    
+    
+    
+    q_table = env.build_Q_table()
+    b_policy_table = env.build_policy_table()
+    b_policy = TabularPolicy(b_policy_table)
+
+    num_episodes = 1000
+    n_sarsa_statistics = plotting.EpisodeStats("n_sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes))
+    n_sarsa_method = N_Step_SARSA(q_table, b_policy, 0.1, env, 7, n_sarsa_statistics, num_episodes)
+    n_sarsa_method.improve()
+    plotting.plot_episode_stats([sarsa_statistics,n_sarsa_statistics])
 

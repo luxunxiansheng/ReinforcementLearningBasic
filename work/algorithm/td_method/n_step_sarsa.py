@@ -106,7 +106,7 @@ class N_Step_SARSA():
                 self.q_table[trajectory[updated_timestamp][0]][trajectory[updated_timestamp][1]] += self.step_size*delta
 
                 # update policy softly
-                q_values = self.q_table[trajectory[updated_timestamp][0]][trajectory[updated_timestamp][1]]
+                q_values = self.q_table[trajectory[updated_timestamp][0]]
                 distribution = self.create_distribution_epsilon_greedily(q_values)
                 self.policy.policy_table[trajectory[updated_timestamp][0]] = distribution
 
