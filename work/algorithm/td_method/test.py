@@ -2,11 +2,11 @@ import numpy as np
 
 from algorithm.td_method.qlearning import QLearning
 from algorithm.td_method.sarsa import SARSA
-from algorithm.td_method.td0_evaluation import TD0_Evalutaion
+from algorithm.td_method.td0_evaluation import TD0Evalutaion
 from algorithm.td_method.expected_sarsa import ExpectedSARSA
 from algorithm.td_method.double_q_learning import DoubleQLearning
-from algorithm.td_method.tdn_evaluation import TDN_Evalutaion
-from algorithm.td_method.n_step_sarsa import N_Step_SARSA
+from algorithm.td_method.tdn_evaluation import TDNEvalutaion
+from algorithm.td_method.n_step_sarsa import NStepsSARSA
 from lib import plotting
 from policy.policy import TabularPolicy
 
@@ -15,7 +15,7 @@ def test_td0_evaluation_method(env):
     v_table = env.build_V_table()
     b_policy_table = env.build_policy_table()
     b_policy = TabularPolicy(b_policy_table)
-    td0_method = TD0_Evalutaion(v_table, b_policy, env)
+    td0_method = TD0Evalutaion(v_table, b_policy, env)
     td0_method.evaluate()
 
 
@@ -144,7 +144,7 @@ def test_tdn_evaluaiton_method(env):
     v_table = env.build_V_table()
     b_policy_table = env.build_policy_table()
     b_policy = TabularPolicy(b_policy_table)
-    td0_method = TDN_Evalutaion(v_table, b_policy,env,1)
+    td0_method = TDNEvalutaion(v_table, b_policy,env,1)
     td0_method.evaluate()
 
 
@@ -169,7 +169,7 @@ def test_n_steps_sarsa_method(env):
 
     num_episodes = 1000
     n_sarsa_statistics = plotting.EpisodeStats("n_sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes))
-    n_sarsa_method = N_Step_SARSA(q_table, b_policy, 0.1, env, 7, n_sarsa_statistics, num_episodes)
+    n_sarsa_method = NStepsSARSA(q_table, b_policy, 0.1, env, 7, n_sarsa_statistics, num_episodes)
     n_sarsa_method.improve()
     plotting.plot_episode_stats([sarsa_statistics,n_sarsa_statistics])
 

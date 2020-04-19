@@ -40,7 +40,7 @@ from tqdm import tqdm
 from lib.utility import create_distribution_greedily
 
 
-class Monte_Carlo_ES_Control:
+class MonteCarloESControl:
     """
     On Policy method and the Exploration comes from the random initial states
     """

@@ -36,7 +36,7 @@
 from tqdm import tqdm
 
 
-class TD0_Evalutaion:
+class TD0Evalutaion:
     def __init__(self, v_table, policy, env, episodes=1000, discount=1.0, step_size=0.1):
         self.v_table = v_table
         self.policy = policy

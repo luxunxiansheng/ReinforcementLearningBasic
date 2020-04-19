@@ -42,7 +42,7 @@ import numpy as np
 # ToDo :  to be tested
 
 
-class Monte_Carlo_Off_Policy_Control:
+class MonteCarloOffPolicyControl:
     """
     As described in 5.7 section of Sutton' book 
     1) Weighted importance sampling.

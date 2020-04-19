@@ -39,7 +39,7 @@ from tqdm import tqdm
 from lib.utility import create_distribution_epsilon_greedily
 
 
-class NStepsSARSA():
+class NStepsExpectedSARSA():
     """
     SARSA algorithm: On-policy TD control. Finds the optimal epsilon-greedy policy.
     """

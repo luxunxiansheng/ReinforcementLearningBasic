@@ -35,7 +35,7 @@
 
 from collections import defaultdict
 
-class Monte_Carlo_Off_Policy_Evaluation:
+class MonteCarloOffPolicyEvaluation:
     """
     As described in 5.6 section of Sutton' book 
 
