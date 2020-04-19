@@ -41,7 +41,7 @@ from lib.utility import create_distribution_epsilon_greedily
 
 class NStepsSARSA():
     """
-    SARSA algorithm: On-policy TD control. Finds the optimal epsilon-greedy policy.
+    N steps SARSA algorithm: On-policy TD control. Finds the optimal epsilon-greedy policy.
     """
 
     def __init__(self, q_table, table_policy, epsilon, env, steps, statistics, episodes, step_size=0.1, discount=1.0):
@@ -88,7 +88,7 @@ class NStepsSARSA():
                 # A'
                 next_action_index = self.policy.get_action(next_state_index)
 
-                trajectory.append((current_state_index, current_action_index,reward, next_state_index, next_action_index))
+                trajectory.append((current_state_index,current_action_index,reward))
 
                 if done:
                     final_timestamp = current_timestamp + 1

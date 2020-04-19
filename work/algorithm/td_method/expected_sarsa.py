@@ -80,12 +80,11 @@ class ExpectedSARSA():
             # S'
             next_state_index = observation[0]
 
-            # expected Q value
+            # expected Q value, actullay the v(s)
             expected_next_q = 0
             next_actions = self.policy.policy_table[next_state_index]
             for action, action_prob in next_actions.items():
-                expected_next_q += action_prob * \
-                    self.q_table[next_state_index][action]
+                expected_next_q += action_prob * self.q_table[next_state_index][action]
 
             delta = reward + self.discount * expected_next_q - \
                 self.q_table[current_state_index][current_action_index]

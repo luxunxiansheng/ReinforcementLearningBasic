@@ -38,10 +38,9 @@ from tqdm import tqdm
 
 from lib.utility import create_distribution_epsilon_greedily
 
-
 class NStepsExpectedSARSA():
     """
-    SARSA algorithm: On-policy TD control. Finds the optimal epsilon-greedy policy.
+    N steps expected SARSA algorithm: On-policy TD control. Finds the optimal epsilon-greedy policy.
     """
 
     def __init__(self, q_table, table_policy, epsilon, env, steps, statistics, episodes, step_size=0.1, discount=1.0):
@@ -51,8 +50,7 @@ class NStepsExpectedSARSA():
         self.episodes = episodes
         self.step_size = step_size
         self.discount = discount
-        self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(
-            epsilon)
+        self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(epsilon)
         self.steps = steps
 
         self.statistics = statistics
@@ -85,10 +83,10 @@ class NStepsExpectedSARSA():
                 # S'
                 next_state_index = observation[0]
 
-                # A'
+                # A' 
                 next_action_index = self.policy.get_action(next_state_index)
-
-                trajectory.append((current_state_index, current_action_index,reward, next_state_index, next_action_index))
+            
+                trajectory.append((current_state_index, current_action_index, reward))
 
                 if done:
                     final_timestamp = current_timestamp + 1
@@ -100,7 +98,12 @@ class NStepsExpectedSARSA():
                 for i in range(updated_timestamp, min(updated_timestamp + self.steps, final_timestamp)):
                     G += np.power(self.discount, i - updated_timestamp) * trajectory[i][2]
                 if updated_timestamp + self.steps < final_timestamp:
-                    G += np.power(self.discount, self.steps) * self.q_table[trajectory[current_timestamp][0]][trajectory[current_timestamp][1]]
+                    # expected Q value, actullay the v(s)
+                    expected_next_q = 0
+                    next_actions = self.policy.policy_table[trajectory[current_timestamp][0]]
+                    for action, action_prob in next_actions.items():
+                        expected_next_q += action_prob * self.q_table[trajectory[current_timestamp][0]][action]
+                    G += np.power(self.discount, self.steps) * expected_next_q
 
                 delta = G - self.q_table[trajectory[updated_timestamp][0]][trajectory[updated_timestamp][1]]
                 self.q_table[trajectory[updated_timestamp][0]][trajectory[updated_timestamp][1]] += self.step_size*delta
