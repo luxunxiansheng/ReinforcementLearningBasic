@@ -23,10 +23,10 @@ import sys
 
 import numpy as np
 
-from env.base_discrete_env import Base_Discrete_Env
+from env.base_discrete_env import BaseDiscreteEnv
 
 
-class GridworldEnv(Base_Discrete_Env):
+class GridworldEnv(BaseDiscreteEnv):
 
     metadata = {'render.modes': ['human', 'ansi']}
 

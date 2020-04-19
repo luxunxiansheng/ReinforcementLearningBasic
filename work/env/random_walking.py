@@ -33,14 +33,14 @@
 #
 # /
 
-from env.base_discrete_env import Base_Discrete_Env
+from env.base_discrete_env import BaseDiscreteEnv
 import numpy as np
 
 RIGHT = 1
 LEFT = 0
 
 
-class RandomWalkingEnv(Base_Discrete_Env):
+class RandomWalkingEnv(BaseDiscreteEnv):
     """
     Example 6.2
 

@@ -37,7 +37,7 @@
 import sys
 import numpy as np
 
-from env.base_discrete_env import Base_Discrete_Env
+from env.base_discrete_env import BaseDiscreteEnv
 
 UP = 0
 RIGHT = 1
@@ -45,7 +45,7 @@ DOWN = 2
 LEFT = 3
 
 
-class WindyGridworldEnv(Base_Discrete_Env):
+class WindyGridworldEnv(BaseDiscreteEnv):
 
     metadata = {'render.modes': ['human']}
 

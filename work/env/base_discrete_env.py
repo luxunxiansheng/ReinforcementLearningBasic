@@ -42,7 +42,7 @@ from gym.envs.toy_text import discrete
 from mpl_toolkits.mplot3d import Axes3D
 
 
-class Base_Discrete_Env(discrete.DiscreteEnv):
+class BaseDiscreteEnv(discrete.DiscreteEnv):
 
     @abstractmethod
     def build_Q_table(self):
