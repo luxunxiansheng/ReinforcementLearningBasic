@@ -88,7 +88,7 @@ class SARSA():
             delta = reward + self.discount * self.q_table[next_state_index][next_action_index] - self.q_table[current_state_index][current_action_index]
             self.q_table[current_state_index][current_action_index] += self.step_size * delta
 
-            # update policy softly 
+            # update policy softly
             q_values = self.q_table[current_state_index]
             distribution = self.create_distribution_epsilon_greedily(q_values)
             self.policy.policy_table[current_state_index] = distribution
