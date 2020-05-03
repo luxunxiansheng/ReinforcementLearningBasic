@@ -41,7 +41,8 @@ from algorithm.td_method.test import (test_double_q_learning_method,
                                       test_qlearning_method, test_sarsa_method,
                                       test_td0_evaluation_method,
                                       test_tdn_evaluaiton_method,
-                                      test_n_setps_expected_sarsa)
+                                      test_n_setps_expected_sarsa,
+                                      test_off_policy_n_steps_sarsa)
 from env.blackjack import BlackjackEnv
 from env.cliff_walking import CliffWalkingEnv
 from env.grid_world import GridworldEnv
@@ -91,7 +92,9 @@ def test(algo, env):
     
     if algo == 'N_steps_expected_sarsa':
         test_n_setps_expected_sarsa(real_env)
-
+        
+    if algo == 'N_steps_off_policy_sarsa':
+        test_off_policy_n_steps_sarsa(real_env)
 
 if __name__ == "__main__":
     fire.Fire()

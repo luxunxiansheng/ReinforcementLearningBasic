@@ -96,14 +96,13 @@ class OffPolicyNStepsSARSA():
             updated_timestamp = current_timestamp - self.steps
 
             if updated_timestamp >= 0:
-                
                 p = 1
-                for i in range(updated_timestamp, min(updated_timestamp + self.steps-1, final_timestamp-1)):
-                    state_index =  trajectory[i][current_action_index]
-                    action_index = trajectory[i][current_action_index]
-                    p *= self.target_policy.target_policy[state_index][action_index]/self.behavior_policy.policy_table[state_index][action_index]
+                for i in range(updated_timestamp, min(updated_timestamp + self.steps, final_timestamp)):
+                    state_index =  trajectory[i][0]
+                    action_index = trajectory[i][1]
+                    p *= self.target_policy.policy_table[state_index][action_index]/self.behavior_policy.policy_table[state_index][action_index]
 
-                G = 1
+                G = 0
                 for i in range(updated_timestamp, min(updated_timestamp + self.steps, final_timestamp)):
                     G += np.power(self.discount, i - updated_timestamp) * trajectory[i][2]
 
