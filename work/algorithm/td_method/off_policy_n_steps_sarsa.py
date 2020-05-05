@@ -60,7 +60,8 @@ class OffPolicyNStepsSARSA():
     def improve(self):
         for episode in tqdm(range(0, self.episodes)):
             self._run_one_episode(episode)
-
+   
+    
     def _run_one_episode(self, episode):
 
         current_timestamp = 0
@@ -78,9 +79,6 @@ class OffPolicyNStepsSARSA():
                 # R
                 reward = observation[1]
                 done = observation[2]
-
-                self.statistics.episode_rewards[episode] += reward
-                self.statistics.episode_lengths[episode] += 1
 
                 # S'
                 next_state_index = observation[0]
@@ -100,7 +98,9 @@ class OffPolicyNStepsSARSA():
                 for i in range(updated_timestamp, min(updated_timestamp + self.steps, final_timestamp)):
                     state_index =  trajectory[i][0]
                     action_index = trajectory[i][1]
-                    p *= self.target_policy.policy_table[state_index][action_index]/self.behavior_policy.policy_table[state_index][action_index]
+
+                    if  self.behavior_policy.policy_table[state_index][action_index] != 0:
+                        p *= self.target_policy.policy_table[state_index][action_index]/self.behavior_policy.policy_table[state_index][action_index]
 
                 G = 0
                 for i in range(updated_timestamp, min(updated_timestamp + self.steps, final_timestamp)):

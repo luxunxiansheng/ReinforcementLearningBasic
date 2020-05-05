@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["test","N_steps_off_policy_sarsa","windygridworld"],
+            "args": ["test","td_control_method","windygridworld"],
             "justMyCode": false          
         }
     ]
