@@ -125,7 +125,7 @@ def test_n_setps_expected_sarsa(env):
 
     return n_steps_expectedsarsa_statistics
 
-
+# TODO: have not  a good way to test this method yet
 def test_off_policy_n_steps_sarsa(env):
     q_table = env.build_Q_table()
 
@@ -142,17 +142,11 @@ def test_off_policy_n_steps_sarsa(env):
     n_steps_offpolicy_sarsa_method = OffPolicyNStepsSARSA(
         q_table, b_policy, t_policy, env, n_steps, n_steps_off_policy_sarsa_statistics, num_episodes)
 
-    profiler = Profiler()
-    profiler.start()
-
     n_steps_offpolicy_sarsa_method.improve()
-
-    profiler.stop()
-    profiler.open_in_browser()
 
     return n_steps_off_policy_sarsa_statistics
 
 
 def test_td_control_method(env):
     plotting.plot_episode_stats([test_sarsa_method(env), test_qlearning_method(env), test_expected_sarsa_method(env), test_double_q_learning_method(
-        env), test_n_steps_sarsa_method(env), test_n_setps_expected_sarsa(env), test_off_policy_n_steps_sarsa(env)])
+        env), test_n_steps_sarsa_method(env), test_n_setps_expected_sarsa(env)])

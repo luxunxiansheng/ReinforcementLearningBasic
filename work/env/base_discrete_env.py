@@ -44,6 +44,8 @@ from mpl_toolkits.mplot3d import Axes3D
 
 class BaseDiscreteEnv(discrete.DiscreteEnv):
 
+    def reset()
+
     @abstractmethod
     def build_Q_table(self):
         Q_table = {}

@@ -39,7 +39,7 @@ from tqdm import tqdm
 from lib.utility import create_distribution_greedily
 
 
-class OffPolicyNStepsSARSA():
+class OffPolicyNStepsSARSA:
     """
      Section 7.3 
     """

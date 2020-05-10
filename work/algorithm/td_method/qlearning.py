@@ -38,7 +38,7 @@ from tqdm import tqdm
 from lib.utility import (create_distribution_epsilon_greedily)
 
 
-class QLearning():
+class QLearning:
     """
     Q-Learning algorithm: Off-policy TD control. Finds the optimal greedy policy
     while following an epsilon-greedy policy
