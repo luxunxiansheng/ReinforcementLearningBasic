@@ -43,7 +43,7 @@ from lib.utility import create_distribution_epsilon_greedily
 
 
 class DynaQ:
-    def __init__(self, q_table, behavior_table_policy, epsilon, env, statistics, episodes, step_size=0.1,  discount=1.0):
+    def __init__(self, q_table, behavior_table_policy, epsilon, env, statistics, episodes, iterations= 50, step_size=0.1,  discount=1.0):
         self.q_table = q_table
         self.policy = behavior_table_policy
         self.env = env
@@ -54,6 +54,7 @@ class DynaQ:
             epsilon)
         self.statistics = statistics
         self.model = TrivialModel()
+        self.iterations = iterations
 
     def improve(self):
         for episode in tqdm(range(0, self.episodes)):
@@ -83,12 +84,20 @@ class DynaQ:
             delta = reward + self.discount * max_value - self.q_table[current_state_index][current_action_index]
             self.q_table[current_state_index][current_action_index] += self.step_size * delta
 
+            
+            self.model.feed(current_state_index, current_action_index, next_state_index, reward)
+            for _ in tqdm(range(0,self.iterations)):
+                current_state_index, current_action_index, next_state_index, reward = self.model.sample()
+                q_values_next_state = self.q_table[next_state_index]
+                max_value = max(q_values_next_state.values())
+                delta = reward + self.discount * max_value - self.q_table[current_state_index][current_action_index]
+                self.q_table[current_state_index][current_action_index] += self.step_size * delta
+
             # update policy softly
             q_values = self.q_table[current_state_index]
             distribution = self.create_distribution_epsilon_greedily(q_values)
             self.policy.policy_table[current_state_index] = distribution
 
-            self.model.feed(current_state_index,current_action_index,next_state_index,reward)
 
             if done:
                 break
