@@ -42,8 +42,9 @@ import pysnooper
 from gym import spaces
 from gym.envs.toy_text import discrete
 
+from env.base_discrete_env import BaseDiscreteEnv
 
-class RoomEnv(discrete.DiscreteEnv):
+class RoomEnv(BaseDiscreteEnv):
     ROOMS= 6
 
     def __init__(self):

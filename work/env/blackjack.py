@@ -42,6 +42,8 @@ import seaborn as sns
 from gym import Env, spaces
 from gym.utils import seeding
 
+from env.base_discrete_env import BaseDiscreteEnv
+
 
 def cmp(a, b):
     return float(a > b) - float(a < b)
@@ -80,8 +82,7 @@ def score(hand):  # What is the score of this hand (0 if bust)
 def is_natural(hand):  # Is this hand a natural blackjack?
     return sorted(hand) == [1, 10]
 
-
-class BlackjackEnv(Env):
+class BlackjackEnv(BaseDiscreteEnv):
     """Simple blackjack environment
 
     Blackjack is a card game where the goal is to obtain cards that sum to as
