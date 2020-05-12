@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 
 EpisodeStats = namedtuple("EpisodeStats", ["algo", "episode_lengths", "episode_rewards"])
 
-def plot_episode_stats(stats, smoothing_window=100, noshow=False):
+def plot_episode_stats(stats, smoothing_window=10, noshow=False):
     # Plot the episode length over time
     fig1 = plt.figure(figsize=(10, 5))
    

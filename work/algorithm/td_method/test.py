@@ -11,6 +11,7 @@ from algorithm.td_method.tdn_evaluation import TDNEvalutaion
 from algorithm.td_method.n_steps_sarsa import NStepsSARSA
 from algorithm.td_method.n_steps_expected_sarsa import NStepsExpectedSARSA
 from algorithm.td_method.off_policy_n_steps_sarsa import OffPolicyNStepsSARSA
+from algorithm.td_method.dyna_q import DynaQ
 
 from lib import plotting
 from policy.policy import TabularPolicy
@@ -27,7 +28,6 @@ def test_td0_evaluation_method(env):
     td0_method = TD0Evalutaion(v_table, b_policy, env)
     td0_method.evaluate()
 
-
 def test_sarsa_method(env):
     q_table = env.build_Q_table()
     b_policy_table = env.build_policy_table()
@@ -35,8 +35,7 @@ def test_sarsa_method(env):
 
     sarsa_statistics = plotting.EpisodeStats("sarsa", episode_lengths=np.zeros(
         num_episodes), episode_rewards=np.zeros(num_episodes))
-    sarsa_method = SARSA(q_table, b_policy, 0.1, env,
-                         sarsa_statistics, num_episodes)
+    sarsa_method = SARSA(q_table, b_policy, 0.1, env,sarsa_statistics, num_episodes)
     sarsa_method.improve()
 
     return sarsa_statistics
@@ -147,6 +146,19 @@ def test_off_policy_n_steps_sarsa(env):
     return n_steps_off_policy_sarsa_statistics
 
 
+def test_dynaQ_method(env):
+    q_table = env.build_Q_table()
+    b_policy_table = env.build_policy_table()
+    b_policy = TabularPolicy(b_policy_table)
+
+    dyna_q_statistics = plotting.EpisodeStats("Dyna_Q", episode_lengths=np.zeros(
+        num_episodes), episode_rewards=np.zeros(num_episodes))
+
+    dyna_q_method = DynaQ(q_table, b_policy, 0.1, env, dyna_q_statistics, num_episodes)
+    dyna_q_method.improve()
+
+    return dyna_q_statistics
+
 def test_td_control_method(env):
     plotting.plot_episode_stats([test_sarsa_method(env), test_qlearning_method(env), test_expected_sarsa_method(env), test_double_q_learning_method(
-        env), test_n_steps_sarsa_method(env), test_n_setps_expected_sarsa(env)])
+        env), test_n_steps_sarsa_method(env), test_n_setps_expected_sarsa(env),test_dynaQ_method(env)])
