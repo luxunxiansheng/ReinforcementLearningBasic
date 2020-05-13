@@ -89,7 +89,7 @@ class DynaQ:
                 sampled_current_state_index, sampled_current_action_index, sampled_next_state_index, sampled_reward = self.model.sample()
                 sampled_q_values_next_state = self.q_table[sampled_next_state_index]
                 max_value = max(sampled_q_values_next_state.values())
-                delta = reward + self.discount * max_value - self.q_table[sampled_current_state_index][sampled_current_action_index]
+                delta = sampled_reward + self.discount * max_value - self.q_table[sampled_current_state_index][sampled_current_action_index]
                 self.q_table[sampled_current_state_index][sampled_current_action_index] += self.step_size * delta
 
             # update policy softly

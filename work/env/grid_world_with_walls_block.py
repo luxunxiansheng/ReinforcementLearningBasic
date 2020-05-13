@@ -1,5 +1,3 @@
-import sys
-
 import numpy as np
 
 from env.base_discrete_env import BaseDiscreteEnv
