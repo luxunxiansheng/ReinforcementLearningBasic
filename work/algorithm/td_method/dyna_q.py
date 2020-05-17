@@ -173,15 +173,12 @@ class PriorityQueue:
 
     def add_item(self, item, priority=0):
         if item in self.entry_finder:
-            self.remove_item(item)
+            the_entry = self.entry_finder.pop(item)
+            the_entry[-1] = self.REMOVED
         entry = [priority, self.counter, item]
         self.counter += 1
         self.entry_finder[item] = entry
         heapq.heappush(self.pq, entry)
-
-    def remove_item(self, item):
-        entry = self.entry_finder.pop(item)
-        entry[-1] = self.REMOVED
 
     def pop_item(self):
         while self.pq:
