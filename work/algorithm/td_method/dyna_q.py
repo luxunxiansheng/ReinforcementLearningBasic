@@ -227,18 +227,19 @@ class PriorityModel(Model):
 
     def learn(self, q_table, discount, step_size, iterations, current_state_index, current_action_index, next_state_index, reward):
         self.feed(current_state_index, current_action_index, next_state_index, reward)
+        
+        #if the value updated a lot, we put it into the priority queue 
         q_values_next_state = q_table[next_state_index]
         max_value = max(q_values_next_state.values())
         delta = reward + discount * max_value - q_table[current_state_index][current_action_index]
         priority = np.abs(delta)
-
         if priority > self.theta:
             self.priority_queue.add_item((current_state_index, current_action_index), -priority)
 
+        # prioritized Sweeping 
         for _ in tqdm(range(0, iterations)):
             if self.priority_queue.empty():
                 return
-
             _, sampled_current_state_index, sampled_current_action_index, sampled_next_state_index, sampled_reward = self.sample()
             sampled_q_values_next_state = q_table[sampled_next_state_index]
             max_value = max(sampled_q_values_next_state.values())
