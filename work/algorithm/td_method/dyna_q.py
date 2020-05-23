@@ -127,7 +127,6 @@ class Model():
     
     
     # feed the model with previous experience
-    @abstractmethod
     def feed(self, state_index, action_index, next_state_index, reward):
         if state_index not in self.model.keys():
             self.model[state_index] = dict()

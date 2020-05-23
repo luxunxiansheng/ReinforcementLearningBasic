@@ -5,7 +5,8 @@
 
 
 > But for control, the keypoint is to check the  update rule whether depending on the same policy.  For example, the expected SARSA is on policy algorithm in that the Q value is updated by using the behavior policy to average  the next state's q values.  
->
+
+
 
 
 
