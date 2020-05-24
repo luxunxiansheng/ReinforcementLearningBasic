@@ -58,7 +58,6 @@ class LinearApproximationMethod(ValueFunction):
     def __init__(self, order):
         self.order = order
         self.weights = np.zeros(order + 1)
-
         # set up bases function
         self.bases = []
         

@@ -53,3 +53,22 @@ def plot_episode_stats(stats, smoothing_window=10, noshow=False):
         plt.show(fig3)
 
     return fig1, fig2, fig3
+
+
+def  plot_state_value(env,value_fuc,noshow=False):
+
+    # Plot the episode length over time
+    fig1 = plt.figure(figsize=(10, 5))
+    
+    state_values = np.asarray([value_fuc.value(state_index/env.nS) for state_index in range(env.nS)])
+    
+    plt.plot(state_values)
+    
+    plt.legend()
+    plt.xlabel("State_index")
+    plt.ylabel("Value")
+    plt.title("Approximation of state value ")
+    if noshow:
+        plt.close(fig1)
+    else:
+        plt.show(fig1) 
