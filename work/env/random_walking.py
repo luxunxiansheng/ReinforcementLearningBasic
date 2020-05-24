@@ -55,10 +55,13 @@ class RandomWalkingEnv(BaseDiscreteEnv):
         isd = np.ones(nS) / nS
         super().__init__(nS, nA, self.P, isd)
 
-    def reset(self):
-        # always start from the middle location
-        self.s = int((self.nS+1)/2)-1
-        return self.s
+    def reset(self,randomly=False):
+        if randomly:
+            super().reset(True)
+        else:
+            # always start from the middle location
+            self.s = int((self.nS+1)/2)-1
+            return self.s
 
     def _build_transitions(self, nS, nA):
         P = {}

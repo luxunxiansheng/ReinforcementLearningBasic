@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["test","td_control_method","windygridworld"],
+            "args": ["test","gradient_mc_evalution","randomwalking"],
             "justMyCode": false          
         }
     ]

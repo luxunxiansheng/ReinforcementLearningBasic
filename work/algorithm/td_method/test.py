@@ -172,8 +172,7 @@ def test_dynaQ_method_priority(env):
     dyna_q_statistics = plotting.EpisodeStats("Dyna_Q_PRIORITY", episode_lengths=np.zeros(
         num_episodes), episode_rewards=np.zeros(num_episodes))
 
-    dyna_q_method = DynaQ(q_table, b_policy, 0.1, env,
-                          dyna_q_statistics, num_episodes,mode=PRIORITY)
+    dyna_q_method = DynaQ(q_table, b_policy, 0.1, env,dyna_q_statistics, num_episodes, mode=PRIORITY)
     dyna_q_method.improve()
 
     return dyna_q_statistics

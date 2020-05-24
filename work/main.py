@@ -35,6 +35,8 @@
 
 import fire
 
+from algorithm.approximate_solution_method.test import test_gradient_mc_evalution
+
 from algorithm.td_method.test import (test_double_q_learning_method,
                                       test_expected_sarsa_method,
                                       test_n_steps_sarsa_method,
@@ -44,6 +46,7 @@ from algorithm.td_method.test import (test_double_q_learning_method,
                                       test_n_setps_expected_sarsa,
                                       test_off_policy_n_steps_sarsa,
                                       test_td_control_method)
+
 from env.blackjack import BlackjackEnv
 from env.cliff_walking import CliffWalkingEnv
 from env.grid_world import GridworldEnv
@@ -99,7 +102,10 @@ def test(algo, env):
     
     if algo == 'td_control_method':
         test_td_control_method(real_env)
-        
+    
+    if algo == 'gradient_mc_evalution':
+        test_gradient_mc_evalution(real_env)
+
 
 if __name__ == "__main__":
     fire.Fire()

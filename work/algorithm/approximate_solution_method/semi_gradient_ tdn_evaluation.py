@@ -33,9 +33,11 @@
 #
 # /
 
+import numpy as np  
 
-class GradientMonteCarloEvalution:
-    def __init__(self, value_fucniton, behavior_policy, env, step_size=2e-5, episodes=10000, discount=1.0,distribution=None):
+
+class SemiGradientTDNEvalution:
+    def __init__(self, value_fucniton, behavior_policy, n_steps, env, step_size=2e-5, episodes=10000, discount=1.0,distribution=None):
         self.env = env
         self.behavior_policy = behavior_policy
         self.episodes = episodes
@@ -43,31 +45,40 @@ class GradientMonteCarloEvalution:
         self.step_size = step_size
         self.value_fucniton = value_fucniton
         self.distribution = distribution
+        self.steps = n_steps
 
     def evaluation(self):
         for _ in range(0,self.episodes):
-            trajectory = self._run_one_episode()
-            G = 0.0
-            for state_index, _, reward in trajectory[::-1]:
-                # The return for current state_action pair
-                G = reward + self.discount*G
-                delta = G-self.value_fucniton(state_index)
-                self.value_fucniton.update(self.step_size, delta, state_index)
-                if self.distribution is not None:
-                    self.distribution[state_index] += 1
-
+            self._run_one_episode()
+            
 
     def _run_one_episode(self):
-        trajectory = []
-        current_state_index = self.env.reset(False)
-        while True:
-            action_index = self.behavior_policy.get_action(current_state_index)
-            observation = self.env.step(action_index)
-            reward = observation[1]
-            trajectory.append((current_state_index, action_index, reward))
-            done = observation[2]
-            if done:
-                break
-            current_state_index = observation[0]
+        current_timestamp = 0
+        final_timestamp = np.inf
 
-        return trajectory
+        trajectory = []
+        current_state_index = self.env.reset()
+        while True:
+            if current_timestamp < final_timestamp:
+                action_index = self.behavior_policy.get_action(current_state_index)
+                observation = self.env.step(action_index)
+                next_state_index = observation[0]
+                reward = observation[1]
+                done = observation[2]
+                trajectory.append((current_state_index, reward))
+                if done:
+                    final_timestamp = current_timestamp+1
+
+            updated_timestamp = current_timestamp-self.steps
+            if updated_timestamp >=0:
+                G = 0
+                for i in range(updated_timestamp , min(updated_timestamp + self.steps , final_timestamp)):
+                    G += np.power(self.discount, i - updated_timestamp ) * trajectory[i][1]
+                if updated_timestamp + self.steps < final_timestamp:
+                    G += np.power(self.discount, self.steps) * self.value_fucniton(trajectory[current_timestamp][0])
+                delta = G-self.value_fucniton.value(trajectory[updated_timestamp][0]/self.env.nS)
+                self.value_fucniton.update(self.step_size, delta, trajectory[updated_timestamp][0]/self.env.nS) 
+                if updated_timestamp == final_timestamp - 1:
+                    break
+            current_timestamp += 1
+            current_state_index = next_state_index
