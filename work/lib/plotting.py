@@ -55,7 +55,9 @@ def plot_episode_stats(stats, smoothing_window=10, noshow=False):
     return fig1, fig2, fig3
 
 
-def  plot_state_value(env,value_fuc,noshow=False):
+      
+
+def  plot_state_value(env,value_fuc,distribution,noshow=False):
 
     # Plot the episode length over time
     fig1 = plt.figure(figsize=(10, 5))
@@ -63,6 +65,7 @@ def  plot_state_value(env,value_fuc,noshow=False):
     state_values = np.asarray([value_fuc.value(state_index/env.nS) for state_index in range(env.nS)])
     
     plt.plot(state_values)
+    plt.plot(distribution/np.sum(distribution))
     
     plt.legend()
     plt.xlabel("State_index")

@@ -47,8 +47,8 @@ class RandomWalkingEnv(BaseDiscreteEnv):
     For convenience, name the state from left to right with number 1 to nS
 
     """
-    def __init__(self):
-        nS = 19
+    def __init__(self,num_states=19):
+        nS = num_states
         nA = 2
         self.P = self._build_transitions(nS, nA)
 

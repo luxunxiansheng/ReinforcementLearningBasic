@@ -37,7 +37,7 @@ from tqdm import tqdm
 
 
 class GradientMonteCarloEvaluation:
-    def __init__(self, value_fucniton, behavior_policy, env, step_size=2e-5, episodes=1000, discount=1.0,distribution=None):
+    def __init__(self, value_fucniton, behavior_policy, env, step_size=1e-5, episodes=5000, discount=1.0,distribution=None):
         self.env = env
         self.behavior_policy = behavior_policy
         self.episodes = episodes
