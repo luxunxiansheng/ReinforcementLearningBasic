@@ -35,20 +35,21 @@
 
 import numpy as np  
 
+from tqdm import tqdm
 
 class SemiGradientTDNEvalution:
-    def __init__(self, value_fucniton, behavior_policy, n_steps, env, step_size=2e-5, episodes=10000, discount=1.0,distribution=None):
+    def __init__(self, value_function, behavior_policy, n_steps, env, step_size=2e-5, episodes=10000, discount=1.0,distribution=None):
         self.env = env
         self.behavior_policy = behavior_policy
         self.episodes = episodes
         self.discount = discount
         self.step_size = step_size
-        self.value_fucniton = value_fucniton
+        self.value_function = value_function
         self.distribution = distribution
         self.steps = n_steps
 
-    def evaluation(self):
-        for _ in range(0,self.episodes):
+    def evaluate(self):
+        for _ in tqdm(range(0,self.episodes)):
             self._run_one_episode()
             
 
@@ -75,9 +76,9 @@ class SemiGradientTDNEvalution:
                 for i in range(updated_timestamp , min(updated_timestamp + self.steps , final_timestamp)):
                     G += np.power(self.discount, i - updated_timestamp ) * trajectory[i][1]
                 if updated_timestamp + self.steps < final_timestamp:
-                    G += np.power(self.discount, self.steps) * self.value_fucniton(trajectory[current_timestamp][0])
-                delta = G-self.value_fucniton.value(trajectory[updated_timestamp][0]/self.env.nS)
-                self.value_fucniton.update(self.step_size, delta, trajectory[updated_timestamp][0]/self.env.nS) 
+                    G += np.power(self.discount, self.steps) * self.value_function.value(trajectory[current_timestamp][0]/self.env.nS)
+                delta = G-self.value_function.value(trajectory[updated_timestamp][0]/self.env.nS)
+                self.value_function.update(self.step_size, delta, trajectory[updated_timestamp][0]/self.env.nS) 
                 if updated_timestamp == final_timestamp - 1:
                     break
             current_timestamp += 1

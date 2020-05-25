@@ -5,6 +5,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 
 EpisodeStats = namedtuple("EpisodeStats", ["algo", "episode_lengths", "episode_rewards"])
+StateValues = namedtuple("State_Values", ['appr_method','state_value'])
 
 def plot_episode_stats(stats, smoothing_window=10, noshow=False):
     # Plot the episode length over time
@@ -55,18 +56,20 @@ def plot_episode_stats(stats, smoothing_window=10, noshow=False):
     return fig1, fig2, fig3
 
 
-      
+def  plot_state_value(env,value_function_stats,noshow=False):
 
-def  plot_state_value(env,value_fuc,distribution,noshow=False):
+    
 
     # Plot the episode length over time
     fig1 = plt.figure(figsize=(10, 5))
     
-    state_values = np.asarray([value_fuc.value(state_index/env.nS) for state_index in range(env.nS)])
-    
-    plt.plot(state_values)
-    plt.plot(distribution/np.sum(distribution))
-    
+    for index in range(len(value_function_stats)):
+        state_value = np.asarray([value_function_stats[index].state_value.value(state_index/env.nS) for state_index in range(env.nS)])
+        plt.plot(state_value,label=value_function_stats[index].appr_method)
+
+    state_value = np.asarray([ state_index/env.nS for state_index in range(env.nS)])
+    plt.plot(state_value,label='True Value')
+
     plt.legend()
     plt.xlabel("State_index")
     plt.ylabel("Value")

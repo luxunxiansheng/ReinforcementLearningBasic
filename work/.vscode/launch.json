@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["test","gradient_mc_evalution","randomwalking"],
+            "args": ["test","semi_gradient_tdn_evaluation","randomwalking"],
             "justMyCode": false          
         }
     ]
