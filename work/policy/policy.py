@@ -59,11 +59,11 @@ class Policy(ABC):
 
 class TabularPolicy(Policy):
     """
-    Tabular policy  describes almost all the core ideas of reinforcement learning algorithms in 
-    their simplest forms: that in which the state and action spaces are small enough for the 
-    approximate value functions to be represented as arrays, or tables. In this case, the methods 
-    can often nd exact solutions, that is, they can often nd exactly the optimal value function 
-    and the optimal policy. 
+    Tabular policy describes almost all the core ideas of reinforcement learning algorithms in
+    their simplest forms in which the state and action spaces are small enough for the
+    approximate value functions to be represented as arrays, or tables. In this case, the methods
+    can often find exact solutions, that is, they can often find exactly the optimal value function
+    and the optimal policy.
 
     More specifically, each entry of the table  will contain a state to actions' probability mapping
     """
@@ -74,4 +74,20 @@ class TabularPolicy(Policy):
     def get_action(self, state):
         action_probs = list(self.policy_table[state].values())
         action_index = np.random.choice(np.arange(len(action_probs)), p=action_probs)
+        return action_index
+
+class DiscreteActionPolicy(Policy):
+    def __init__(self, action_space, q_function):
+        self.create_distribution_fn = None
+        self.action_space = action_space
+        self.q_function = q_function
+    
+    @create_distribution_fn.setter
+    def create_distribution_fn(self, cdfn):
+        self.create_distribution_fn = cdfn
+
+    def get_action(self, state):
+        q_values = [self.q_function.value(state, action_index) for action_index in range(self.action_space.n)]
+        distribution = self.create_distribution_fn(q_values)
+        action_index = np.random.choice(np.arange(self.action_space.n), p=distribution)
         return action_index

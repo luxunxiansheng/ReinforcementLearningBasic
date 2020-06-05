@@ -35,7 +35,7 @@
 
 import fire
 
-from algorithm.approximate_solution_method.test import test_gradient_mc_evaluation, test_semi_gradient_tdn_evaluation
+from algorithm.approximate_solution_method.test import test_approximation_evaluation
 
 from algorithm.td_method.test import (test_double_q_learning_method,
                                       test_expected_sarsa_method,
@@ -103,11 +103,8 @@ def test(algo, env):
     if algo == 'td_control_method':
         test_td_control_method(real_env)
     
-    if algo == 'gradient_mc_evalution':
-        test_gradient_mc_evaluation(real_env)
-    
-    if algo == 'semi_gradient_tdn_evaluation':
-        test_semi_gradient_tdn_evaluation(real_env)
+    if algo == 'approximation_evalution':
+        test_approximation_evaluation(real_env)
         
 
 
