@@ -51,7 +51,7 @@ class ValueFunction:
         pass
 
     @abstractmethod
-    def update(self, alpha, delta, state):
+    def update(self, alpha, state, target):
         pass
 
 
@@ -68,7 +68,8 @@ class LinearApproximationMethod(ValueFunction):
         feature = np.asarray([func(state) for func in self.bases])
         return np.dot(self.weights, feature)
 
-    def update(self, alpha, delta, state):
+    def update(self, alpha, state, target):
+        delta = target- self.value(state)
         # get derivative value
         derivative_value = np.asarray([func(state) for func in self.bases])
         self.weights += alpha* delta * derivative_value

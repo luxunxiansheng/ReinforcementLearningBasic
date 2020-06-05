@@ -61,10 +61,10 @@ class EpisodicSemiGradientSarsaControl:
 
     def _run_one_episode(self, episode):
         # S
-        current_state_index = self.env.reset()
+        current_state = self.env.reset()
 
         # A
-        current_action_index = self.policy.get_action(current_state_index)
+        current_action_index = self.policy.get_action(current_state)
 
         while True:
             observation = self.env.step(current_action_index)
@@ -76,17 +76,17 @@ class EpisodicSemiGradientSarsaControl:
             self.statistics.episode_lengths[episode] += 1
 
             # S'
-            next_state_index = observation[0]
+            next_state = observation[0]
 
             # A'
-            next_action_index = self.policy.get_action(next_state_index)
+            next_action_index = self.policy.get_action(next_state)
 
             # SGD fitting
-            delta = reward + self.discount * self.q_function.value(next_state_index, next_action_index)- self.q_function.value(current_state_index, current_action_index)
-            self.q_function.update(self.step_size, delta, current_state_index)
+            target = reward + self.discount * self.q_function.value(next_state, next_action_index)
+            self.q_function.update(self.step_size, current_state, current_action_index, target)
 
             if done:
                 break
 
-            current_state_index =  next_state_index
+            current_state =  next_state
             current_action_index = next_action_index

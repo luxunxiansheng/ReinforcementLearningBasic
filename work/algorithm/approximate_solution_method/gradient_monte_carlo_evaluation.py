@@ -53,8 +53,7 @@ class GradientMonteCarloEvaluation:
             for state_index, _, reward in trajectory[::-1]:
                 # The return for current state_action pair
                 G = reward + self.discount*G
-                delta = G-self.value_fucniton.value(state_index/self.env.nS)
-                self.value_fucniton.update(self.step_size, delta, state_index/self.env.nS)
+                self.value_fucniton.update(self.step_size,state_index/self.env.nS, G)
                 if self.distribution is not None:
                     self.distribution[state_index] += 1
 

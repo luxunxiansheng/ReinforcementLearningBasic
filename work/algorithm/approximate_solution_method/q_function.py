@@ -49,7 +49,7 @@ class QFunction:
 
 
 
-class TileCodingBasesValueFunction(QFunction):
+class TileCodingBasesQFunction(QFunction):
     
     ################# Tile coding ##########################################
     # Following are some utilities for tile coding from Rich.
@@ -93,28 +93,28 @@ class TileCodingBasesValueFunction(QFunction):
 
     @staticmethod
     def hash_coords(coordinates, m, read_only=False):
-        if isinstance(m, TileCodingBasesValueFunction.IHT): return m.get_index(tuple(coordinates), read_only)
+        if isinstance(m, TileCodingBasesQFunction.IHT): return m.get_index(tuple(coordinates), read_only)
         if isinstance(m, int): return hash(tuple(coordinates)) % m
         if m is None: return coordinates
 
 
     # This implementation is specific to continuous state space and discrete action space
     @staticmethod
-    def build_tiles(iht_or_size, num_tilings, floats, ints=None, read_only=False):
-        """returns num-tilings tile indices corresponding to the floats and ints"""
-        if ints is None:
-            ints = []
-        qfloats = [floor(f * num_tilings) for f in floats]
+    def build_tiles(iht_or_size, num_tilings, state, action=None, read_only=False):
+        """returns num-tilings tile indices corresponding to the states and ints"""
+        if action is None:
+            action = []
+        qs = [floor(s * num_tilings) for s in state]
         tiles = []
         for tiling in range(num_tilings):
             tilingX2 = tiling * 2
             coords = [tiling]
             b = tiling
-            for q in qfloats:
+            for q in qs:
                 coords.append((q + b) // num_tilings)
                 b += tilingX2
-            coords.extend(ints)
-            tiles.append(TileCodingBasesValueFunction.hash_coords(coords, iht_or_size, read_only))
+            coords.extend(action)
+            tiles.append(TileCodingBasesQFunction.hash_coords(coords, iht_or_size, read_only))
         return tiles
 
 
@@ -129,7 +129,7 @@ class TileCodingBasesValueFunction(QFunction):
         # divide step size equally to each tiling
         self.step_size = step_size / num_of_tilings
 
-        self.hash_table = TileCodingBasesValueFunction.IHT(max_size)
+        self.hash_table = TileCodingBasesQFunction.IHT(max_size)
 
         # weight for each tile
         self.weights = np.zeros(max_size)
@@ -142,41 +142,36 @@ class TileCodingBasesValueFunction(QFunction):
         self.scale_x = self.num_of_tilings / (x_max - x_min)
         self.scale_y = self.num_of_tilings / (y_max - y_min)
 
-    # get indices of active tiles for given state and action
-    def get_active_tiles(self, floats, ints):
-        # I think positionScale * (position - position_min) would be a good normalization.
-        # However positionScale * position_min is a constant, so it's ok to ignore it.
-        active_tiles = TileCodingBasesValueFunction.tiles(self.hash_table, self.num_of_tilings,
-                            [self.scale_x * floats[0], self.scale_y * floats[1]],
-                            [ints])
+    # get indices of active tiles for given 2d state and action
+    def get_active_tiles(self, state, action):
+
+        active_tiles = TileCodingBasesQFunction.build_tiles(self.hash_table, self.num_of_tilings,
+                            [self.scale_x * state[0], self.scale_y * state[1]],
+                            [action])
         return active_tiles
 
     # estimate the value of given state and action
     def value(self, state, action):
-        if floats[0] == self.x_max:
+        if state[0] == self.x_max:
             return 0.0
-        active_tiles = self.get_active_tiles(floats, ints)
+        active_tiles = self.get_active_tiles(state, action)
         return np.sum(self.weights[active_tiles])
 
-    # learn with given state, action and target
-    def learn(self, position, velocity, action, target):
-        active_tiles = self.get_active_tiles(position, velocity, action)
+   
+    def update(self, alpha, state, action, target):
+        active_tiles = self.get_active_tiles(state, action)
         estimation = np.sum(self.weights[active_tiles])
         delta = self.step_size * (target - estimation)
         for active_tile in active_tiles:
             self.weights[active_tile] += delta
-
-    # get # of steps to reach the goal under current state value function
-    def cost_to_go(self, position, velocity):
-        costs = []
-        for action in ACTIONS:
-            costs.append(self.value(position, velocity, action))
-        return -np.max(costs)
+        
 
 
-    def value(self, state, action):
-        pass
+    # # get # of steps to reach the goal under current state value function
+    # def cost_to_go(self, position, velocity):
+    #     costs = []
+    #     for action in ACTIONS:
+    #         costs.append(self.value(position, velocity, action))
+    #     return -np.max(costs)
 
-    
-    def update(self, alpha, delta, state, action):
-        pass
+        
