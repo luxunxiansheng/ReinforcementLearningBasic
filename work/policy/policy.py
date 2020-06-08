@@ -78,16 +78,16 @@ class TabularPolicy(Policy):
 
 class DiscreteActionPolicy(Policy):
     def __init__(self, action_space, q_function):
-        self.create_distribution_fn = None
         self.action_space = action_space
         self.q_function = q_function
-    
-    @create_distribution_fn.setter
-    def create_distribution_fn(self, cdfn):
-        self.create_distribution_fn = cdfn
+        self.create_distribution_fn =None
+
+
 
     def get_action(self, state):
-        q_values = [self.q_function.value(state, action_index) for action_index in range(self.action_space.n)]
-        distribution = self.create_distribution_fn(q_values)
+        q_values ={}
+        for action_index in range(self.action_space.n):
+            q_values[action_index] = self.q_function.value(state,action_index)
+        distribution = list(self.create_distribution_fn(q_values).values())
         action_index = np.random.choice(np.arange(self.action_space.n), p=distribution)
         return action_index

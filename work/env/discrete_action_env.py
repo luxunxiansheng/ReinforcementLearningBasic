@@ -39,7 +39,14 @@ from abc import abstractmethod
 class DiscreteActionEnv(Env):
     @property
     @abstractmethod
-    def actions(self):
+    def action_space(self):
+        pass
+
+
+
+    @property
+    @abstractmethod
+    def observation_space(self):
         pass
 
     

@@ -36,6 +36,7 @@
 import fire
 
 from algorithm.approximate_solution_method.test import test_approximation_evaluation
+from algorithm.approximate_solution_method.test import test_approximation_control_method
 
 from algorithm.td_method.test import (test_double_q_learning_method,
                                       test_expected_sarsa_method,
@@ -53,6 +54,7 @@ from env.grid_world import GridworldEnv
 from env.grid_world_with_walls_block import GridWorldWithWallsBlockEnv
 from env.random_walking import RandomWalkingEnv
 from env.windy_gridworld import WindyGridworldEnv
+from env.mountain_car import MountainCarEnv
 from lib.utility import create_distribution_randomly
 
 
@@ -68,6 +70,9 @@ def get_env(env):
 
     if env == 'cliffwalking':
         return CliffWalkingEnv()
+
+    if env == 'mountaincar':
+        return MountainCarEnv()
 
 
 def test(algo, env):
@@ -105,7 +110,9 @@ def test(algo, env):
     
     if algo == 'approximation_evalution':
         test_approximation_evaluation(real_env)
-        
+    
+    if algo == 'approximation_control':
+        test_approximation_control_method(real_env)
 
 
 if __name__ == "__main__":

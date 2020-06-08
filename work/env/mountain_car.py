@@ -11,7 +11,7 @@ import gym
 from gym import spaces
 from gym.utils import seeding
 
-from discrete_action_env import DiscreteActionEnv
+from env.discrete_action_env import DiscreteActionEnv
 
 class MountainCarEnv(DiscreteActionEnv):
     """
@@ -169,5 +169,8 @@ class MountainCarEnv(DiscreteActionEnv):
             self.viewer.close()
             self.viewer = None
 
-    def actions(self):
+    def action_space(self):
         return self.action_space
+
+    def observation_space(self):
+        return self.observation_space
