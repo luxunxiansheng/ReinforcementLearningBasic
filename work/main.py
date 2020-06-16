@@ -35,26 +35,25 @@
 
 import fire
 
-from algorithm.approximate_solution_method.test import test_approximation_evaluation
-from algorithm.approximate_solution_method.test import test_approximation_control_method
-
+from algorithm.approximate_solution_method.test import (
+    test_approximation_control_method, test_approximation_evaluation)
+    
 from algorithm.td_method.test import (test_double_q_learning_method,
                                       test_expected_sarsa_method,
+                                      test_n_setps_expected_sarsa,
                                       test_n_steps_sarsa_method,
+                                      test_off_policy_n_steps_sarsa,
                                       test_qlearning_method, test_sarsa_method,
                                       test_td0_evaluation_method,
-                                      test_tdn_evaluaiton_method,
-                                      test_n_setps_expected_sarsa,
-                                      test_off_policy_n_steps_sarsa,
-                                      test_td_control_method)
-
+                                      test_td_control_method,
+                                      test_tdn_evaluaiton_method)
 from env.blackjack import BlackjackEnv
 from env.cliff_walking import CliffWalkingEnv
 from env.grid_world import GridworldEnv
 from env.grid_world_with_walls_block import GridWorldWithWallsBlockEnv
+from env.mountain_car import MountainCarEnv
 from env.random_walking import RandomWalkingEnv
 from env.windy_gridworld import WindyGridworldEnv
-from env.mountain_car import MountainCarEnv
 from lib.utility import create_distribution_randomly
 
 

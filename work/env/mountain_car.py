@@ -70,8 +70,8 @@ class MountainCarEnv(DiscreteActionEnv):
 
         self.viewer = None
 
-        self.action_space = spaces.Discrete(3)
-        self.observation_space = spaces.Box(self.low, self.high, dtype=np.float32)
+        self._action_space = spaces.Discrete(3)
+        self._observation_space = spaces.Box(self.low, self.high, dtype=np.float32)
 
         self.seed()
 
@@ -168,9 +168,11 @@ class MountainCarEnv(DiscreteActionEnv):
         if self.viewer:
             self.viewer.close()
             self.viewer = None
-
+    
+    @property
     def action_space(self):
-        return self.action_space
-
+        return self._action_space
+    
+    @property
     def observation_space(self):
-        return self.observation_space
+        return self._observation_space

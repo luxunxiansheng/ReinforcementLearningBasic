@@ -4,8 +4,13 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
-EpisodeStats = namedtuple("EpisodeStats", ["algo", "episode_lengths", "episode_rewards"])
-StateValues = namedtuple("State_Values", ['appr_method','state_value'])
+QValue = namedtuple('QValue',['x_name','y_name','q_function'])
+
+EpisodeStats = namedtuple("EpisodeStats", ["algo", "episode_lengths", "episode_rewards",'q_value'])
+
+StateValues = namedtuple("StateValues", ['appr_method','state_value'])
+
+
 
 def plot_episode_stats(stats, smoothing_window=10, noshow=False):
     # Plot the episode length over time
@@ -57,9 +62,6 @@ def plot_episode_stats(stats, smoothing_window=10, noshow=False):
 
 
 def  plot_state_value(env,value_function_stats,noshow=False):
-
-    
-
     # Plot the episode length over time
     fig1 = plt.figure(figsize=(10, 5))
     
@@ -78,3 +80,45 @@ def  plot_state_value(env,value_function_stats,noshow=False):
         plt.close(fig1)
     else:
         plt.show(fig1) 
+
+
+def plot_2d_q_value(env, stats, noshow = False):
+    
+    fig1 = plt.figure(figsize=(10, 5))
+    ax = fig1.add_subplot(111, projection='3d')
+    grid_size = 40
+   
+    xs = np.linspace(env.observation_space.low[0],env.observation_space.high[0], grid_size)
+    ys = np.linspace(env.observation_space.low[1],env.observation_space.high[1], grid_size)
+
+    for index in range(len(stats)):
+        axis_x = []
+        axis_y = []
+        axis_z = []
+        for x in xs:
+            for y in ys:
+                axis_x.append(x)
+                axis_y.append(y)
+                axis_z.append(cost_to_go(stats[index].q_value.q_function,[x,y],env.action_space))
+    
+    ax.scatter(axis_x, axis_y, axis_z)
+            
+    ax.set_xlabel(stats[0].q_value.x_name)
+    ax.set_ylabel(stats[0].q_value.y_name)
+    ax.set_zlabel('cost to go')
+   
+    plt.title('Q Value of state')
+
+    if noshow:
+        plt.close(fig1)
+    else:
+        plt.show(fig1) 
+
+
+
+# get # of steps to reach the goal under current state value function
+def cost_to_go(value_function,state,actions):
+    costs = []
+    for action in range(actions.n):
+        costs.append(value_function.value(state, action))
+    return -np.max(costs)   

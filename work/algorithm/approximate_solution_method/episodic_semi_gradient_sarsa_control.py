@@ -33,9 +33,11 @@
 #
 # /
 
-import numpy as np 
+import numpy as np
 from tqdm import tqdm
+
 from lib.utility import create_distribution_epsilon_greedily
+
 
 class EpisodicSemiGradientSarsaControl:
     """
@@ -53,6 +55,7 @@ class EpisodicSemiGradientSarsaControl:
         self.policy = discreteactionpolicy
         self.policy.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(epsilon)
         self.statistics = statistics
+        
         
 
     def improve(self):
@@ -88,5 +91,6 @@ class EpisodicSemiGradientSarsaControl:
             if done:
                 break
 
-            current_state =  next_state
+            current_state = next_state
             current_action_index = next_action_index
+ 

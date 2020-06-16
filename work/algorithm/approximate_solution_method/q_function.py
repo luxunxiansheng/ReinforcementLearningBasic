@@ -44,7 +44,7 @@ class QFunction:
         pass
 
     @abstractmethod
-    def update(self, alpha, delta, state,action):
+    def update(self, alpha, state, action, target):
         pass
 
 
@@ -164,14 +164,6 @@ class TileCodingBasesQFunction(QFunction):
         delta = self.step_size * (target - estimation)
         for active_tile in active_tiles:
             self.weights[active_tile] += delta
-        
-
-
-    # # get # of steps to reach the goal under current state value function
-    # def cost_to_go(self, position, velocity):
-    #     costs = []
-    #     for action in ACTIONS:
-    #         costs.append(self.value(position, velocity, action))
-    #     return -np.max(costs)
+            
 
         
