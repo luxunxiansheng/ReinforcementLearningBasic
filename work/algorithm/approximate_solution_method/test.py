@@ -14,7 +14,7 @@ from lib import plotting
 from lib.utility import create_distribution_epsilon_greedily
 from policy.policy import DiscreteActionPolicy, TabularPolicy
 
-num_episodes = 10000
+num_episodes = 1000
 n_steps = 4
 
 
@@ -71,7 +71,7 @@ def test_approximation_control(env):
     q_v = plotting.QValue('Position','Speed', q_function)
     approximation_control_statistics = plotting.EpisodeStats("approximation_control", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes),q_value=q_v)
 
-    episodicsemigradsarsacontrol = EpisodicSemiGradientSarsaControl(q_function, discreteactionpolicy, 0.01, env, approximation_control_statistics, num_episodes)
+    episodicsemigradsarsacontrol = EpisodicSemiGradientSarsaControl(q_function, discreteactionpolicy, env, approximation_control_statistics, num_episodes)
     episodicsemigradsarsacontrol.improve()
 
     return approximation_control_statistics

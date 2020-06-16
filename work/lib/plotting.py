@@ -106,9 +106,7 @@ def plot_2d_q_value(env, stats, noshow = False):
     ax.set_xlabel(stats[0].q_value.x_name)
     ax.set_ylabel(stats[0].q_value.y_name)
     ax.set_zlabel('cost to go')
-   
-    plt.title('Q Value of state')
-
+      
     if noshow:
         plt.close(fig1)
     else:

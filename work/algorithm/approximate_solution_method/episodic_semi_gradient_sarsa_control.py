@@ -44,19 +44,14 @@ class EpisodicSemiGradientSarsaControl:
     SARSA algorithm: On-policy TD control. Finds the optimal epsilon-greedy policy with approximation of q funciton 
     """
 
-    def __init__(self, q_function, discreteactionpolicy, epsilon, env, statistics, episodes, step_size=0.1, discount=1.0):
-        self.q_function = q_function
-        
+    def __init__(self, estimator, discreteactionpolicy, env, statistics, episodes, step_size=0.1, discount=1.0):
+        self.estimator = estimator
+        self.policy = discreteactionpolicy
         self.env = env
-        self.episodes = episodes
         self.step_size = step_size
         self.discount = discount
-        
-        self.policy = discreteactionpolicy
-        self.policy.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(epsilon)
         self.statistics = statistics
-        
-        
+        self.episodes = episodes
 
     def improve(self):
         for episode in tqdm(range(0, self.episodes)):
@@ -84,9 +79,12 @@ class EpisodicSemiGradientSarsaControl:
             # A'
             next_action_index = self.policy.get_action(next_state)
 
+            
+            # set the target 
+            target = reward + self.discount * self.estimator.value(next_state, next_action_index)
+
             # SGD fitting
-            target = reward + self.discount * self.q_function.value(next_state, next_action_index)
-            self.q_function.update(self.step_size, current_state, current_action_index, target)
+            self.estimator.update(self.step_size, current_state, current_action_index, target)
 
             if done:
                 break
