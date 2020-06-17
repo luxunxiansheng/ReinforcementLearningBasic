@@ -80,7 +80,6 @@ class EpisodicSemiGradientQLearningControl:
             q_values = {}
             for action_index in range(self.env.action_space.n):
                 q_values[action_index] = self.estimator.value(next_state,action_index)
-            
             max_value = max(q_values.values())
 
             # set the target 
