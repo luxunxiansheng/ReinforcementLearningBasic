@@ -1,5 +1,9 @@
 import numpy as np
 
+from algorithm.approximate_solution_method.episodic_semi_gradient_expected_sarsa_control import \
+    EpisodicSemiGradientExpectedSarsaControl
+from algorithm.approximate_solution_method.episodic_semi_gradient_q_learning_control import \
+    EpisodicSemiGradientQLearningControl
 from algorithm.approximate_solution_method.episodic_semi_gradient_sarsa_control import \
     EpisodicSemiGradientSarsaControl
 from algorithm.approximate_solution_method.gradient_monte_carlo_evaluation import \
@@ -14,7 +18,7 @@ from lib import plotting
 from lib.utility import create_distribution_epsilon_greedily
 from policy.policy import DiscreteActionPolicy, TabularPolicy
 
-num_episodes = 1000
+num_episodes = 5000
 n_steps = 4
 
 
@@ -55,7 +59,7 @@ def test_approximation_evaluation(env):
         env, [semi_poly, mc_poly, semi_fourier, mc_fourier])
 
 
-def test_approximation_control(env):
+def test_approximation_control_sarsa(env):
 
     action_space = env.action_space
 
@@ -69,7 +73,7 @@ def test_approximation_control(env):
     discreteactionpolicy.create_distribution_fn = create_distribution_epsilon_greedily(0.1)
 
     q_v = plotting.QValue('Position','Speed', q_function)
-    approximation_control_statistics = plotting.EpisodeStats("approximation_control", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes),q_value=q_v)
+    approximation_control_statistics = plotting.EpisodeStats("SARSA", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes),q_value=q_v)
 
     episodicsemigradsarsacontrol = EpisodicSemiGradientSarsaControl(q_function, discreteactionpolicy, env, approximation_control_statistics, num_episodes)
     episodicsemigradsarsacontrol.improve()
@@ -77,9 +81,53 @@ def test_approximation_control(env):
     return approximation_control_statistics
 
 
+def test_approximation_control_expected_sarsa(env):
+
+    action_space = env.action_space
+
+    observation_space = env.observation_space
+
+    tile_coding_step_size = 0.3
+    q_function = TileCodingBasesQFunction(
+        tile_coding_step_size, observation_space.high[0], observation_space.low[0], observation_space.high[1], observation_space.low[1])
+
+    discreteactionpolicy = DiscreteActionPolicy(action_space, q_function)
+    discreteactionpolicy.create_distribution_fn = create_distribution_epsilon_greedily(0.1)
+
+    q_v = plotting.QValue('Position','Speed', q_function)
+    approximation_control_statistics = plotting.EpisodeStats("Expected SARSA", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes),q_value=q_v)
+
+    episodicsemigradsarsacontrol = EpisodicSemiGradientExpectedSarsaControl(q_function, discreteactionpolicy, env, approximation_control_statistics, num_episodes)
+    episodicsemigradsarsacontrol.improve()
+
+    return approximation_control_statistics
+
+
+
+def test_approximation_control_q_learning(env):
+
+    action_space = env.action_space
+
+    observation_space = env.observation_space
+
+    tile_coding_step_size = 0.3
+    q_function = TileCodingBasesQFunction(
+        tile_coding_step_size, observation_space.high[0], observation_space.low[0], observation_space.high[1], observation_space.low[1])
+
+    discreteactionpolicy = DiscreteActionPolicy(action_space, q_function)
+    discreteactionpolicy.create_distribution_fn = create_distribution_epsilon_greedily(0.1)
+
+    q_v = plotting.QValue('Position','Speed', q_function)
+    approximation_control_statistics = plotting.EpisodeStats("Q_Learning", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes),q_value=q_v)
+
+    episodicsemigradsarsacontrol = EpisodicSemiGradientQLearningControl(q_function, discreteactionpolicy, env, approximation_control_statistics, num_episodes)
+    episodicsemigradsarsacontrol.improve()
+
+    return approximation_control_statistics
+
+
 def test_approximation_control_method(env):
 
-    episode_stats = [test_approximation_control(env)]
+    episode_stats = [test_approximation_control_sarsa(env),test_approximation_control_expected_sarsa(env),test_approximation_control_q_learning(env)]
     plotting.plot_episode_stats(episode_stats)
     plotting.plot_2d_q_value(env,episode_stats)
-    

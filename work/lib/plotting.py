@@ -88,6 +88,8 @@ def plot_2d_q_value(env, stats, noshow = False):
     ax = fig1.add_subplot(111, projection='3d')
     grid_size = 40
    
+    
+        
     xs = np.linspace(env.observation_space.low[0],env.observation_space.high[0], grid_size)
     ys = np.linspace(env.observation_space.low[1],env.observation_space.high[1], grid_size)
 
@@ -100,8 +102,7 @@ def plot_2d_q_value(env, stats, noshow = False):
                 axis_x.append(x)
                 axis_y.append(y)
                 axis_z.append(cost_to_go(stats[index].q_value.q_function,[x,y],env.action_space))
-    
-    ax.scatter(axis_x, axis_y, axis_z)
+        ax.scatter(axis_x, axis_y, axis_z)
             
     ax.set_xlabel(stats[0].q_value.x_name)
     ax.set_ylabel(stats[0].q_value.y_name)
