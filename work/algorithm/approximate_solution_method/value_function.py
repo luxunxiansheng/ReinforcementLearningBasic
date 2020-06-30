@@ -51,7 +51,7 @@ class ValueFunction:
         pass
 
     @abstractmethod
-    def update(self, alpha, state, target):
+    def update(self, alpha, state, target, discount=1.0, lamda=0.0):
         pass
 
 
@@ -61,6 +61,7 @@ class LinearApproximationMethod(ValueFunction):
         self.weights = np.zeros(order + 1)
         # set up bases function
         self.bases = []
+        self.z = 0 
         
     # get the value of @state
     def value(self, state):
@@ -68,11 +69,12 @@ class LinearApproximationMethod(ValueFunction):
         feature = np.asarray([func(state) for func in self.bases])
         return np.dot(self.weights, feature)
 
-    def update(self, alpha, state, target):
+    def update(self, alpha, state, target, discount=1.0,lamda=0.0):
         delta = target- self.value(state)
         # get derivative value
         derivative_value = np.asarray([func(state) for func in self.bases])
-        self.weights += alpha* delta * derivative_value
+        self.z = discount*lamda+self.z+ derivative_value        
+        self.weights += alpha* delta * self.z
 
 class PolynomialBasesValueFunction(LinearApproximationMethod):
     def __init__(self, order):
