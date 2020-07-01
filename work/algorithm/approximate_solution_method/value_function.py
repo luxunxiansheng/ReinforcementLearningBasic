@@ -45,6 +45,7 @@ from math import floor
 # declaration at the top                                              #
 #######################################################################
 
+
 class ValueFunction:
     @abstractmethod
     def value(self, state):
@@ -55,36 +56,38 @@ class ValueFunction:
         pass
 
 
-class LinearApproximationMethod(ValueFunction): 
+class LinearApproximationMethod(ValueFunction):
     def __init__(self, order):
         self.order = order
         self.weights = np.zeros(order + 1)
         # set up bases function
         self.bases = []
-        self.z = 0 
-        
+        self.z = 0
+
     # get the value of @state
     def value(self, state):
         # get the feature vector
         feature = np.asarray([func(state) for func in self.bases])
         return np.dot(self.weights, feature)
 
-    def update(self, alpha, state, target, discount=1.0,lamda=0.0):
-        delta = target- self.value(state)
+    
+    def update(self, alpha, state, target, discount=1.0, lamda=0.0):
+        delta = target - self.value(state)
         # get derivative value
         derivative_value = np.asarray([func(state) for func in self.bases])
-        self.z = discount*lamda+self.z+ derivative_value        
-        self.weights += alpha* delta * self.z
+        self.z = discount*lamda*self.z + derivative_value
+        self.weights += alpha * delta * self.z
+
 
 class PolynomialBasesValueFunction(LinearApproximationMethod):
     def __init__(self, order):
         super().__init__(order)
         for i in range(0, order + 1):
             self.bases.append(lambda s, i=i: pow(s, i))
-        
+
+
 class FourierBasesValueFunction(LinearApproximationMethod):
     def __init__(self, order):
         super().__init__(order)
         for i in range(0, order + 1):
             self.bases.append(lambda s, i=i: np.cos(i * np.pi * s))
-

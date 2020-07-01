@@ -84,8 +84,7 @@ class TDLambdaEvaluation:
 
             # set the target
             target = reward + self.discount * self.estimator.value(next_state)
-            self.estimator.update(
-                self.step_size, current_state, target, self.discount, self.trace_decay_rate)
+            self.estimator.update(self.step_size, current_state, target, self.discount, self.trace_decay_rate)
 
             if done:
                 break
