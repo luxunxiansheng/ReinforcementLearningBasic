@@ -4,6 +4,7 @@ from pyinstrument import Profiler
 
 from algorithm.td_method.qlearning import QLearning
 from algorithm.td_method.sarsa import SARSA
+from algorithm.td_method.sarsa_lambda import SARSALambda
 from algorithm.td_method.td0_evaluation import TD0Evalutaion
 from algorithm.td_method.expected_sarsa import ExpectedSARSA
 from algorithm.td_method.double_q_learning import DoubleQLearning
@@ -18,7 +19,7 @@ from lib import plotting
 from policy.policy import TabularPolicy
 
 
-num_episodes = 1000
+num_episodes = 100
 n_steps = 4
 
 
@@ -43,10 +44,19 @@ def test_sarsa_method(env):
     b_policy_table = env.build_policy_table()
     b_policy = TabularPolicy(b_policy_table)
 
-    sarsa_statistics = plotting.EpisodeStats("sarsa", episode_lengths=np.zeros(
-        num_episodes), episode_rewards=np.zeros(num_episodes))
-    sarsa_method = SARSA(q_table, b_policy, 0.1, env,
-                         sarsa_statistics, num_episodes)
+    sarsa_statistics = plotting.EpisodeStats("sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes),q_value=None)
+    sarsa_method = SARSA(q_table, b_policy, 0.1, env, sarsa_statistics, num_episodes)
+    sarsa_method.improve()
+
+    return sarsa_statistics
+
+def test_sarsa_lambda_method(env):
+    q_table = env.build_Q_table()
+    b_policy_table = env.build_policy_table()
+    b_policy = TabularPolicy(b_policy_table)
+
+    sarsa_statistics = plotting.EpisodeStats("sarsa_labmda", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes),q_value=None)
+    sarsa_method = SARSALambda(q_table, b_policy, 0.1, env, sarsa_statistics, num_episodes)
     sarsa_method.improve()
 
     return sarsa_statistics
@@ -57,8 +67,7 @@ def test_qlearning_method(env):
     b_policy_table = env.build_policy_table()
     b_policy = TabularPolicy(b_policy_table)
 
-    q_learning_statistics = plotting.EpisodeStats("Q_Learning", episode_lengths=np.zeros(
-        num_episodes), episode_rewards=np.zeros(num_episodes))
+    q_learning_statistics = plotting.EpisodeStats("Q_Learning", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes),q_value=None)
 
     qlearning_method = QLearning(
         q_table, b_policy, 0.1, env, q_learning_statistics, num_episodes)
@@ -73,8 +82,7 @@ def test_expected_sarsa_method(env):
     b_policy_table = env.build_policy_table()
     b_policy = TabularPolicy(b_policy_table)
 
-    expectedsarsa_statistics = plotting.EpisodeStats("Expected_Sarsa", episode_lengths=np.zeros(
-        num_episodes), episode_rewards=np.zeros(num_episodes))
+    expectedsarsa_statistics = plotting.EpisodeStats("Expected_Sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes),q_value=None)
 
     expectedsarsa_method = ExpectedSARSA(
         q_table, b_policy, 0.1, env, expectedsarsa_statistics, num_episodes)
@@ -89,8 +97,7 @@ def test_double_q_learning_method(env):
     b_policy_table = env.build_policy_table()
     b_policy = TabularPolicy(b_policy_table)
 
-    double_q_learning_statistics = plotting.EpisodeStats("Double_Q_Learning", episode_lengths=np.zeros(
-        num_episodes), episode_rewards=np.zeros(num_episodes))
+    double_q_learning_statistics = plotting.EpisodeStats("Double_Q_Learning", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes),q_value=None)
 
     double_qlearning_method = DoubleQLearning(
         q_table, b_policy, 0.1, env, double_q_learning_statistics, num_episodes)
@@ -112,8 +119,7 @@ def test_n_steps_sarsa_method(env):
     q_table = env.build_Q_table()
     b_policy_table = env.build_policy_table()
     b_policy = TabularPolicy(b_policy_table)
-    n_sarsa_statistics = plotting.EpisodeStats("N_Steps_Sarsa", episode_lengths=np.zeros(
-        num_episodes), episode_rewards=np.zeros(num_episodes))
+    n_sarsa_statistics = plotting.EpisodeStats("N_Steps_Sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes),q_value=None)
     n_sarsa_method = NStepsSARSA(
         q_table, b_policy, 0.1, env,  n_steps, n_sarsa_statistics, num_episodes)
     n_sarsa_method.improve()
@@ -126,8 +132,7 @@ def test_n_setps_expected_sarsa(env):
     b_policy_table = env.build_policy_table()
     b_policy = TabularPolicy(b_policy_table)
 
-    n_steps_expectedsarsa_statistics = plotting.EpisodeStats("N_Steps_Expected_Sarsa", episode_lengths=np.zeros(
-        num_episodes), episode_rewards=np.zeros(num_episodes))
+    n_steps_expectedsarsa_statistics = plotting.EpisodeStats("N_Steps_Expected_Sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes),q_value=None)
 
     n_steps_expectedsarsa_method = NStepsExpectedSARSA(
         q_table, b_policy, 0.1, env,  n_steps, n_steps_expectedsarsa_statistics, num_episodes)
@@ -135,7 +140,7 @@ def test_n_setps_expected_sarsa(env):
 
     return n_steps_expectedsarsa_statistics
 
-# TODO: have not  a good way to test this method yet
+
 
 
 def test_off_policy_n_steps_sarsa(env):
@@ -147,8 +152,7 @@ def test_off_policy_n_steps_sarsa(env):
     t_policy_table = env.build_policy_table()
     t_policy = TabularPolicy(t_policy_table)
 
-    n_steps_off_policy_sarsa_statistics = plotting.EpisodeStats("N_Steps_Offpolicy_Sarsa", episode_lengths=np.zeros(
-        num_episodes), episode_rewards=np.zeros(num_episodes))
+    n_steps_off_policy_sarsa_statistics = plotting.EpisodeStats("N_Steps_Offpolicy_Sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes),q_value=None)
 
     n_steps_offpolicy_sarsa_method = OffPolicyNStepsSARSA(
         q_table, b_policy, t_policy, env, n_steps, n_steps_off_policy_sarsa_statistics, num_episodes)
@@ -163,11 +167,9 @@ def test_dynaQ_method_trival(env):
     b_policy_table = env.build_policy_table()
     b_policy = TabularPolicy(b_policy_table)
 
-    dyna_q_statistics = plotting.EpisodeStats("Dyna_Q", episode_lengths=np.zeros(
-        num_episodes), episode_rewards=np.zeros(num_episodes))
+    dyna_q_statistics = plotting.EpisodeStats("Dyna_Q", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes),q_value=None)
 
-    dyna_q_method = DynaQ(q_table, b_policy, 0.1, env,
-                          dyna_q_statistics, num_episodes)
+    dyna_q_method = DynaQ(q_table, b_policy, 0.1, env, dyna_q_statistics, num_episodes)
     dyna_q_method.improve()
 
     return dyna_q_statistics
@@ -178,8 +180,7 @@ def test_dynaQ_method_priority(env):
     b_policy_table = env.build_policy_table()
     b_policy = TabularPolicy(b_policy_table)
 
-    dyna_q_statistics = plotting.EpisodeStats("Dyna_Q_PRIORITY", episode_lengths=np.zeros(
-        num_episodes), episode_rewards=np.zeros(num_episodes))
+    dyna_q_statistics = plotting.EpisodeStats("Dyna_Q_PRIORITY", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes),q_value=None)
 
     dyna_q_method = DynaQ(q_table, b_policy, 0.1, env,dyna_q_statistics, num_episodes, mode=PRIORITY)
     dyna_q_method.improve()
@@ -188,5 +189,4 @@ def test_dynaQ_method_priority(env):
 
 
 def test_td_control_method(env):
-    plotting.plot_episode_stats([test_sarsa_method(env), test_qlearning_method(env), test_expected_sarsa_method(env), test_double_q_learning_method(
-        env), test_n_steps_sarsa_method(env), test_n_setps_expected_sarsa(env),test_dynaQ_method_trival(env), test_dynaQ_method_priority(env)])
+    plotting.plot_episode_stats([test_sarsa_method(env),test_sarsa_lambda_method(env)])
