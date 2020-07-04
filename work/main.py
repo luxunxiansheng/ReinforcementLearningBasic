@@ -35,8 +35,7 @@
 
 import fire
 
-from algorithm.approximate_solution_method.test import (
-    test_approximation_control_method, test_approximation_evaluation)
+from algorithm.approximate_solution_method.test import (test_approximation_control_method, test_approximation_evaluation)
     
 from algorithm.td_method.test import (test_double_q_learning_method,
                                       test_expected_sarsa_method,
@@ -45,6 +44,7 @@ from algorithm.td_method.test import (test_double_q_learning_method,
                                       test_off_policy_n_steps_sarsa,
                                       test_qlearning_method, test_sarsa_method,
                                       test_td0_evaluation_method,
+                                      test_td_lambda_evalution_method,
                                       test_td_control_method,
                                       test_tdn_evaluaiton_method)
 from env.blackjack import BlackjackEnv
@@ -94,6 +94,9 @@ def test(algo, env):
     
     if algo == 'TDN_evalutaion':
         test_tdn_evaluaiton_method(real_env)
+
+    if algo == 'TDLambda_evalutaion':
+        test_td_lambda_evalution_method(real_env)
     
     if algo == 'N_step_sarsa':
         test_n_steps_sarsa_method(real_env)

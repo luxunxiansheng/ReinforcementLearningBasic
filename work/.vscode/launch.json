@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["test","approximation_control","mountaincar"],
+            "args": ["test","TDLambda_evalutaion","randomwalking"],
             "justMyCode": false          
         }
     ]

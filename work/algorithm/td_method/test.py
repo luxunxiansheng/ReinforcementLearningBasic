@@ -12,12 +12,13 @@ from algorithm.td_method.n_steps_sarsa import NStepsSARSA
 from algorithm.td_method.n_steps_expected_sarsa import NStepsExpectedSARSA
 from algorithm.td_method.off_policy_n_steps_sarsa import OffPolicyNStepsSARSA
 from algorithm.td_method.dyna_q import DynaQ, TRIVAL, PRIORITY
+from algorithm.td_method.td_lambda_evaluation import TDLambdaEvalutaion
 
 from lib import plotting
 from policy.policy import TabularPolicy
 
 
-num_episodes = 100
+num_episodes = 1000
 n_steps = 4
 
 
@@ -27,6 +28,14 @@ def test_td0_evaluation_method(env):
     b_policy = TabularPolicy(b_policy_table)
     td0_method = TD0Evalutaion(v_table, b_policy, env)
     td0_method.evaluate()
+
+def test_td_lambda_evalution_method(env):
+    v_table = env.build_V_table()
+    b_policy_table = env.build_policy_table()
+    b_policy = TabularPolicy(b_policy_table)
+    tdlambda_method = TDLambdaEvalutaion(v_table, b_policy, env)
+    tdlambda_method.evaluate()
+
 
 
 def test_sarsa_method(env):
