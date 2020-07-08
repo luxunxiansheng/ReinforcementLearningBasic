@@ -11,12 +11,10 @@
 # for the specific language governing rights and limitations under the
 # License.
 #
-#
-# Contributor(s):
+## Contributor(s):
 #
 #    Bin.Li (ornot2008@yahoo.com)
-#
-#
+##
 # Alternatively, the contents of this file may be used under the terms of
 # either the GNU General Public License Version 2 or later (the "GPL"), or
 # the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
@@ -35,47 +33,43 @@
 
 from tqdm import tqdm
 
-from lib.utility import create_distribution_epsilon_greedily
-from copy import deepcopy
+from lib.utility import (create_distribution_epsilon_greedily)
 
-class SARSALambda:
-    """
-    SARSA algorithm with backward view: On-policy TD control. Finds the optimal epsilon-greedy policy
-    """
 
-    def __init__(self, q_table, table_policy, epsilon,env, statistics,episodes,step_size=0.1,discount=1.0, lamb= 0.0):
+class QLambda:
+    """
+    Q-Learning algorithm with backward view : Off-policy TD control. Finds the optimal greedy policy
+    while following an epsilon-greedy policy
+   """
+    def __init__(self, q_table, behavior_table_policy, epsilon, env, statistics, episodes, step_size=0.1,  discount=1.0, lamb = 0.0):
         self.q_table = q_table
-        self.policy = table_policy
+        self.policy = behavior_table_policy
         self.env = env
-        
         self.episodes = episodes
         self.step_size = step_size
         self.discount = discount
         self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(epsilon)
-        
         self.statistics = statistics
-
         self.lamb =lamb
-
         self.eligibility = deepcopy(q_table)
         for state_index in q_table:
             for action_index in q_table[state_index]:
                 self.eligibility[state_index][action_index] = 0.0
-        
 
     def improve(self):
         for episode in tqdm(range(0, self.episodes)):
             self._run_one_episode(episode)
 
-    def _run_one_episode(self,episode):
+    def _run_one_episode(self, episode):
         # S
         current_state_index = self.env.reset()
 
-        # A
-        current_action_index = self.policy.get_action(current_state_index)
-
         while True:
+
+            # A
+            current_action_index = self.policy.get_action(current_state_index)
             observation = self.env.step(current_action_index)
+
             # R
             reward = observation[1]
             done = observation[2]
@@ -87,16 +81,25 @@ class SARSALambda:
             next_state_index = observation[0]
 
             # A'
-            next_action_index = self.policy.get_action(next_state_index)
-
-            delta = reward + self.discount * self.q_table[next_state_index][next_action_index] - self.q_table[current_state_index][current_action_index]
+            next_action_next_state = self.policy.get_action(next_state_index) 
+        
+            # A*
+            q_values_next_state = self.q_table[next_state_index]
+            best_action_next_state = max(q_values_next_state, key=q_values_next_state.get)
+        
+            # Q*(s',A*)
+            max_value = q_values_next_state[best_action_next_state]
+            
+            delta = reward + self.discount * max_value - self.q_table[current_state_index][current_action_index] 
             self.eligibility[current_state_index][current_action_index] += 1.0
             
             # backforward view proprogate 
             for state_index in self.q_table:
                 for action_index in self.q_table[state_index]:
                     self.q_table[state_index][action_index] = self.q_table[state_index][action_index]+self.step_size*delta* self.eligibility[state_index][action_index]
-                    self.eligibility[state_index][action_index] = self.eligibility[state_index][action_index]*self.discount* self.lamb
+
+                    if next_action_next_state == best_action_next_state:
+                        self.eligibility[state_index][action_index] = self.eligibility[state_index][action_index]*self.discount* self.lamb
 
             # update policy softly
             q_values = self.q_table[current_state_index]
@@ -107,4 +110,3 @@ class SARSALambda:
                 break
 
             current_state_index = next_state_index
-            current_action_index = next_action_index

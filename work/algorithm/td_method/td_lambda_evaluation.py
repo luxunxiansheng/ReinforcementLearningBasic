@@ -54,7 +54,7 @@ class TDLambdaEvalutaion:
     def evaluate(self):
         for _ in tqdm(range(0, self.episodes)):
             self._run_one_episode()
-        self.env.show_v_table(self.v_table)    
+        self.env.show_v_table(self.v_table)     
 
     def _run_one_episode(self):
         """
@@ -74,7 +74,7 @@ class TDLambdaEvalutaion:
             for state_index in self.eligibility:
                 self.v_table[state_index] = self.v_table[state_index] + self.step_size * delta * self.eligibility[state_index]
                 self.eligibility[state_index] = self.lamb * self.discount * self.eligibility[state_index]
- 
+
             if done:
                 break               
 
