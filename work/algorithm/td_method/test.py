@@ -14,6 +14,7 @@ from algorithm.td_method.n_steps_expected_sarsa import NStepsExpectedSARSA
 from algorithm.td_method.off_policy_n_steps_sarsa import OffPolicyNStepsSARSA
 from algorithm.td_method.dyna_q import DynaQ, TRIVAL, PRIORITY
 from algorithm.td_method.td_lambda_evaluation import TDLambdaEvalutaion
+from algorithm.td_method.q_lambda import QLambda
 
 from lib import plotting
 from policy.policy import TabularPolicy
@@ -61,6 +62,17 @@ def test_sarsa_lambda_method(env):
 
     return sarsa_statistics
 
+
+def test_q_lambda_method(env):
+    q_table = env.build_Q_table()
+    b_policy_table = env.build_policy_table()
+    b_policy = TabularPolicy(b_policy_table)
+
+    q_lambda_statistics = plotting.EpisodeStats("Q_labmda", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes),q_value=None)
+    q_lambda_method = QLambda(q_table, b_policy, 0.1, env, q_lambda_statistics, num_episodes)
+    q_lambda_method.improve()
+
+    return q_lambda_statistics
 
 def test_qlearning_method(env):
     q_table = env.build_Q_table()
@@ -141,8 +153,6 @@ def test_n_setps_expected_sarsa(env):
     return n_steps_expectedsarsa_statistics
 
 
-
-
 def test_off_policy_n_steps_sarsa(env):
     q_table = env.build_Q_table()
 
@@ -189,4 +199,4 @@ def test_dynaQ_method_priority(env):
 
 
 def test_td_control_method(env):
-    plotting.plot_episode_stats([test_sarsa_method(env),test_sarsa_lambda_method(env)])
+    plotting.plot_episode_stats([test_sarsa_method(env),test_sarsa_lambda_method(env),test_q_lambda_method(env)])
