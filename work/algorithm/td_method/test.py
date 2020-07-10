@@ -2,7 +2,7 @@ import numpy as np
 
 from pyinstrument import Profiler
 
-from algorithm.td_method.qlearning import QLearning
+from algorithm.td_method.q_learning import QLearning
 from algorithm.td_method.sarsa import SARSA
 from algorithm.td_method.sarsa_lambda import SARSALambda
 from algorithm.td_method.td0_evaluation import TD0Evalutaion
