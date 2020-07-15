@@ -66,11 +66,12 @@ class QLambda:
     def _run_one_episode(self, episode):
         # S
         current_state_index = self.env.reset()
+        current_action_index = self.policy.get_action(current_state_index)
 
         while True:
 
             # A
-            current_action_index = self.policy.get_action(current_state_index)
+            
             observation = self.env.step(current_action_index)
 
             # R
@@ -84,7 +85,7 @@ class QLambda:
             next_state_index = observation[0]
 
             # A'
-            next_action_next_state = self.policy.get_action(next_state_index) 
+            next_action_index = self.policy.get_action(next_state_index) 
         
             # A*
             q_values_next_state = self.q_table[next_state_index]
@@ -101,7 +102,7 @@ class QLambda:
                 for action_index in self.q_table[state_index]:
                     self.q_table[state_index][action_index] = self.q_table[state_index][action_index]+self.step_size*delta* self.eligibility[state_index][action_index]
 
-                    if next_action_next_state == best_action_next_state:
+                    if next_action_index == best_action_next_state:
                         self.eligibility[state_index][action_index] = self.eligibility[state_index][action_index]*self.discount* self.lamb
                     else:
                         self.eligibility[state_index][action_index] = 0 
@@ -114,4 +115,5 @@ class QLambda:
             if done:
                 break
 
-            current_state_index = next_state_index
+            current_state_index  = next_state_index
+            current_action_index = next_action_index
