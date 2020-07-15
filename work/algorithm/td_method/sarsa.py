@@ -62,8 +62,6 @@ class SARSA:
             self._run_one_episode(episode)
 
     def _run_one_episode(self,episode):
-      
-   
         # S
         current_state_index = self.env.reset()
 

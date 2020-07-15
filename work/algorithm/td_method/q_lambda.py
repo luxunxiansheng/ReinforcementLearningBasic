@@ -103,6 +103,8 @@ class QLambda:
 
                     if next_action_next_state == best_action_next_state:
                         self.eligibility[state_index][action_index] = self.eligibility[state_index][action_index]*self.discount* self.lamb
+                    else:
+                        self.eligibility[state_index][action_index] = 0 
 
             # update policy softly
             q_values = self.q_table[current_state_index]
