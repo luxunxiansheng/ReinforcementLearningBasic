@@ -40,7 +40,7 @@ from math import floor
 
 class QFunction:
     @abstractmethod
-    def value(self, state, action):
+    def predict(self, state, action):
         pass
 
     @abstractmethod
@@ -151,13 +151,13 @@ class TileCodingBasesQFunction(QFunction):
         return active_tiles
 
     # estimate the value of given state and action
-    def value(self, state, action):
+    def predict(self, state, action):
         if state[0] == self.x_max:
             return 0.0
         active_tiles = self.get_active_tiles(state, action)
         return np.sum(self.weights[active_tiles])
 
-   
+
     def update(self, alpha, state, action, target):
         active_tiles = self.get_active_tiles(state, action)
         estimation = np.sum(self.weights[active_tiles])

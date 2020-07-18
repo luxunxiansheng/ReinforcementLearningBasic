@@ -1,7 +1,4 @@
-# #### BEGIN LICENSE BLOCK #####
-# Version: MPL 1.1/GPL 2.0/LGPL 2.1
-#
-# The contents of this file are subject to the Mozilla Public License Version
+ts of this file are subject to the Mozilla Public License Version
 # 1.1 (the "License"); you may not use this file except in compliance with
 # the License. You may obtain a copy of the License at
 # http://www.mozilla.org/MPL/
@@ -33,17 +30,9 @@
 #
 # /
 
-import numpy as np
-from tqdm import tqdm
+# Sarsa(lambda) algorithm
 
-from lib.utility import create_distribution_epsilon_greedily
-
-
-class EpisodicSemiGradientSarsaControl:
-    """
-    SARSA algorithm: On-policy TD control. Finds the optimal epsilon-greedy policy with approximation of q funciton 
-    """
-
+class SARSALambda:
     def __init__(self, estimator, discreteactionpolicy, env, statistics, episodes, step_size=0.1, discount=1.0):
         self.estimator = estimator
         self.policy = discreteactionpolicy
@@ -52,43 +41,3 @@ class EpisodicSemiGradientSarsaControl:
         self.discount = discount
         self.statistics = statistics
         self.episodes = episodes
-
-    def improve(self):
-        for episode in tqdm(range(0, self.episodes)):
-            self._run_one_episode(episode)
-
-    def _run_one_episode(self, episode):
-        # S
-        current_state = self.env.reset()
-
-        # A
-        current_action_index = self.policy.get_action(current_state)
-
-        while True:
-            observation = self.env.step(current_action_index)
-            # R
-            reward = observation[1]
-            done = observation[2]
-
-            self.statistics.episode_rewards[episode] += reward
-            self.statistics.episode_lengths[episode] += 1
-
-            # S'
-            next_state = observation[0]
-
-            # A'
-            next_action_index = self.policy.get_action(next_state)
-
-            
-            # set the target 
-            target = reward + self.discount * self.estimator.predict(next_state, next_action_index)
-
-            # SGD fitting
-            self.estimator.update(self.step_size, current_state, current_action_index, target)
-
-            if done:
-                break
-
-            current_state = next_state
-            current_action_index = next_action_index
- 

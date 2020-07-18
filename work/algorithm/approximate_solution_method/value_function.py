@@ -48,7 +48,7 @@ from math import floor
 
 class ValueFunction:
     @abstractmethod
-    def value(self, state):
+    def predict(self, state):
         pass
 
     @abstractmethod
@@ -65,7 +65,7 @@ class LinearApproximationMethod(ValueFunction):
         self.z = 0
 
     # get the value of @state
-    def value(self, state):
+    def predict(self, state):
         # get the feature vector
         feature = np.asarray([func(state) for func in self.bases])
         return np.dot(self.weights, feature)

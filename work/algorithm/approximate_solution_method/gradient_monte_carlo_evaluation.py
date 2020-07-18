@@ -37,13 +37,13 @@ from tqdm import tqdm
 
 
 class GradientMonteCarloEvaluation:
-    def __init__(self, value_fucniton, behavior_policy, env, step_size=1e-5, episodes=5000, discount=1.0,distribution=None):
+    def __init__(self, estimator, behavior_policy, env, step_size=1e-5, episodes=5000, discount=1.0,distribution=None):
         self.env = env
         self.behavior_policy = behavior_policy
         self.episodes = episodes
         self.discount = discount
         self.step_size = step_size
-        self.value_fucniton = value_fucniton
+        self.estimator = estimator
         self.distribution = distribution
 
     def evaluate(self):
@@ -53,7 +53,7 @@ class GradientMonteCarloEvaluation:
             for state_index, _, reward in trajectory[::-1]:
                 # The return for current state_action pair
                 G = reward + self.discount*G
-                self.value_fucniton.update(self.step_size,state_index/self.env.nS, G)
+                self.estimator.update(self.step_size,state_index/self.env.nS, G)
                 if self.distribution is not None:
                     self.distribution[state_index] += 1
 
