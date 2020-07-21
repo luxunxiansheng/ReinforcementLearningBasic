@@ -1,8 +1,16 @@
-import collections
+from abc import abstractmethod
 
-People = collections.namedtuple('Person', ['name', 'age', 'gender'])
+class Base:
+    @abstractmethod
+    def say(self):
+        print("Say In Base")
 
-e1 = People('Asim', '15', 'F')
 
-print(e1.__class__.__name__)
+class Derived(Base):
+    def __init__(self):
+        print("Init")
 
+
+
+d = Derived()
+d.say()

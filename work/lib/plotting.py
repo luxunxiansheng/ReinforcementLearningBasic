@@ -66,7 +66,7 @@ def  plot_state_value(env,value_function_stats,noshow=False):
     fig1 = plt.figure(figsize=(10, 5))
     
     for index in range(len(value_function_stats)):
-        state_value = np.asarray([value_function_stats[index].state_value.value(state_index/env.nS) for state_index in range(env.nS)])
+        state_value = np.asarray([value_function_stats[index].state_value.predict(state_index/env.nS) for state_index in range(env.nS)])
         plt.plot(state_value,label=value_function_stats[index].appr_method)
 
     state_value = np.asarray([ state_index/env.nS for state_index in range(env.nS)])

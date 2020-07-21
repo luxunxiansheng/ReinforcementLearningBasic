@@ -118,3 +118,10 @@ class CliffWalkingEnv(BaseDiscreteEnv):
 
             outfile.write(output)
         outfile.write("\n")
+
+    def reset(self, randomly=True):
+        if randomly:
+            return super().reset(True)
+
+        # hard coded , the index is (3,0)
+        return np.ravel_multi_index((3, 0), self.shape)

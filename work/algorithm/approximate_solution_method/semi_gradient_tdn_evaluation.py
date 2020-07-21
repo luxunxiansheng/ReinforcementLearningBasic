@@ -38,13 +38,13 @@ import numpy as np
 from tqdm import tqdm
 
 class SemiGradientTDNEvalution:
-    def __init__(self, value_function, behavior_policy, n_steps, env, step_size=2e-5, episodes=10000, discount=1.0,distribution=None):
+    def __init__(self, estimator, behavior_policy, n_steps, env, step_size=2e-5, episodes=10000, discount=1.0,distribution=None):
         self.env = env
         self.behavior_policy = behavior_policy
         self.episodes = episodes
         self.discount = discount
         self.step_size = step_size
-        self.value_function = value_function
+        self.estimator = estimator
         self.distribution = distribution
         self.steps = n_steps
 
@@ -70,16 +70,18 @@ class SemiGradientTDNEvalution:
                 if done:
                     final_timestamp = current_timestamp+1
 
+                current_state_index = next_state_index
+            
             updated_timestamp = current_timestamp-self.steps
             if updated_timestamp >=0:
                 G = 0
                 for i in range(updated_timestamp , min(updated_timestamp + self.steps , final_timestamp)):
                     G += np.power(self.discount, i - updated_timestamp ) * trajectory[i][1]
                 if updated_timestamp + self.steps < final_timestamp:
-                    G += np.power(self.discount, self.steps) * self.value_function.value(trajectory[current_timestamp][0]/self.env.nS)
-                delta = G-self.value_function.value(trajectory[updated_timestamp][0]/self.env.nS)
-                self.value_function.update(self.step_size, delta, trajectory[updated_timestamp][0]/self.env.nS) 
+                    G += np.power(self.discount, self.steps) * self.estimator.predict(trajectory[current_timestamp][0]/self.env.nS)
+                delta = G-self.estimator.predict(trajectory[updated_timestamp][0]/self.env.nS)
+                self.estimator.update(self.step_size, delta, trajectory[updated_timestamp][0]/self.env.nS) 
                 if updated_timestamp == final_timestamp - 1:
                     break
             current_timestamp += 1
-            current_state_index = next_state_index
+            

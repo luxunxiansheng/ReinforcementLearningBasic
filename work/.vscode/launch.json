@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["test","td_control_method","cliffwalking"],
+            "args": ["test","approximation_evalution","randomwalking"],
             "justMyCode": false          
         }
     ]

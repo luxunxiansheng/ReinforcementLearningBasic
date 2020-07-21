@@ -71,6 +71,8 @@ class TDNEvalutaion:
                 trajectory.append((current_state_index,reward))
                 if done:
                     final_timestamp = current_timestamp+1
+                
+                current_state_index = next_state_index
 
             updated_timestamp = current_timestamp-self.steps 
             if updated_timestamp >=0:
@@ -87,4 +89,4 @@ class TDNEvalutaion:
                     break
 
             current_timestamp += 1
-            current_state_index = next_state_index
+

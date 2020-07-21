@@ -43,7 +43,6 @@ from mpl_toolkits.mplot3d import Axes3D
 
 
 class BaseDiscreteEnv(discrete.DiscreteEnv):
-
     
     @abstractmethod
     def reset(self, randomly=True):

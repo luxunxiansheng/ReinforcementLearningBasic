@@ -72,7 +72,7 @@ class LinearApproximationMethod(ValueFunction):
 
     
     def update(self, alpha, state, target, discount=1.0, lamda=0.0):
-        delta = target - self.value(state)
+        delta = target - self.predict(state)
         # get derivative value
         derivative_value = np.asarray([func(state) for func in self.bases])
         self.z = discount*lamda*self.z + derivative_value
