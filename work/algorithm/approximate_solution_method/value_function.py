@@ -62,7 +62,7 @@ class LinearApproximationMethod(ValueFunction):
         self.weights = np.zeros(order + 1)
         # set up bases function
         self.bases = []
-        self.z = 0
+        self.eligibility = 0
 
     # get the value of @state
     def predict(self, state):
@@ -75,8 +75,10 @@ class LinearApproximationMethod(ValueFunction):
         delta = target - self.predict(state)
         # get derivative value
         derivative_value = np.asarray([func(state) for func in self.bases])
-        self.z = discount*lamda*self.z + derivative_value
-        self.weights += alpha * delta * self.z
+
+        self.eligibility = self.eligibility*lamda*discount+derivative_value
+
+        self.weights += alpha * delta * self.eligibility
 
 
 class PolynomialBasesValueFunction(LinearApproximationMethod):

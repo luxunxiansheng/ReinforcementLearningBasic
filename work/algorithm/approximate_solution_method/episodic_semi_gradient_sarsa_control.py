@@ -91,4 +91,3 @@ class EpisodicSemiGradientSarsaControl:
 
             current_state = next_state
             current_action_index = next_action_index
- 

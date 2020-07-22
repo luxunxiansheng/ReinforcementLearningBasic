@@ -33,33 +33,12 @@
 #
 # /
 
+import numpy as np 
 from tqdm import tqdm
 
 # TD(lambda) algorithm
 
-
-class TemporalDifferenceLambda(ValueFunction):
-    def __init__(self, rate, step_size):
-        ValueFunction.__init__(self, rate, step_size)
-        self.new_episode()
-
-    def new_episode(self):
-        # initialize the eligibility trace
-        self.eligibility = np.zeros(N_STATES + 2)
-        # initialize the beginning state
-        self.last_state = START_STATE
-
-    def learn(self, state, reward):
-        # update the eligibility trace and weights
-        self.eligibility *= self.rate
-        self.eligibility[self.last_state] += 1
-        delta = reward + self.value(state) - self.value(self.last_state)
-        delta *= self.step_size
-        self.weights += delta * self.eligibility
-        self.last_state = state
-
-
-class TDLambdaEvaluation:
+class SemiGradientTDLambdaEvaluation:
     def __init__(self, value_function, policy, env, step_size=2e-5, episodes=10000, discount=1.0, trace_decay_rate=0.5):
         self.env = env
         self.policy = policy
@@ -74,16 +53,24 @@ class TDLambdaEvaluation:
             self._run_one_episode()
 
     def _run_one_episode(self):
+        
         current_state = self.env.reset()
+        self.estimator.eligibility = np.zeros(self.estimator.weights.size)
+
         while True:
+            # A
             action_index = self.policy.get_action(current_state)
             observation = self.env.step(action_index)
+            
+            # S'
             next_state = observation[0]
+            
+            # R 
             reward = observation[1]
             done = observation[2]
 
             # set the target
-            target = reward + self.discount * self.estimator.value(next_state)
+            target = reward + self.discount * self.estimator.predict(next_state)
             self.estimator.update(self.step_size, current_state, target, self.discount, self.trace_decay_rate)
 
             if done:

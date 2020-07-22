@@ -38,7 +38,7 @@ import numpy as np
 from tqdm import tqdm
 
 class SemiGradientTDNEvalution:
-    def __init__(self, estimator, behavior_policy, n_steps, env, step_size=2e-5, episodes=10000, discount=1.0,distribution=None):
+    def __init__(self, estimator, behavior_policy, n_steps, env, step_size=2e-5, episodes=1000, discount=1.0,distribution=None):
         self.env = env
         self.behavior_policy = behavior_policy
         self.episodes = episodes
