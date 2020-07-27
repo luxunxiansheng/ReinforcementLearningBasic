@@ -39,14 +39,14 @@ from tqdm import tqdm
 # TD(lambda) algorithm
 
 class SemiGradientTDLambdaEvaluation:
-    def __init__(self, value_function, policy, env, step_size=2e-5, episodes=10000, discount=1.0, trace_decay_rate=0.5):
+    def __init__(self, value_function, policy, env, step_size=2e-5, episodes=10000, discount=1.0, lamda=0.5):
         self.env = env
         self.policy = policy
         self.episodes = episodes
         self.discount = discount
         self.step_size = step_size
         self.estimator = value_function
-        self.trace_decay_rate = trace_decay_rate
+        self.lamda = lamda
 
     def evaluate(self):
         for _ in tqdm(range(0, self.episodes)):
@@ -71,9 +71,11 @@ class SemiGradientTDLambdaEvaluation:
 
             # set the target
             target = reward + self.discount * self.estimator.predict(next_state)
-            self.estimator.update(self.step_size, current_state, target, self.discount, self.trace_decay_rate)
+            self.estimator.update(self.step_size, current_state, target, self.discount, self.lamda)
 
             if done:
                 break
 
             current_state = next_state
+
+            

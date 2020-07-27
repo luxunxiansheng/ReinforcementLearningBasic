@@ -30,44 +30,41 @@ def test_approximation_evaluation(env):
 
     distribution = np.zeros(env.nS)
 
-    polynomialbasesfunc_semi = PolynomialBasesValueFunction(5)
-    semigradienttdnevalution = SemiGradientTDNEvalution(
-        polynomialbasesfunc_semi, b_policy, 5, env, episodes=num_episodes, distribution=distribution)
-    semigradienttdnevalution.evaluate()
-    semi_poly = plotting.StateValues(
-        'polynomialbasesfunc_semi', polynomialbasesfunc_semi)
-
-
-    polynomialbasesfunc = PolynomialBasesValueFunction(5)
-    semigradienttdlambdaevalution = SemiGradientTDLambdaEvaluation(
-        polynomialbasesfunc, b_policy,env,episodes=num_episodes)
+    
+    """
+    vf = PolynomialBasesValueFunction(2)
+    semigradienttdlambdaevalution = SemiGradientTDLambdaEvaluation(vf, b_policy,env,episodes=num_episodes,lamda=0.0)
     semigradienttdlambdaevalution.evaluate()
-    semi_poly = plotting.StateValues(
-        'polynomialbasesfunc_semi_tdlmabda', polynomialbasesfunc_semi)
+    semi_grident_tdl_poly = plotting.StateValues('semigradientTDLambdaevalution', vf)
 
-
-    polynomialbasesfunc_mc = PolynomialBasesValueFunction(5)
-    gradientmcevalution = GradientMonteCarloEvaluation(
-        polynomialbasesfunc_mc, b_policy, env,episodes=num_episodes, distribution=distribution)
-    gradientmcevalution.evaluate()
-    mc_poly = plotting.StateValues(
-        'polynomialbasesfunc_mc', polynomialbasesfunc_mc)
-
-    fourierBasesValueFunction_semi = FourierBasesValueFunction(5)
-    semigradienttdnevalution = SemiGradientTDNEvalution(
-        fourierBasesValueFunction_semi, b_policy, 5, env, episodes=num_episodes,distribution=distribution)
+    
+    vf = PolynomialBasesValueFunction(2)
+    semigradienttdnevalution = SemiGradientTDNEvalution(vf, b_policy, 5, env, episodes=num_episodes, distribution=distribution)
     semigradienttdnevalution.evaluate()
-    semi_fourier = plotting.StateValues(
-        'fourierBasesValueFunction_semi', fourierBasesValueFunction_semi)
+    semi_grident_tdn_poly = plotting.StateValues('semigradientTDNevalution', vf)
 
-    fourierBasesValueFunction_mc = FourierBasesValueFunction(5)
-    gradientmcevalution = GradientMonteCarloEvaluation(
-        fourierBasesValueFunction_mc, b_policy, env, episodes=num_episodes,distribution=distribution)
+    
+    vf = PolynomialBasesValueFunction(2)
+    gradientmcevalution = GradientMonteCarloEvaluation(vf, b_policy, env,episodes=num_episodes, distribution=distribution)
     gradientmcevalution.evaluate()
-    mc_fourier = plotting.StateValues(
-        'fourierBasesValueFunction_mc', fourierBasesValueFunction_mc)
-    plotting.plot_state_value(
-        env, [semi_poly, mc_poly, semi_fourier, mc_fourier])
+    mc_poly = plotting.StateValues('gradientMCevalution', vf)
+
+
+    vf = FourierBasesValueFunction(5)
+    semigradienttdnevalution = SemiGradientTDNEvalution(vf, b_policy, 5, env, episodes=num_episodes,distribution=distribution)
+    semigradienttdnevalution.evaluate()
+    semi_graident_tdn_fourier = plotting.StateValues('semigradientTDNevalution', vf)
+
+    """
+
+    vf = FourierBasesValueFunction(10)
+    gradientmcevalution = GradientMonteCarloEvaluation(vf, b_policy, env, episodes=num_episodes,distribution=distribution)
+    gradientmcevalution.evaluate()
+    mc_fourier = plotting.StateValues('gradientMCevalution', vf)
+    
+    plotting.plot_state_value(env, [mc_fourier])
+
+
 
 
 def test_approximation_control_sarsa(env):
