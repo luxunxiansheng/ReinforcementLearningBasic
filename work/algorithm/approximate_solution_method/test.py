@@ -15,12 +15,12 @@ from algorithm.approximate_solution_method.semi_gradient_td_lambda_evaluation im
 from algorithm.approximate_solution_method.semi_gradient_tdn_evaluation import \
     SemiGradientTDNEvalution
 from algorithm.approximate_solution_method.value_function import (
-    FourierBasesValueFunction, PolynomialBasesValueFunction)
+    FourierBasesValueFunction, PolynomialBasesValueFunction, StateAggregation)
 from lib import plotting
 from lib.utility import create_distribution_epsilon_greedily
 from policy.policy import DiscreteActionPolicy, TabularPolicy
 
-num_episodes = 3000
+num_episodes = 100000
 n_steps = 4
 
 
@@ -57,12 +57,12 @@ def test_approximation_evaluation(env):
 
     """
 
-    vf = FourierBasesValueFunction(10)
+    vf = StateAggregation(env.nS,3)
     gradientmcevalution = GradientMonteCarloEvaluation(vf, b_policy, env, episodes=num_episodes,distribution=distribution)
     gradientmcevalution.evaluate()
-    mc_fourier = plotting.StateValues('gradientMCevalution', vf)
+    mc_sg = plotting.StateValues('gradientMCEvalution', vf)
     
-    plotting.plot_state_value(env, [mc_fourier])
+    plotting.plot_state_value(env, [mc_sg])
 
 
 

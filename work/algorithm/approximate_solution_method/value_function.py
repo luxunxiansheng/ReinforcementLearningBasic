@@ -35,7 +35,7 @@
 
 from abc import abstractmethod
 import numpy as np
-from math import floor
+from math import ceil
 
 #######################################################################
 # Copyright (C)                                                       #
@@ -54,6 +54,31 @@ class ValueFunction:
     @abstractmethod
     def update(self, alpha, state, target, discount=1.0, lamda=0.0):
         pass
+
+
+class StateAggregation(ValueFunction):
+    def __init__(self,total_states,states_per_group):
+        self.states_per_group = states_per_group 
+        self.groups = ceil(total_states/states_per_group)       
+        self.weights = np.zeros(self.groups)
+        self.eligibility = 0
+    
+
+    def predict(self, state):
+        return self.weights[state//self.states_per_group]
+    
+
+    def update(self,alpha,state, target, discount = 1.0, lamda=0.0):
+        delta = target-self.predict(state)
+
+        derivative_value = np.zeros(self.groups)
+        derivative_value[state//self.states_per_group] = 1
+
+        self.eligibility = self.eligibility*lamda*discount+derivative_value
+        
+        self.weights+= alpha*delta*self.eligibility
+
+        #print(self.weights)
 
 
 class LinearApproximationMethod(ValueFunction):
@@ -93,3 +118,5 @@ class FourierBasesValueFunction(LinearApproximationMethod):
         super().__init__(order)
         for i in range(0, order + 1):
             self.bases.append(lambda s, i=i: np.cos(i * np.pi * s))
+
+

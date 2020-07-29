@@ -45,6 +45,7 @@ class RandomWalkingEnv(BaseDiscreteEnv):
     Example 6.2
 
     For convenience, name the state from left to right with number 1 to nS
+    The states include the start point and the end point.
 
     """
     def __init__(self,num_states=19):
@@ -83,7 +84,7 @@ class RandomWalkingEnv(BaseDiscreteEnv):
         P[nS-2][LEFT]  = [(1.0, nS-3, 0, False)]
         P[nS-2][RIGHT] = [(1.0, nS-1, 1, True)]
 
-        P[nS-1][LEFT]  = [(1.0, nS-1, 0, True)]
-        P[nS-1][RIGHT] = [(1.0, nS-1, 0, True)]
+        P[nS-1][LEFT]  = [(1.0, nS-1, 1, True)]
+        P[nS-1][RIGHT] = [(1.0, nS-1, 1, True)]
 
         return P
