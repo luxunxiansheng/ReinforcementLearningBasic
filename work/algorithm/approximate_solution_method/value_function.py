@@ -79,7 +79,6 @@ class StateAggregation(ValueFunction):
         
         self.weights+= alpha*delta*self.eligibility
 
-        
 
 
 class LinearApproximationMethod(ValueFunction):
