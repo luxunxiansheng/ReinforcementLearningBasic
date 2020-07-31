@@ -85,7 +85,7 @@ class DiscreteActionPolicy(Policy):
     def get_action(self, state):
         q_values ={}
         for action_index in range(self.action_space.n):
-            q_values[action_index] = self.estimator.value(state,action_index)
+            q_values[action_index] = self.estimator.predict(state,action_index)
         distribution = list(self.create_distribution_fn(q_values).values())
         action_index = np.random.choice(np.arange(self.action_space.n), p=distribution)
         return action_index

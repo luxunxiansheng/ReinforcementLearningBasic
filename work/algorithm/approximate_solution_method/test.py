@@ -20,7 +20,7 @@ from lib import plotting
 from lib.utility import create_distribution_epsilon_greedily
 from policy.policy import DiscreteActionPolicy, TabularPolicy
 
-num_episodes = 10000
+num_episodes = 1000
 n_steps = 4
 
 
@@ -74,6 +74,10 @@ def test_approximation_control_sarsa(env):
     episodicsemigradsarsacontrol.improve()
 
     return approximation_control_statistics
+
+
+
+
 
 
 def test_approximation_control_expected_sarsa(env):

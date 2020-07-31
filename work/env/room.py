@@ -39,8 +39,6 @@ from collections import defaultdict
 import gym
 import numpy as np
 from gym import spaces
-from gym.envs.toy_text import discrete
-
 
 from env.base_discrete_env import BaseDiscreteEnv
 

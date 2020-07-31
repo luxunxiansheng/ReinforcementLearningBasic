@@ -79,7 +79,7 @@ class EpisodicSemiGradientExpectedSarsaControl:
             # expected q value of the next state 
             q_values = {}
             for action_index in range(self.env.action_space.n):
-                q_values[action_index] = self.estimator.predcit(next_state,action_index)
+                q_values[action_index] = self.estimator.predict(next_state,action_index)
             distribution = self.policy.get_action_distribution(q_values)
 
             expected_q_value = 0

@@ -116,8 +116,8 @@ def plot_2d_q_value(env, stats, noshow = False):
 
 
 # get # of steps to reach the goal under current state value function
-def cost_to_go(value_function,state,actions):
+def cost_to_go(estimator,state,actions):
     costs = []
     for action in range(actions.n):
-        costs.append(value_function.value(state, action))
+        costs.append(estimator.predict(state, action))
     return -np.max(costs)   
