@@ -84,7 +84,7 @@ class RandomWalkingEnv(BaseDiscreteEnv):
         P[nS-2][LEFT]  = [(1.0, nS-3, 0, False)]
         P[nS-2][RIGHT] = [(1.0, nS-1, 1, True)]
 
-        P[nS-1][LEFT]  = [(1.0, nS-1, 1, True)]
-        P[nS-1][RIGHT] = [(1.0, nS-1, 1, True)]
+        P[nS-1][LEFT]  = [(1.0, nS-1, 0, True)]
+        P[nS-1][RIGHT] = [(1.0, nS-1, 0, True)]
 
         return P

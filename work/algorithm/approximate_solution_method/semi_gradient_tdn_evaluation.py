@@ -79,8 +79,7 @@ class SemiGradientTDNEvalution:
                     G += np.power(self.discount, i - updated_timestamp ) * trajectory[i][1]
                 if updated_timestamp + self.steps < final_timestamp:
                     G += np.power(self.discount, self.steps) * self.estimator.predict(trajectory[current_timestamp][0])
-                delta = G-self.estimator.predict(trajectory[updated_timestamp][0])
-                self.estimator.update(self.step_size, delta, trajectory[updated_timestamp][0]) 
+                self.estimator.update(self.step_size, trajectory[updated_timestamp][0],G) 
                 if updated_timestamp == final_timestamp - 1:
                     break
             current_timestamp += 1

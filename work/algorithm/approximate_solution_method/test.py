@@ -29,40 +29,26 @@ def test_approximation_evaluation(env):
     b_policy = TabularPolicy(b_policy_table)
 
     distribution = np.zeros(env.nS)
-
     
-    """
-    vf = PolynomialBasesValueFunction(2)
+    
+    vf = StateAggregation(env.nS,3)
     semigradienttdlambdaevalution = SemiGradientTDLambdaEvaluation(vf, b_policy,env,episodes=num_episodes,lamda=0.0)
     semigradienttdlambdaevalution.evaluate()
-    semi_grident_tdl_poly = plotting.StateValues('semigradientTDLambdaevalution', vf)
+    semi_grident_tdl_sa = plotting.StateValues('semigradientTDLambdaevalution', vf)
 
-    
-    vf = PolynomialBasesValueFunction(2)
-    semigradienttdnevalution = SemiGradientTDNEvalution(vf, b_policy, 5, env, episodes=num_episodes, distribution=distribution)
-    semigradienttdnevalution.evaluate()
-    semi_grident_tdn_poly = plotting.StateValues('semigradientTDNevalution', vf)
-
-    
-    vf = PolynomialBasesValueFunction(2)
-    gradientmcevalution = GradientMonteCarloEvaluation(vf, b_policy, env,episodes=num_episodes, distribution=distribution)
-    gradientmcevalution.evaluate()
-    mc_poly = plotting.StateValues('gradientMCevalution', vf)
-
-
-    vf = FourierBasesValueFunction(5)
+        
     semigradienttdnevalution = SemiGradientTDNEvalution(vf, b_policy, 5, env, episodes=num_episodes,distribution=distribution)
     semigradienttdnevalution.evaluate()
-    semi_graident_tdn_fourier = plotting.StateValues('semigradientTDNevalution', vf)
+    semi_graident_tdn_sg = plotting.StateValues('semigradientTDNevalution', vf)
 
-    """
+    
 
     vf = StateAggregation(env.nS,3)
     gradientmcevalution = GradientMonteCarloEvaluation(vf, b_policy, env, episodes=num_episodes,distribution=distribution)
     gradientmcevalution.evaluate()
     mc_sg = plotting.StateValues('gradientMCEvalution', vf)
     
-    plotting.plot_state_value(env, [mc_sg])
+    plotting.plot_state_value(env, [semi_grident_tdl_sa,semi_graident_tdn_sg,mc_sg])
 
 
 

@@ -34,8 +34,9 @@
 # /
 
 from abc import abstractmethod
-import numpy as np
 from math import ceil
+
+import numpy as np
 
 #######################################################################
 # Copyright (C)                                                       #
@@ -78,7 +79,7 @@ class StateAggregation(ValueFunction):
         
         self.weights+= alpha*delta*self.eligibility
 
-        #print(self.weights)
+        
 
 
 class LinearApproximationMethod(ValueFunction):
@@ -118,5 +119,3 @@ class FourierBasesValueFunction(LinearApproximationMethod):
         super().__init__(order)
         for i in range(0, order + 1):
             self.bases.append(lambda s, i=i: np.cos(i * np.pi * s))
-
-
