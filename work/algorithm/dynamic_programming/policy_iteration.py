@@ -52,13 +52,13 @@ class PolicyIteration:
         self.delta = delta
         self.discount = discount
 
-    def evaluate(self):
+    def _evaluate(self):
         while True:
-            delta = self.evaluate_once()
+            delta = self._evaluate_once()
             if delta < self.delta:
                 break
 
-    def evaluate_once(self):
+    def _evaluate_once(self):
         delta = 1e-10
         for state_index, old_value_of_state in self.v_table.items():
             value_of_state = 0.0
@@ -72,6 +72,9 @@ class PolicyIteration:
         return delta
 
     def improve(self):
+        
+        self._evaluate()
+        
         delta = 1e-10
         for state_index, actions in self.policy.policy_table.items():
             old_policy = copy.deepcopy(self.policy.policy_table[state_index])
