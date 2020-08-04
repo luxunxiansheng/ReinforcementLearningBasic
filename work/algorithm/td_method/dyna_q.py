@@ -33,7 +33,6 @@
 #
 # /
 
-
 import heapq
 from abc import abstractmethod
 
@@ -54,8 +53,7 @@ class DynaQ:
         self.episodes = episodes
         self.step_size = step_size
         self.discount = discount
-        self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(
-            epsilon)
+        self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(epsilon)
         self.statistics = statistics
 
         if mode == PRIORITY:
@@ -70,7 +68,7 @@ class DynaQ:
             self._run_one_episode(episode)
 
     def _run_one_episode(self, episode):
-         # S
+        # S
         current_state_index = self.env.reset()
 
         while True:
@@ -90,13 +88,9 @@ class DynaQ:
 
             q_values_next_state = self.q_table[next_state_index]
             max_value = max(q_values_next_state.values())
-            delta = reward + self.discount * max_value - \
-                self.q_table[current_state_index][current_action_index]
+            delta = reward + self.discount * max_value - self.q_table[current_state_index][current_action_index]
             self.q_table[current_state_index][current_action_index] += self.step_size * delta
-
-            self.model.learn(self.q_table, self.discount, self.step_size, self.iterations,
-                             current_state_index, current_action_index, next_state_index, reward)
-
+            self.model.learn(self.q_table, self.discount, self.step_size, self.iterations, current_state_index, current_action_index, next_state_index, reward)
             # update policy softly
             q_values = self.q_table[current_state_index]
             distribution = self.create_distribution_epsilon_greedily(q_values)
@@ -141,25 +135,24 @@ class Model():
         pass
 
 
-
 # Trivial model for planning in Dyna-Q
 class TrivialModel(Model):
     # randomly sample from previous experience
     def sample(self):
         state_index = list(self.model)[self.rand.choice(range(len(self.model.keys())))]
-        action_index = list(self.model[state_index])[self.rand.choice(
-            range(len(self.model[state_index].keys())))]
+        action_index = list(self.model[state_index])[self.rand.choice(range(len(self.model[state_index].keys())))]
         next_state_index, reward = self.model[state_index][action_index]
         return state_index, action_index, next_state_index, reward
 
     def learn(self, q_table, discount, step_size, iterations, current_state_index, current_action_index, next_state_index, reward):
         self.feed(current_state_index, current_action_index, next_state_index, reward)
+        
+        # Take Q learning several times. 
         for _ in tqdm(range(0, iterations)):
             sampled_current_state_index, sampled_current_action_index, sampled_next_state_index, sampled_reward = self.sample()
             sampled_q_values_next_state = q_table[sampled_next_state_index]
             max_value = max(sampled_q_values_next_state.values())
-            delta = sampled_reward + discount * max_value - \
-                q_table[sampled_current_state_index][sampled_current_action_index]
+            delta = sampled_reward + discount * max_value -  q_table[sampled_current_state_index][sampled_current_action_index]
             q_table[sampled_current_state_index][sampled_current_action_index] += step_size * delta
 
 
@@ -242,8 +235,7 @@ class PriorityModel(Model):
             _, sampled_current_state_index, sampled_current_action_index, sampled_next_state_index, sampled_reward = self.sample()
             sampled_q_values_next_state = q_table[sampled_next_state_index]
             max_value = max(sampled_q_values_next_state.values())
-            delta = sampled_reward + discount * max_value - \
-                q_table[sampled_current_state_index][sampled_current_action_index]
+            delta = sampled_reward + discount * max_value - q_table[sampled_current_state_index][sampled_current_action_index]
             q_table[sampled_current_state_index][sampled_current_action_index] += step_size * delta
 
             # deal with all the predecessors of the sample state

@@ -62,12 +62,10 @@ class ExpectedSARSA:
         # S
         current_state_index = self.env.reset()
 
-        
-
         while True:
             # A
             current_action_index = self.policy.get_action(current_state_index)
-           
+
             observation = self.env.step(current_action_index)
             #self.env.render()
             # R
