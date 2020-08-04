@@ -34,7 +34,7 @@
 # /
 
 from lib.utility import create_distribution_greedily
-
+from policy.policy import TabularPolicy
 
 class VValueIteration:
     
@@ -56,9 +56,8 @@ class VValueIteration:
     """
     
     
-    def __init__(self, table_policy, v_table, p, delta=1e-8, discount=1.0):
+    def __init__(self, v_table, p, delta=1e-8, discount=1.0):
         self.v_table = v_table
-        self.policy = table_policy
         self.transition_table = p
         self.delta = delta
         self.discount = discount
@@ -70,12 +69,19 @@ class VValueIteration:
             if delta < self.delta:
                 break
 
+       
+
+    def get_optimal_policy(self):
+        policy_table = {}
         for state_index, _ in self.v_table.items():
             q_values = {}  
             for action_index, transitions in self.transition_table[state_index].items():
                 q_values[action_index]=self._get_value_of_action(transitions)
             greedy_distibution = self.create_distribution_greedily(q_values)
-            self.policy.policy_table[state_index] = greedy_distibution
+            policy_table[state_index] = greedy_distibution 
+        
+        table_policy = TabularPolicy(policy_table)
+        return table_policy
 
     def _bellman_optimize(self):
         delta = 1e-10

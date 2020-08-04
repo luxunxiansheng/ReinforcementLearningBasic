@@ -35,7 +35,7 @@
 
 
 from lib.utility import create_distribution_greedily
-
+from policy.policy import TabularPolicy
 
 class QValueIteration:
     """
@@ -55,9 +55,8 @@ class QValueIteration:
     """
     
 
-    def __init__(self, q_table, table_policy, p, delta=1e-8):
+    def __init__(self, q_table, p, delta=1e-8):
         self.q_table = q_table
-        self.policy =  table_policy
         self.transition_table = p
         self.delta = delta
         self.create_distribution_greedily = create_distribution_greedily()
@@ -67,11 +66,18 @@ class QValueIteration:
             delta = self._bellman_optimize()
             if delta < self.delta:
                 break
+        
 
+    def get_optimal_policy(self):
+        policy_table = {}
         for state_index, action_values in self.q_table.items():
             distibution = self.create_distribution_greedily(action_values)
-            self.policy.policy_table[state_index]= distibution
+            policy_table[state_index]= distibution
+        
+        table_policy = TabularPolicy(policy_table)
+        return table_policy
 
+    
     def _bellman_optimize(self):
         delta = 1e-10
         for state_index, action_values in self.q_table.items():

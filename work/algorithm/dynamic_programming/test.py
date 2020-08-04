@@ -27,18 +27,15 @@ def test_policy_iteration(env):
 def test_q_value_iteration(env):
     q_table = env.build_Q_table()
     transition_table = env.P
-    policy_table = env.build_policy_table()
-    table_policy = TabularPolicy(policy_table)
-    rl_method = QValueIteration(q_table, table_policy, transition_table)
+    
+    rl_method = QValueIteration(q_table, transition_table)
     rl_method.improve()
-    env.show_policy(table_policy)
-
+    env.show_policy(rl_method.get_optimal_policy(env))
 
 def test_v_value_iteration(env):
     v_table = env.build_V_table()
     transition_table = env.P
-    policy_table = env.build_policy_table()
-    table_policy = TabularPolicy(policy_table)
-    rl_method = VValueIteration(table_policy, v_table, transition_table)
+    
+    rl_method = VValueIteration(v_table, transition_table)
     rl_method.improve()
-    env.show_policy(table_policy)
+    env.show_policy(rl_method.get_optimal_policy())
