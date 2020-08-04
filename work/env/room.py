@@ -61,7 +61,7 @@ class RoomEnv(BaseDiscreteEnv):
             P[state_index]=defaultdict(lambda:np.zeros(nA))
             for action_index in range(nA):
                 P[state_index][action_index]=[(0.0,0,0,False),(0.0,1,0,False),(0.0,2,0,False),(0.0,3,0,False),(0.0,4,0,False),(0.0,5,0,False)]
-           
+        
         P[0][4][4]=(1.0,4,0,False)
         P[1][3][3]=(1.0,3,0,False)
         P[1][5][5]=(1.0,5,100,True)

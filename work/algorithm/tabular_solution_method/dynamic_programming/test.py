@@ -1,6 +1,6 @@
-from algorithm.dynamic_programming.policy_iteration import PolicyIteration
-from algorithm.dynamic_programming.q_value_iteration import QValueIteration
-from algorithm.dynamic_programming.v_value_iteration import VValueIteration
+from algorithm.tabular_solution_method.dynamic_programming.policy_iteration import PolicyIteration
+from algorithm.tabular_solution_method.dynamic_programming.q_value_iteration import QValueIteration
+from algorithm.tabular_solution_method.dynamic_programming.v_value_iteration import VValueIteration
 
 from policy.policy import TabularPolicy
 
