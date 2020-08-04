@@ -47,7 +47,7 @@ import numpy as np
 #######################################################################
 
 
-class ValueFunction:
+class VValueEstimator:
     @abstractmethod
     def predict(self, state):
         pass
@@ -57,7 +57,7 @@ class ValueFunction:
         pass
 
 
-class StateAggregation(ValueFunction):
+class StateAggregationVValueEstimator(VValueEstimator):
     def __init__(self,total_states,states_per_group):
         self.states_per_group = states_per_group 
         self.groups = ceil(total_states/states_per_group)       
@@ -81,7 +81,7 @@ class StateAggregation(ValueFunction):
 
 
 
-class LinearApproximationMethod(ValueFunction):
+class LinearApproximationVVauleEstimator(VValueEstimator):
     def __init__(self, order):
         self.order = order
         self.weights = np.zeros(order + 1)
@@ -106,14 +106,14 @@ class LinearApproximationMethod(ValueFunction):
         self.weights += alpha * delta * self.eligibility
 
 
-class PolynomialBasesValueFunction(LinearApproximationMethod):
+class PolynomialBasesVValueEsitmator(LinearApproximationVVauleEstimator):
     def __init__(self, order):
         super().__init__(order)
         for i in range(0, order + 1):
             self.bases.append(lambda s, i=i: pow(s, i))
 
 
-class FourierBasesValueFunction(LinearApproximationMethod):
+class FourierBasesVValueEsimator(LinearApproximationVVauleEstimator):
     def __init__(self, order):
         super().__init__(order)
         for i in range(0, order + 1):

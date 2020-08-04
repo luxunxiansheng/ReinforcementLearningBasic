@@ -6,16 +6,17 @@ from algorithm.approximate_solution_method.episodic_semi_gradient_q_learning_con
     EpisodicSemiGradientQLearningControl
 from algorithm.approximate_solution_method.episodic_semi_gradient_sarsa_control import \
     EpisodicSemiGradientSarsaControl
+from algorithm.approximate_solution_method.estimator.q_value_estimator import \
+    TileCodingBasesQValueEstimator
+from algorithm.approximate_solution_method.estimator.v_value_estimator import (
+    FourierBasesVValueEsimator, PolynomialBasesVValueEsitmator,
+    StateAggregationVValueEstimator)
 from algorithm.approximate_solution_method.gradient_monte_carlo_evaluation import \
     GradientMonteCarloEvaluation
-from algorithm.approximate_solution_method.q_function import \
-    TileCodingBasesQFunction
 from algorithm.approximate_solution_method.semi_gradient_td_lambda_evaluation import \
     SemiGradientTDLambdaEvaluation
 from algorithm.approximate_solution_method.semi_gradient_tdn_evaluation import \
     SemiGradientTDNEvalution
-from algorithm.approximate_solution_method.value_function import (
-    FourierBasesValueFunction, PolynomialBasesValueFunction, StateAggregation)
 from lib import plotting
 from lib.utility import create_distribution_epsilon_greedily
 from policy.policy import DiscreteActionPolicy, TabularPolicy
@@ -29,26 +30,28 @@ def test_approximation_evaluation(env):
     b_policy = TabularPolicy(b_policy_table)
 
     distribution = np.zeros(env.nS)
-    
-    
-    vf = StateAggregation(env.nS,3)
-    semigradienttdlambdaevalution = SemiGradientTDLambdaEvaluation(vf, b_policy,env,episodes=num_episodes,lamda=0.0)
-    semigradienttdlambdaevalution.evaluate()
-    semi_grident_tdl_sg = plotting.StateValues('semigradientTDLambdaevalution', vf)
 
-    vf = StateAggregation(env.nS,3)    
-    semigradienttdnevalution = SemiGradientTDNEvalution(vf, b_policy, 5, env, episodes=num_episodes,distribution=distribution)
+    vf = StateAggregationVValueEstimator(env.nS, 3)
+    semigradienttdlambdaevalution = SemiGradientTDLambdaEvaluation(
+        vf, b_policy, env, episodes=num_episodes, lamda=0.0)
+    semigradienttdlambdaevalution.evaluate()
+    semi_grident_tdl_sg = plotting.StateValues(
+        'semigradientTDLambdaevalution', vf)
+
+    vf = StateAggregationVValueEstimator(env.nS, 3)
+    semigradienttdnevalution = SemiGradientTDNEvalution(
+        vf, b_policy, 5, env, episodes=num_episodes, distribution=distribution)
     semigradienttdnevalution.evaluate()
     semi_graident_tdn_sg = plotting.StateValues('semigradientTDNevalution', vf)
 
-    vf = StateAggregation(env.nS,3)
-    gradientmcevalution = GradientMonteCarloEvaluation(vf, b_policy, env, episodes=num_episodes,distribution=distribution)
+    vf = StateAggregationVValueEstimator(env.nS, 3)
+    gradientmcevalution = GradientMonteCarloEvaluation(
+        vf, b_policy, env, episodes=num_episodes, distribution=distribution)
     gradientmcevalution.evaluate()
     mc_sg = plotting.StateValues('gradientMCEvalution', vf)
-    
-    plotting.plot_state_value(env, [semi_grident_tdl_sg,semi_graident_tdn_sg,semi_graident_tdn_sg,mc_sg])
 
-
+    plotting.plot_state_value(
+        env, [semi_grident_tdl_sg, semi_graident_tdn_sg, semi_graident_tdn_sg, mc_sg])
 
 
 def test_approximation_control_sarsa(env):
@@ -58,7 +61,7 @@ def test_approximation_control_sarsa(env):
     observation_space = env.observation_space
 
     tile_coding_step_size = 0.3
-    q_function = TileCodingBasesQFunction(
+    q_function = TileCodingBasesQValueEstimator(
         tile_coding_step_size, observation_space.high[0], observation_space.low[0], observation_space.high[1], observation_space.low[1])
 
     discreteactionpolicy = DiscreteActionPolicy(action_space, q_function)
@@ -76,10 +79,6 @@ def test_approximation_control_sarsa(env):
     return approximation_control_statistics
 
 
-
-
-
-
 def test_approximation_control_expected_sarsa(env):
 
     action_space = env.action_space
@@ -87,7 +86,7 @@ def test_approximation_control_expected_sarsa(env):
     observation_space = env.observation_space
 
     tile_coding_step_size = 0.3
-    q_function = TileCodingBasesQFunction(
+    q_function = TileCodingBasesQValueEstimator(
         tile_coding_step_size, observation_space.high[0], observation_space.low[0], observation_space.high[1], observation_space.low[1])
 
     discreteactionpolicy = DiscreteActionPolicy(action_space, q_function)
@@ -112,7 +111,7 @@ def test_approximation_control_q_learning(env):
     observation_space = env.observation_space
 
     tile_coding_step_size = 0.3
-    q_function = TileCodingBasesQFunction(
+    q_function = TileCodingBasesQValueEstimator(
         tile_coding_step_size, observation_space.high[0], observation_space.low[0], observation_space.high[1], observation_space.low[1])
 
     discreteactionpolicy = DiscreteActionPolicy(action_space, q_function)

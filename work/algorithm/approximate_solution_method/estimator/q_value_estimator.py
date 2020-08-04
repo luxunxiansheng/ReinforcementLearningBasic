@@ -38,7 +38,7 @@ import numpy as np
 from math import floor
 
 
-class QFunction:
+class QValueEstimator:
     @abstractmethod
     def predict(self, state, action):
         pass
@@ -49,7 +49,7 @@ class QFunction:
 
 
 
-class TileCodingBasesQFunction(QFunction):
+class TileCodingBasesQValueEstimator(QValueEstimator):
     
     ################# Tile coding ##########################################
     # Following are some utilities for tile coding from Rich.
@@ -93,7 +93,7 @@ class TileCodingBasesQFunction(QFunction):
 
     @staticmethod
     def hash_coords(coordinates, m, read_only=False):
-        if isinstance(m, TileCodingBasesQFunction.IHT): return m.get_index(tuple(coordinates), read_only)
+        if isinstance(m, TileCodingBasesQValueEstimator.IHT): return m.get_index(tuple(coordinates), read_only)
         if isinstance(m, int): return hash(tuple(coordinates)) % m
         if m is None: return coordinates
 
@@ -114,7 +114,7 @@ class TileCodingBasesQFunction(QFunction):
                 coords.append((q + b) // num_tilings)
                 b += tilingX2
             coords.extend(action)
-            tiles.append(TileCodingBasesQFunction.hash_coords(coords, iht_or_size, read_only))
+            tiles.append(TileCodingBasesQValueEstimator.hash_coords(coords, iht_or_size, read_only))
         return tiles
 
 
@@ -129,7 +129,7 @@ class TileCodingBasesQFunction(QFunction):
         # divide step size equally to each tiling
         self.step_size = step_size / num_of_tilings
 
-        self.hash_table = TileCodingBasesQFunction.IHT(max_size)
+        self.hash_table = TileCodingBasesQValueEstimator.IHT(max_size)
 
         # weight for each tile
         self.weights = np.zeros(max_size)
@@ -147,7 +147,7 @@ class TileCodingBasesQFunction(QFunction):
     # get indices of active tiles for given 2d state and action
     def get_active_tiles(self, state, action):
 
-        active_tiles = TileCodingBasesQFunction.build_tiles(self.hash_table, self.num_of_tilings,
+        active_tiles = TileCodingBasesQValueEstimator.build_tiles(self.hash_table, self.num_of_tilings,
                             [self.scale_x * state[0], self.scale_y * state[1]],
                             [action])
         return active_tiles
