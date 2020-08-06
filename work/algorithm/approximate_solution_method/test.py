@@ -19,7 +19,7 @@ from algorithm.approximate_solution_method.semi_gradient_tdn_evaluation import \
     SemiGradientTDNEvalution
 from lib import plotting
 from lib.utility import create_distribution_epsilon_greedily
-from policy.policy import DiscreteActionPolicy, TabularPolicy
+from policy.policy import ApproximatePolicy, TabularPolicy
 
 num_episodes = 1000
 n_steps = 4
@@ -64,7 +64,7 @@ def test_approximation_control_sarsa(env):
     q_function = TileCodingBasesQValueEstimator(
         tile_coding_step_size, observation_space.high[0], observation_space.low[0], observation_space.high[1], observation_space.low[1])
 
-    discreteactionpolicy = DiscreteActionPolicy(action_space, q_function)
+    discreteactionpolicy = ApproximatePolicy(action_space, q_function)
     discreteactionpolicy.create_distribution_fn = create_distribution_epsilon_greedily(
         0.1)
 
@@ -89,7 +89,7 @@ def test_approximation_control_expected_sarsa(env):
     q_function = TileCodingBasesQValueEstimator(
         tile_coding_step_size, observation_space.high[0], observation_space.low[0], observation_space.high[1], observation_space.low[1])
 
-    discreteactionpolicy = DiscreteActionPolicy(action_space, q_function)
+    discreteactionpolicy = ApproximatePolicy(action_space, q_function)
     discreteactionpolicy.create_distribution_fn = create_distribution_epsilon_greedily(
         0.1)
 
@@ -114,7 +114,7 @@ def test_approximation_control_q_learning(env):
     q_function = TileCodingBasesQValueEstimator(
         tile_coding_step_size, observation_space.high[0], observation_space.low[0], observation_space.high[1], observation_space.low[1])
 
-    discreteactionpolicy = DiscreteActionPolicy(action_space, q_function)
+    discreteactionpolicy = ApproximatePolicy(action_space, q_function)
     discreteactionpolicy.create_distribution_fn = create_distribution_epsilon_greedily(
         0.1)
 

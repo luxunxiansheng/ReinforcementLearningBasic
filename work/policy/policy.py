@@ -33,12 +33,10 @@
 #
 # /
 
-
-
 from abc import ABC, abstractmethod
+from example.mountaincar.ac import policy_estimator, value_estimator
 
 import numpy as np
-
 
 class Policy(ABC):
     """
@@ -53,8 +51,13 @@ class Policy(ABC):
     """
 
     @abstractmethod
+    def _construct_distribution(self,state):
+        pass   
+
     def get_action(self, state):
-        pass
+        distribution = self.construct_distribution(state)
+        action = np.random.choice(np.arange(len(distribution)), p=distribution)
+        return action
 
 
 class TabularPolicy(Policy):
@@ -70,29 +73,37 @@ class TabularPolicy(Policy):
 
     def __init__(self, pi):
         self.policy_table = pi
+    
+    def _construct_distribution(self, state):
+        distribution = list(self.policy_table[state].values())
+        return distribution
+    
+    def get_action_probablity(self,state,action):
+        return self.policy_table[state][action]
 
-    def get_action(self, state):
-        action_probs = list(self.policy_table[state].values())
-        action_index = np.random.choice(np.arange(len(action_probs)), p=action_probs)
-        return action_index
+class ApproximatePolicy(Policy):
+    def __init__(self,q_value_estimator):
+        self.q_value_estimator = q_value_estimator
 
-class DiscreteActionPolicy(Policy):
-    def __init__(self, action_space, estimator):
-        self.action_space = action_space
-        self.estimator = estimator
-        self.create_distribution_fn =None
-
-    def get_action(self, state):
+    def _construct_distribution(self, state):
         q_values ={}
         for action_index in range(self.action_space.n):
-            q_values[action_index] = self.estimator.predict(state,action_index)
-        distribution = list(self.create_distribution_fn(q_values).values())
-        action_index = np.random.choice(np.arange(self.action_space.n), p=distribution)
-        return action_index
+            q_values[action_index] = self.q_value_estimator.predict(state,action_index)
+        
+        distribution = self.get_action_distribution(q_values)
+        return distribution
     
     def get_action_distribution(self,q_values):
         return  list(self.create_distribution_fn(q_values).values())
     
     
+class ParameterizedPolicy(Policy):
+    def __init__(self,policy_estimator) -> None:
+        self.policy_estimator = policy_estimator
 
+    def _construct_distribution(self, state):
+        distribution = self.policy_estimator.predict(state)
+        return distribution
+
+    
 

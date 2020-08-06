@@ -41,8 +41,8 @@ from lib.utility import create_distribution_greedily
 
 class PolicyIteration:
     """
-     Once a ploicy has been improved to get a new sequence of value of states, we can
-     then compute the value of the states to improve the pollicy, monotonically. 
+    Once a ploicy has been improved to get a new sequence of value of states, we can
+    then compute the value of the states to improve the pollicy, monotonically. 
     """
 
     def __init__(self, v_table, policy, transition_table, delta=1e-5, discount=1.0):
@@ -65,8 +65,7 @@ class PolicyIteration:
             action_transitions = self.transition_table[state_index]
             for action_index, transitions in action_transitions.items():
                 value_of_action = self._get_value_of_action(transitions)
-                value_of_state += self.policy.policy_table[state_index][action_index] * \
-                    value_of_action
+                value_of_state += self.policy.get_action_probablity(state_index,action_index) * value_of_action
             self.v_table[state_index] = value_of_state
             delta = max(abs(value_of_state-old_value_of_state), delta)
         return delta
