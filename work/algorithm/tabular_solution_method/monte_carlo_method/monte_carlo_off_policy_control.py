@@ -33,13 +33,12 @@
 #
 # /
 
-
+import copy
 from collections import defaultdict
 
 import numpy as np
 
-
-# ToDo :  to be tested
+from lib.utility import create_distribution_greedily
 
 
 class MonteCarloOffPolicyControl:
@@ -50,13 +49,14 @@ class MonteCarloOffPolicyControl:
 
     """
 
-    def __init__(self, q_table, behavior_policy, target_policy, env, episodes=10000, discount=1.0):
+    def __init__(self, q_table, behavior_policy, env, episodes=10000, discount=1.0):
         self.q_table = q_table
         self.behavior_policy = behavior_policy
-        self.target_policy = target_policy
+        self.target_policy = copy.deepcopy(behavior_policy)
         self.env = env
         self.episodes = episodes
         self.discount = discount
+        self.create_distribution_greedily = create_distribution_greedily()
 
     def improve(self):
         # it is necessary to keep the weight total for every state_action pair
@@ -74,9 +74,10 @@ class MonteCarloOffPolicyControl:
                 C[state_index][action_index] += W
 
                 # q_value calculated incrementally with off policy
-                self.q_table[state_index][action_index] += W / \
-                    C[state_index][action_index] * \
-                    (G-self.q_table[state_index][action_index])
+                self.q_table[state_index][action_index] += W / C[state_index][action_index] * (G-self.q_table[state_index][action_index])
+
+                distibution = self.create_distribution_greedily(self.q_table[state_index])
+                self.target_policy.policy_table[state_index] =  distibution
 
                 # If the action taken by the behavior policy is not the action
                 # taken by the target policy the probability will be 0 and we can break
@@ -84,8 +85,7 @@ class MonteCarloOffPolicyControl:
                     break
 
                 # probability product
-                W = W * 1. / \
-                    self.behavior_policy.policy_table[state_index][action_index]
+                W = W * 1. / self.behavior_policy.policy_table[state_index][action_index]
 
     def _init_weight_total(self):
         weight_total = defaultdict(lambda: {})
@@ -96,7 +96,7 @@ class MonteCarloOffPolicyControl:
 
     def _run_one_episode(self):
         trajectory = []
-        current_state_index = self.env.reset(False)
+        current_state_index = self.env.reset(True)
         while True:
             action_index = self.behavior_policy.get_action(current_state_index)
             observation = self.env.step(action_index)
@@ -108,3 +108,6 @@ class MonteCarloOffPolicyControl:
             current_state_index = observation[0]
 
         return trajectory
+
+    def get_optimal_policy(self):
+        return self.target_policy

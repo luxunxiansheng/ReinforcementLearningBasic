@@ -45,6 +45,10 @@ from algorithm.tabular_solution_method.dynamic_programming.test import (test_pol
     test_off_policy_n_steps_sarsa, test_qlearning_method, test_sarsa_method,
     test_td0_evaluation_method, test_td_control_method,
     test_td_lambda_evalution_method, test_tdn_evaluaiton_method) """
+
+
+from algorithm.tabular_solution_method.monte_carlo_method.test import (test_mc_offpolicy_control_method,test_mc_offpolicy_evaluation_method_for_blackjack)
+
 from env.blackjack import BlackjackEnv
 from env.cliff_walking import CliffWalkingEnv
 from env.grid_world import GridworldEnv
@@ -87,10 +91,17 @@ def test_dp(algo,env):
         test_q_value_iteration(real_env)
 
 
-""" def test_mc(algo,env):
-    pass 
+def test_mc(algo,env):
+    real_env = get_env(env)
+
+    if algo == "MonteCarloOffPolicyControl":
+        test_mc_offpolicy_control_method(real_env)
+
+    if algo == "MonteCarloOffPolicyEvaluation":
+        test_mc_offpolicy_evaluation_method_for_blackjack()
 
 
+"""
 def test_td(algo, env):
     real_env = get_env(env)
 

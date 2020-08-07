@@ -38,15 +38,15 @@ from collections import defaultdict
 from tqdm import tqdm
 
 from lib.utility import create_distribution_greedily
+from policy.policy import TabularPolicy
 
 
 class MonteCarloESControl:
     """
     On Policy method and the Exploration comes from the random initial states
     """
-    def __init__(self, q_table, table_policy, env, episodes=500000, discount=1.0):
+    def __init__(self, q_table, env, episodes=500000, discount=1.0):
         self.q_table = q_table
-        self.policy = table_policy
         self.env = env
         self.episodes = episodes
         self.discount = discount
@@ -62,10 +62,6 @@ class MonteCarloESControl:
                 R = reward+self.discount*R
                 state_count[state_index][action_index] = (state_count[state_index][action_index][0] + 1, state_count[state_index][action_index][1] + R)
                 self.q_table[state_index][action_index] = state_count[state_index][action_index][1] / state_count[state_index][action_index][0]
-                
-                q_values = self.q_table[state_index]
-                distribution = self.create_distribution_greedily(q_values)
-                self.policy.policy_table[state_index] = distribution
                         
     def _init_state_count(self):
         state_count = defaultdict(lambda: {})
@@ -89,3 +85,12 @@ class MonteCarloESControl:
             current_state_index = observation[0]
 
         return trajectory
+
+    def get_optimal_policy(self):
+        policy_table = {}
+        for state_index, action_values in self.q_table.items():
+            distibution = self.create_distribution_greedily(action_values)
+            policy_table[state_index]= distibution
+        
+        table_policy = TabularPolicy(policy_table)
+        return table_policy

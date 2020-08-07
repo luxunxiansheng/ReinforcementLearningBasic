@@ -60,7 +60,6 @@ class MonteCarloOffPolicyEvaluation:
             G = 0.0
             W = 1
             for state_index, action_index, reward in trajectory[::-1]:
-
                 # The return for current state_action pair
                 G = reward + self.discount*G
 

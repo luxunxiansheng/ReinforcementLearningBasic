@@ -1,5 +1,6 @@
 from algorithm.tabular_solution_method.monte_carlo_method.monte_carlo_es_control import MonteCarloESControl
 from algorithm.tabular_solution_method.monte_carlo_method.monte_carlo_off_policy_evaluation import MonteCarloOffPolicyEvaluation
+from algorithm.tabular_solution_method.monte_carlo_method.monte_carlo_off_policy_control import MonteCarloOffPolicyControl
 from algorithm.tabular_solution_method.monte_carlo_method.monte_carlo_on_policy_control import MonteCarloOnPolicyControl
 from algorithm.tabular_solution_method.monte_carlo_method.v_monte_carlo_evaluation import VMonteCarloEvaluation
 from policy.policy import TabularPolicy
@@ -43,20 +44,26 @@ def test_mc_offpolicy_evaluation_method_for_blackjack():
 
 
 def test_q_mc_es_control_method(env):
-    q_table = env.build_Q_table()
-    policy_table = env.build_policy_table()
-    table_policy = TabularPolicy(policy_table)
     rl_method = MonteCarloESControl(q_table, table_policy, env)
     rl_method.improve()
-    env.show_policy(table_policy)
+    env.show_policy(rl_method.get_optimal_policy())
+
+
+def test_mc_offpolicy_control_method(env):
+    q_table = env.build_Q_table()
+    policy_table = env.build_policy_table()
+    behavior_policy = TabularPolicy(policy_table)
+    rl_method = MonteCarloOffPolicyControl(q_table, behavior_policy, env)
+    rl_method.improve()
+    env.show_policy(rl_method.get_optimal_policy())
+    
 
 
 def test_mc_onpolicy_control_method(env):
     q_table = env.build_Q_table()
     policy_table = env.build_policy_table()
     table_policy = TabularPolicy(policy_table)
-    rl_method = MonteCarloOnPolicyControl(
-        q_table, table_policy, 0.1, env)
+    rl_method = MonteCarloOnPolicyControl(q_table, table_policy, env)
     rl_method.improve()
     env.render()
     env.show_policy(table_policy)
