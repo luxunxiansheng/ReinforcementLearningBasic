@@ -15,7 +15,7 @@ def test_policy_iteration(env):
 
     delta = 1e-5
 
-    env.show_policy(table_policy)
+    #env.show_policy(table_policy)
 
     print("---------------------------------")
 
@@ -32,7 +32,7 @@ def test_q_value_iteration(env):
     
     rl_method = QValueIteration(q_table, transition_table)
     rl_method.improve()
-    env.show_policy(rl_method.get_optimal_policy(env))
+    env.show_policy(rl_method.get_optimal_policy())
 
 def test_v_value_iteration(env):
     v_table = env.build_V_table()

@@ -32,9 +32,7 @@ class GridworldEnv(BaseDiscreteEnv):
     DOWN = 2
     LEFT = 3
     
-    metadata = {'render.modes': ['human', 'ansi']}
-
-    def __init__(self, shape=[6, 6]):
+    def __init__(self, shape=[20, 20]):
         if not isinstance(shape, (list, tuple)) or not len(shape) == 2:
             raise ValueError('shape argument must be a list/tuple of length 2')
 

@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["test_dp","policy_iteration","grid_world"],
+            "args": ["test_dp","q_value_iteration","grid_world"],
             "justMyCode": false          
         }
     ]

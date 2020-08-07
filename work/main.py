@@ -81,10 +81,10 @@ def test_dp(algo,env):
         test_policy_iteration(real_env)
 
     if algo == "v_value_iteration":
-        test_v_value_iteration(env)
+        test_v_value_iteration(real_env)
     
     if algo == "q_value_iteration":
-        test_q_value_iteration(env)
+        test_q_value_iteration(real_env)
 
 
 """ def test_mc(algo,env):
