@@ -83,8 +83,7 @@ class PolicyIteration:
                 q_values[action_index] = self._get_value_of_action(transition)
             greedy_distibution = create_distribution_greedily()(q_values)
             self.policy.policy_table[state_index] = greedy_distibution
-            new_old_policy_diff = {action_index: abs(
-                old_policy[action_index]-greedy_distibution[action_index]) for action_index in greedy_distibution}
+            new_old_policy_diff = {action_index: abs(old_policy[action_index]-greedy_distibution[action_index]) for action_index in greedy_distibution}
             delta = max(max(new_old_policy_diff.values()), delta)
         return delta
 

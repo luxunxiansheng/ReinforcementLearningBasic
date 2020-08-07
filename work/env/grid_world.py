@@ -27,7 +27,11 @@ from env.base_discrete_env import BaseDiscreteEnv
 
 
 class GridworldEnv(BaseDiscreteEnv):
-
+    UP = 0
+    RIGHT = 1
+    DOWN = 2
+    LEFT = 3
+    
     metadata = {'render.modes': ['human', 'ansi']}
 
     def __init__(self, shape=[6, 6]):
@@ -46,18 +50,13 @@ class GridworldEnv(BaseDiscreteEnv):
         super().__init__(nS, nA, self.P, isd)
 
     def _build_transitions(self, nS, nA):
-         # Transition prob matrix
+        # Transition prob matrix
         P = {}
 
         it = np.nditer(self.grid, flags=['multi_index'])
 
         MAX_Y = self.grid.shape[0]
         MAX_X = self.grid.shape[1]
-
-        UP = 0
-        RIGHT = 1
-        DOWN = 2
-        LEFT = 3
 
         while not it.finished:
             s = it.iterindex
@@ -71,40 +70,34 @@ class GridworldEnv(BaseDiscreteEnv):
 
             # We're stuck in a terminal state
             if is_done(s):
-                P[s][UP] = [(1.0, s, reward, True)]
-                P[s][RIGHT] = [(1.0, s, reward, True)]
-                P[s][DOWN] = [(1.0, s, reward, True)]
-                P[s][LEFT] = [(1.0, s, reward, True)]
+                P[s][GridworldEnv.UP] = [(1.0, s, reward, True)]
+                P[s][GridworldEnv.RIGHT] = [(1.0, s, reward, True)]
+                P[s][GridworldEnv.DOWN] = [(1.0, s, reward, True)]
+                P[s][GridworldEnv.LEFT] = [(1.0, s, reward, True)]
             # Not a terminal state
             else:
                 ns_up = s if y == 0 else s - MAX_X
                 ns_right = s if x == (MAX_X - 1) else s + 1
                 ns_down = s if y == (MAX_Y - 1) else s + MAX_X
                 ns_left = s if x == 0 else s - 1
-                P[s][UP] = [(1.0, ns_up, reward, is_done(ns_up))]
-                P[s][RIGHT] = [(1.0, ns_right, reward, is_done(ns_right))]
-                P[s][DOWN] = [(1.0, ns_down, reward, is_done(ns_down))]
-                P[s][LEFT] = [(1.0, ns_left, reward, is_done(ns_left))]
+                P[s][GridworldEnv.UP] = [(1.0, ns_up, reward, is_done(ns_up))]
+                P[s][GridworldEnv.RIGHT] = [(1.0, ns_right, reward, is_done(ns_right))]
+                P[s][GridworldEnv.DOWN] = [(1.0, ns_down, reward, is_done(ns_down))]
+                P[s][GridworldEnv.LEFT] = [(1.0, ns_left, reward, is_done(ns_left))]
 
             it.iternext()
 
         return P
     
     
-
-    def render(self, mode='human'):
-        outfile = io.StringIO() if mode == 'ansi' else sys.stdout
+    def show_policy(self, policy):
+        outfile = sys.stdout
         it = np.nditer(self.grid, flags=['multi_index'])
         while not it.finished:
             s = it.iterindex
             _, x = it.multi_index
 
-            if self.s == s:
-                output = " x "
-            elif s == 0 or s == self.nS - 1:
-                output = " T "
-            else:
-                output = " o "
+            output = self._get_direction(policy.get_action(s))    
 
             if x == 0:
                 output = output.lstrip()
@@ -117,3 +110,7 @@ class GridworldEnv(BaseDiscreteEnv):
                 outfile.write("\n")
 
             it.iternext()
+
+    def _get_direction(self,action):
+        dirctions={GridworldEnv.UP:'^ ',GridworldEnv.RIGHT:'> ',GridworldEnv.LEFT:'< ',GridworldEnv.DOWN:'V '}
+        return dirctions[action]

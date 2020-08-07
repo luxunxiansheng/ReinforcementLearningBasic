@@ -34,7 +34,6 @@
 # /
 
 from abc import ABC, abstractmethod
-from example.mountaincar.ac import policy_estimator, value_estimator
 
 import numpy as np
 
@@ -55,7 +54,7 @@ class Policy(ABC):
         pass   
 
     def get_action(self, state):
-        distribution = self.construct_distribution(state)
+        distribution = self._construct_distribution(state)
         action = np.random.choice(np.arange(len(distribution)), p=distribution)
         return action
 

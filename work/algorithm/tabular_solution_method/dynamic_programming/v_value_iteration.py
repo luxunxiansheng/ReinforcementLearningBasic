@@ -49,9 +49,7 @@ class VValueIteration:
     is when policy evaluation is stopped after just one sweep(one update of each state). This
     alrgorithm is so called Value Iteration. 
 
-
     Refer to the equation 4.2 in Sutton's book 
-
 
     """
     
@@ -68,8 +66,6 @@ class VValueIteration:
             delta = self._bellman_optimize()
             if delta < self.delta:
                 break
-
-       
 
     def get_optimal_policy(self):
         policy_table = {}
@@ -91,8 +87,7 @@ class VValueIteration:
             for action_index, transition in transitions.items():
                 value_of_action = self._get_value_of_action(transition)
                 q_values[action_index] = value_of_action
-            optimal_value_of_action = self._get_optimal_value_of_action(
-                q_values)
+            optimal_value_of_action = self._get_optimal_value_of_action(q_values)
             self.v_table[state_index] = optimal_value_of_action
             delta = max(abs(old_value_of_state-optimal_value_of_action), delta)
 

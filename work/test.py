@@ -1,16 +1,17 @@
-from abc import abstractmethod
+import numpy as np 
 
-class Base:
-    @abstractmethod
-    def say(self):
-        print("Say In Base")
+a = np.arange(5,11).reshape(2,3)
 
+print(a)
 
-class Derived(Base):
-    def __init__(self):
-        print("Init")
+it = np.nditer(a,flags=['multi_index'])
 
 
-
-d = Derived()
-d.say()
+for x in it:
+    
+    s = it.iterindex
+    y = it.multi_index
+    print(x)
+    print(s)
+    print(y)
+        

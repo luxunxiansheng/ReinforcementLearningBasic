@@ -17,6 +17,8 @@ def test_policy_iteration(env):
 
     env.show_policy(table_policy)
 
+    print("---------------------------------")
+
     while True:
         current_delta = rl_method.improve()
         if current_delta < delta:
