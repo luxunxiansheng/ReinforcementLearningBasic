@@ -20,7 +20,7 @@ from lib import plotting
 from policy.policy import TabularPolicy
 
 
-num_episodes = 1000
+num_episodes = 100000
 n_steps = 4
 
 

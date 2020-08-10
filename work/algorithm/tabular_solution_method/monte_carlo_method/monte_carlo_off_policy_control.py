@@ -37,8 +37,13 @@ import copy
 from collections import defaultdict
 
 import numpy as np
+from numpy.lib import utils
 
-from lib.utility import create_distribution_greedily
+from tqdm import tqdm
+
+from lib.utility import (create_distribution_epsilon_greedily,
+                         create_distribution_greedily)
+
 
 
 class MonteCarloOffPolicyControl:
@@ -57,16 +62,16 @@ class MonteCarloOffPolicyControl:
         self.episodes = episodes
         self.discount = discount
         self.create_distribution_greedily = create_distribution_greedily()
+        self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(0.01)
 
     def improve(self):
         # it is necessary to keep the weight total for every state_action pair
         C = self._init_weight_total()
-        for _ in range(0, self.episodes):
+        for _ in tqdm(range(0, self.episodes)):
             trajectory = self._run_one_episode()
             G = 0.0
             W = 1
             for state_index, action_index, reward in trajectory[::-1]:
-
                 # The return for current state_action pair
                 G = reward + self.discount*G
 
@@ -87,6 +92,9 @@ class MonteCarloOffPolicyControl:
                 # probability product
                 W = W * 1. / self.behavior_policy.policy_table[state_index][action_index]
 
+                self.behavior_policy.policy_table[state_index] = self.create_distribution_epsilon_greedily(self.q_table[state_index])
+
+            
     def _init_weight_total(self):
         weight_total = defaultdict(lambda: {})
         for state_index, action_values in self.q_table.items():

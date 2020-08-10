@@ -92,6 +92,5 @@ class PolicyIteration:
         for transition_prob, next_state_index, reward, done in transitions:  # For each next state
             # the reward is also related to the next state
             value_of_next_state = 0 if done else self.v_table[next_state_index]
-            value_of_action += transition_prob * \
-                (self.discount*value_of_next_state+reward)
+            value_of_action += transition_prob * (self.discount*value_of_next_state+reward)
         return value_of_action

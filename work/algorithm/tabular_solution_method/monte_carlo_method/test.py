@@ -56,8 +56,6 @@ def test_mc_offpolicy_control_method(env):
     rl_method = MonteCarloOffPolicyControl(q_table, behavior_policy, env)
     rl_method.improve()
     env.show_policy(rl_method.get_optimal_policy())
-    
-
 
 def test_mc_onpolicy_control_method(env):
     q_table = env.build_Q_table()

@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["test_mc","MonteCarloOffPolicyEvaluation",""],
+            "args": ["test_mc","MonteCarloOffPolicyControl","grid_world"],
             "justMyCode": false          
         }
     ]
