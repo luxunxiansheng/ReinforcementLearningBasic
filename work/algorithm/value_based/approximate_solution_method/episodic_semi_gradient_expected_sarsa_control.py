@@ -36,16 +36,13 @@
 import numpy as np
 from tqdm import tqdm
 
-from lib.utility import create_distribution_epsilon_greedily
-
-
 class EpisodicSemiGradientExpectedSarsaControl:
     """
     Expected SARSA algorithm: On-policy TD control. Finds the optimal epsilon-greedy policy with approximation of q funciton 
     """
 
     def __init__(self, estimator, discreteactionpolicy, env, statistics, episodes, step_size=0.1, discount=1.0):
-        self.estimator = estimator
+        self.q_value_estimator = estimator
         self.policy = discreteactionpolicy
         self.env = env
         self.step_size = step_size
@@ -79,7 +76,7 @@ class EpisodicSemiGradientExpectedSarsaControl:
             # expected q value of the next state 
             q_values = {}
             for action_index in range(self.env.action_space.n):
-                q_values[action_index] = self.estimator.predict(next_state,action_index)
+                q_values[action_index] = self.q_value_estimator.predict(next_state,action_index)
             distribution = self.policy.get_action_distribution(q_values)
 
             expected_q_value = 0
@@ -90,10 +87,9 @@ class EpisodicSemiGradientExpectedSarsaControl:
             target = reward + self.discount * expected_q_value
 
             # SGD fitting
-            self.estimator.update(self.step_size, current_state, current_action_index, target)
+            self.q_value_estimator.update(self.step_size, current_state, current_action_index, target)
 
             if done:
                 break
 
             current_state = next_state
-            

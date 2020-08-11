@@ -60,7 +60,6 @@ def reinforce(env, statistics, policy_estimator, value_estimator, num_episodes, 
         discount_factor: Time-discount factor
 
     """
-
     Transition = namedtuple(
         "Transition", ["state", "action", "reward", "next_state", "done"])
 
@@ -80,16 +79,14 @@ def reinforce(env, statistics, policy_estimator, value_estimator, num_episodes, 
             next_state, reward, done, _ = env.step(action)
 
             # Keep track of the transition
-            episode.append(Transition(state=state, action=action,
-                                      reward=reward, next_state=next_state, done=done))
+            episode.append(Transition(state=state, action=action,reward=reward, next_state=next_state, done=done))
 
             # Update statistics
             statistics.episode_rewards[i_episode] += reward
             statistics.episode_lengths[i_episode] = t
 
             # Print out which step we're on, useful for debugging.
-            print("\rStep {} @ Episode {}/{} ({})".format(t, i_episode + 1,
-                                                          num_episodes, statistics.episode_rewards[i_episode - 1]), end="")
+            print("\rStep {} @ Episode {}/{} ({})".format(t, i_episode + 1,num_episodes, statistics.episode_rewards[i_episode - 1]), end="")
             # sys.stdout.flush()
 
             if done:

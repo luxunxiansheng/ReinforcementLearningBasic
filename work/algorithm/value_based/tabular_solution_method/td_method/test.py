@@ -2,19 +2,19 @@ import numpy as np
 
 from pyinstrument import Profiler
 
-from algorithm.tabular_solution_method.td_method.q_learning import QLearning
-from algorithm.tabular_solution_method.td_method.sarsa import SARSA
-from algorithm.tabular_solution_method.td_method.sarsa_lambda import SARSALambda
-from algorithm.tabular_solution_method.td_method.td0_evaluation import TD0Evalutaion
-from algorithm.tabular_solution_method.td_method.expected_sarsa import ExpectedSARSA
-from algorithm.tabular_solution_method.td_method.double_q_learning import DoubleQLearning
-from algorithm.tabular_solution_method.td_method.tdn_evaluation import TDNEvalutaion
-from algorithm.tabular_solution_method.td_method.n_steps_sarsa import NStepsSARSA
-from algorithm.tabular_solution_method.td_method.n_steps_expected_sarsa import NStepsExpectedSARSA
-from algorithm.tabular_solution_method.td_method.off_policy_n_steps_sarsa import OffPolicyNStepsSARSA
-from algorithm.tabular_solution_method.td_method.dyna_q import DynaQ, TRIVAL, PRIORITY
-from algorithm.tabular_solution_method.td_method.td_lambda_evaluation import TDLambdaEvalutaion
-from algorithm.tabular_solution_method.td_method.q_lambda import QLambda
+from algorithm.value_based.tabular_solution_method.td_method.q_learning import QLearning
+from algorithm.value_based.tabular_solution_method.td_method.sarsa import SARSA
+from algorithm.value_based.tabular_solution_method.td_method.sarsa_lambda import SARSALambda
+from algorithm.value_based.tabular_solution_method.td_method.td0_evaluation import TD0Evalutaion
+from algorithm.value_based.tabular_solution_method.td_method.expected_sarsa import ExpectedSARSA
+from algorithm.value_based.tabular_solution_method.td_method.double_q_learning import DoubleQLearning
+from algorithm.value_based.tabular_solution_method.td_method.tdn_evaluation import TDNEvalutaion
+from algorithm.value_based.tabular_solution_method.td_method.n_steps_sarsa import NStepsSARSA
+from algorithm.value_based.tabular_solution_method.td_method.n_steps_expected_sarsa import NStepsExpectedSARSA
+from algorithm.value_based.tabular_solution_method.td_method.off_policy_n_steps_sarsa import OffPolicyNStepsSARSA
+from algorithm.value_based.tabular_solution_method.td_method.dyna_q import DynaQ, TRIVAL, PRIORITY
+from algorithm.value_based.tabular_solution_method.td_method.td_lambda_evaluation import TDLambdaEvalutaion
+from algorithm.value_based.tabular_solution_method.td_method.q_lambda import QLambda
 
 from lib import plotting
 from policy.policy import TabularPolicy

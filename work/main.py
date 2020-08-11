@@ -38,7 +38,7 @@ import fire
 """ from algorithm.approximate_solution_method.test import (
     test_approximation_control_method, test_approximation_evaluation) """
 
-from algorithm.tabular_solution_method.dynamic_programming.test import (test_policy_iteration, test_q_value_iteration, test_v_value_iteration)
+from algorithm.value_based.tabular_solution_method.dynamic_programming.test import (test_policy_iteration, test_q_value_iteration, test_v_value_iteration)
 
 """ from algorithm.tabular_solution_method.td_method.test import (test_double_q_learning_method, test_expected_sarsa_method,
     test_n_setps_expected_sarsa, test_n_steps_sarsa_method,
@@ -47,7 +47,7 @@ from algorithm.tabular_solution_method.dynamic_programming.test import (test_pol
     test_td_lambda_evalution_method, test_tdn_evaluaiton_method) """
 
 
-from algorithm.tabular_solution_method.monte_carlo_method.test import (test_mc_offpolicy_control_method,test_mc_offpolicy_evaluation_method_for_blackjack)
+from algorithm.value_based.tabular_solution_method.monte_carlo_method.test import (test_mc_offpolicy_control_method,test_mc_offpolicy_evaluation_method_for_blackjack)
 
 from env.blackjack import BlackjackEnv
 from env.cliff_walking import CliffWalkingEnv

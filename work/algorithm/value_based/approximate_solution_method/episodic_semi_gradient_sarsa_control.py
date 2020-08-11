@@ -36,8 +36,6 @@
 import numpy as np
 from tqdm import tqdm
 
-from lib.utility import create_distribution_epsilon_greedily
-
 
 class EpisodicSemiGradientSarsaControl:
     """

@@ -5,13 +5,13 @@ permalink: https://perma.cc/6Z2N-PFWC
 
 import math
 
-import numpy as np
-
 import gym
+import numpy as np
 from gym import spaces
 from gym.utils import seeding
 
 from env.discrete_action_env import DiscreteActionEnv
+
 
 class MountainCarEnv(DiscreteActionEnv):
     """

@@ -39,12 +39,11 @@
 
 ## About The Project
 
-[Reinforcement Learning: An introduction 2e](1) is believed to be the most famous book on reinforcement learning methodology. Dozons of classic algorithms are proposed in the book, which include dynamical progamming methods, monte carlo methods, temporal-difference  methods ,policy grident methods and so on so forth.  [Shangtong Zhang](2) implements almost all of the algothims in the book with python. It is a great work for educational purposes.
+[Reinforcement Learning: An introduction 2e](1) is believed to be the most famous book on reinforcement learning methodology. Dozons of classic algorithms are proposed in this book, which include dynamical progamming methods, monte carlo methods, temporal-difference  methods ,policy grident methods and so on so forth.  [Shangtong Zhang](2) implements almost all of the algothims in the book with python. It is my favorite reference project when I read Sutton's book. However, because of its educational purpose, each case follows the book pretty strictly and hard to reuse some codes. From enginerring perspecitve, there is still big room for improvement. I need one compact code set for my own use. That is why I decided to launch this project even though I knew there had been many other RL projects exsiting in the world.
 
-From enginerring perspecitve, there is still big room for improvement. In this project,
-a lightweight framework is configured with Object-oriented programming paradigm. Algorithms and enviroments are seperated carefully and most of the algorithms in [Reinforcement Learning: An introduction 2e](1) are re-implemented. It might be a good start point for beginners to step into the door of reinforcemet learning, espcially for whom who come from software industry with solid programming skills.
+In this project,a lightweight framework is configured with Object-oriented programming paradigm. Algorithms and enviroments are carefully seperated and most of the algorithms in [Reinforcement Learning: An introduction 2e](1) are re-implemented. It might be a good start point for beginners to step into the door of reinforcemet learning, espcially for whom who come from software industry with solid programming skills.
 
-Deep inforcement learning algorithms,such as DQN, Alphazero,etc., will also be covered but that cloud  need more computation resources.
+Deep inforcement learning algorithms,such as DQN, Alphazero,etc., will also be covered.
 
 This project is built With [Python](www.python.org) and several libraries:
 

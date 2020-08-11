@@ -1,21 +1,21 @@
 import numpy as np
 
-from algorithm.approximate_solution_method.episodic_semi_gradient_expected_sarsa_control import \
+from algorithm.value_based.approximate_solution_method.episodic_semi_gradient_expected_sarsa_control import \
     EpisodicSemiGradientExpectedSarsaControl
-from algorithm.approximate_solution_method.episodic_semi_gradient_q_learning_control import \
+from algorithm.value_based.approximate_solution_method.episodic_semi_gradient_q_learning_control import \
     EpisodicSemiGradientQLearningControl
-from algorithm.approximate_solution_method.episodic_semi_gradient_sarsa_control import \
+from algorithm.value_based.approximate_solution_method.episodic_semi_gradient_sarsa_control import \
     EpisodicSemiGradientSarsaControl
-from algorithm.approximate_solution_method.estimator.q_value_estimator import \
+from algorithm.value_based.approximate_solution_method.estimator.q_value_estimator import \
     TileCodingBasesQValueEstimator
-from algorithm.approximate_solution_method.estimator.v_value_estimator import (
+from algorithm.value_based.approximate_solution_method.estimator.v_value_estimator import (
     FourierBasesVValueEsimator, PolynomialBasesVValueEsitmator,
     StateAggregationVValueEstimator)
-from algorithm.approximate_solution_method.gradient_monte_carlo_evaluation import \
+from algorithm.value_based.approximate_solution_method.gradient_monte_carlo_evaluation import \
     GradientMonteCarloEvaluation
-from algorithm.approximate_solution_method.semi_gradient_td_lambda_evaluation import \
+from algorithm.value_based.approximate_solution_method.semi_gradient_td_lambda_evaluation import \
     SemiGradientTDLambdaEvaluation
-from algorithm.approximate_solution_method.semi_gradient_tdn_evaluation import \
+from algorithm.value_based.approximate_solution_method.semi_gradient_tdn_evaluation import \
     SemiGradientTDNEvalution
 from lib import plotting
 from lib.utility import create_distribution_epsilon_greedily
