@@ -41,10 +41,7 @@ from numpy.lib import utils
 
 from tqdm import tqdm
 
-from lib.utility import (create_distribution_epsilon_greedily,
-                         create_distribution_greedily)
-
-
+from lib.utility import (create_distribution_epsilon_greedily,create_distribution_greedily)
 
 class MonteCarloOffPolicyControl:
     """
