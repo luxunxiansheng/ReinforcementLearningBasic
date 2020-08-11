@@ -6,12 +6,27 @@
   </a>
 
   <h3 align="center">Reinforcement Learning Easy Playgroud</h3>
+
+  <p align="center">
+    A lightweight framework of reinforcement learning built for easy to learn and use  
+    <br />
+    <a href="https://github.com/othneildrew/Best-README-Template"><strong>Explore the docs »</strong></a>
+    <br />
+    <br />
+    <a href="https://github.com/othneildrew/Best-README-Template">View Demo</a>
+    ·
+    <a href="https://github.com/othneildrew/Best-README-Template/issues">Report Bug</a>
+    ·
+    <a href="https://github.com/othneildrew/Best-README-Template/issues">Request Feature</a>
+  </p>
 </p>
+
 
 <!-- TABLE OF CONTENTS -->
 ## Table of Contents
 
 * [About the Project](#about-the-project)
+  * [Built With](#built-with)
 * [Getting Started](#getting-started)
   * [Prerequisites](#prerequisites)
   * [Installation](#installation)
@@ -22,33 +37,21 @@
 * [Contact](#contact)
 * [Acknowledgements](#acknowledgements)
 
-
-
-<!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
+[Reinforcement Learning: An introduction 2e](1) is believed to be the most famous book on reinforcement learning methodology. Dozons of classic algorithms are proposed in the book, which include dynamical progamming methods, monte carlo methods, temporal-difference  methods ,policy grident methods and so on so forth.  [Shangtong Zhang](2) implements almost all of the algothims in the book with python. It is a great work for educational purposes.
 
-There are many great README templates available on GitHub, however, I didn't find one that really suit my needs so I created this enhanced one. I want to create a README template so amazing that it'll be the last one you ever need.
+From enginerring perspecitve, there is still big room for improvement. In this project,
+a lightweight framework is configured with Object-oriented programming paradigm. Algorithms and enviroments are seperated carefully and most of the algorithms in [Reinforcement Learning: An introduction 2e](1) are re-implemented. It might be a good start point for beginners to step into the door of reinforcemet learning, espcially for whom who come from software industry with solid programming skills.
 
-Here's why:
-* Your time should be focused on creating something amazing. A project that solves a problem and helps others
-* You shouldn't be doing the same tasks over and over like creating a README from scratch
-* You should element DRY principles to the rest of your life :smile:
+Deep inforcement learning algorithms,such as DQN, Alphazero,etc., will also be covered but that cloud  need more computation resources.
 
-Of course, no one template will serve all projects since your needs may be different. So I'll be adding more in the near future. You may also suggest changes by forking this repo and creating a pull request or opening an issue.
+This project is built With [Python](www.python.org) and several libraries:
 
-A list of commonly used resources that I find helpful are listed in the acknowledgements.
-
-### Built With
-This section should list any major frameworks that you built your project using. Leave any add-ons/plugins for the acknowledgements section. Here are a few examples.
-* [Bootstrap](https://getbootstrap.com)
-* [JQuery](https://jquery.com)
-* [Laravel](https://laravel.com)
+* [gym](http://openai.com)
+* [tqdm]()
 
 
-
-<!-- GETTING STARTED -->
 ## Getting Started
 
 This is an example of how you may give instructions on setting up your project locally.
@@ -141,5 +144,7 @@ Project Link: [https://github.com/your_username/repo_name](https://github.com/yo
 
 
 
-
+## References
+* [1] http://incompleteideas.net/book/the-book-2nd.html 
+* [2] https://github/ShangtongZhang/reinforcement-learning-an-introduction 
 

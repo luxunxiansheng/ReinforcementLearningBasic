@@ -92,8 +92,7 @@ class MonteCarloOffPolicyControl:
                 # probability product
                 W = W * 1. / self.behavior_policy.policy_table[state_index][action_index]
 
-                self.behavior_policy.policy_table[state_index] = self.create_distribution_epsilon_greedily(self.q_table[state_index])
-
+                
             
     def _init_weight_total(self):
         weight_total = defaultdict(lambda: {})
@@ -106,6 +105,7 @@ class MonteCarloOffPolicyControl:
         trajectory = []
         current_state_index = self.env.reset(True)
         while True:
+            self.behavior_policy.policy_table[current_state_index] = self.create_distribution_epsilon_greedily(self.q_table[current_state_index])
             action_index = self.behavior_policy.get_action(current_state_index)
             observation = self.env.step(action_index)
             reward = observation[1]
