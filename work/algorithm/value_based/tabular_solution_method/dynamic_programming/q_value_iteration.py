@@ -41,10 +41,11 @@ from policy.policy import TabularPolicy
 
 
 class Actor(ActorBase):
-    def __init__(self):
+    def __init__(self,q_table,p,delta=1e-8,discount=1.0):
         self.q_table = q_table
         self.transition_table = p
         self.delta = delta
+        self.discount = discount
         self.create_distribution_greedily = create_distribution_greedily()
         
     def improve(self):
@@ -110,10 +111,17 @@ class QValueIteration:
     """
     
 
-    def __init__(self, q_table, p, delta=1e-8):
+    def __init__(self, q_table, p, delta=1e-8,discount=1.0):
         self.q_table = q_table
         self.transition_table = p
         self.delta = delta
-        self.create_distribution_greedily = create_distribution_greedily()
+        self.discount = discount
+
+    def improve(self):
+        actor = Actor(self.q_table,self.transition_table,self.delta,self.discount)
+        actor.improve()
+        optimal = actor.get_optimal_policy()
+        return optimal
+
 
     

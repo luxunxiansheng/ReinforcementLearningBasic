@@ -34,30 +34,11 @@
 # /
 
 
-
-from numpy.core.einsumfunc import _optimal_path
 from common import ActorBase
 from lib.utility import create_distribution_greedily
 from policy.policy import TabularPolicy
 
 class Actor(ActorBase):
-    
-    """
-    One drawback to policy iteration method is that each of its iterations involves policy 
-    evalution, which may itself be a protracted iterative computation requiring multiple 
-    sweeps through the state set. If policy evaluation is done iteratively, then convergence 
-    exactly occurs in the limit.   
-    
-    In fact,the plilcy evaluation step of policy iteration can be truncated in serveral ways
-    without losing the convergence guarantees of policy iteration. One important special case
-    is when policy evaluation is stopped after just one sweep(one update of each state). This
-    alrgorithm is so called Value Iteration. 
-
-    Refer to the equation 4.2 in Sutton's book 
-
-    """
-    
-    
     def __init__(self, v_table, p, delta=1e-8, discount=1.0):
         self.v_table = v_table
         self.transition_table = p
@@ -111,6 +92,21 @@ class Actor(ActorBase):
 
 
 class VValueIteration:
+    """
+    One drawback to policy iteration method is that each of its iterations involves policy 
+    evalution, which may itself be a protracted iterative computation requiring multiple 
+    sweeps through the state set. If policy evaluation is done iteratively, then convergence 
+    exactly occurs in the limit.   
+    
+    In fact,the plilcy evaluation step of policy iteration can be truncated in serveral ways
+    without losing the convergence guarantees of policy iteration. One important special case
+    is when policy evaluation is stopped after just one sweep(one update of each state). This
+    alrgorithm is so called Value Iteration. 
+
+    Refer to the equation 4.2 in Sutton's book 
+
+    """
+
     def __init__(self, v_table, p, delta=1e-8, discount=1.0):
         self.v_table = v_table
         self.transition_table = p
