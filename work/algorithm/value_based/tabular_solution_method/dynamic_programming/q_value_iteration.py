@@ -34,33 +34,19 @@
 # /
 
 
+
+from common import ActorBase
 from lib.utility import create_distribution_greedily
 from policy.policy import TabularPolicy
 
-class QValueIteration:
-    """
-    One drawback to policy iteration method is that each of its iterations involves policy 
-    evalution, which may itself be a protracted iterative computation requiring multiple 
-    sweeps through the state set. If policy evaluation is done iteratively, then convergence 
-    exactly occurs in the limit.   
-    
-    In fact,the plilcy evaluation step of policy iteration can be truncated in serveral ways
-    without losing the convergence guarantees of policy iteration. One important special case
-    is when policy evaluation is stopped after just one sweep(one update of each state). This
-    alrgorithm is so called Value Iteration. 
 
-
-    In this implementaion, the q value is used. Refer to the equation 4.2 in Sutton's book 
-
-    """
-    
-
-    def __init__(self, q_table, p, delta=1e-8):
+class Actor(ActorBase):
+    def __init__(self):
         self.q_table = q_table
         self.transition_table = p
         self.delta = delta
         self.create_distribution_greedily = create_distribution_greedily()
-
+        
     def improve(self):
         while True:
             delta = self._bellman_optimize()
@@ -101,3 +87,33 @@ class QValueIteration:
     def _get_optimal_value_of_state(self, state_index):
         action_values_of_state = self.q_table[state_index]
         return max(action_values_of_state.values())
+
+
+
+
+
+class QValueIteration:
+    """
+    One drawback to policy iteration method is that each of its iterations involves policy 
+    evalution, which may itself be a protracted iterative computation requiring multiple 
+    sweeps through the state set. If policy evaluation is done iteratively, then convergence 
+    exactly occurs in the limit.   
+    
+    In fact,the plilcy evaluation step of policy iteration can be truncated in serveral ways
+    without losing the convergence guarantees of policy iteration. One important special case
+    is when policy evaluation is stopped after just one sweep(one update of each state). This
+    alrgorithm is so called Value Iteration. 
+
+
+    In this implementaion, the q value is used. Refer to the equation 4.2 in Sutton's book 
+
+    """
+    
+
+    def __init__(self, q_table, p, delta=1e-8):
+        self.q_table = q_table
+        self.transition_table = p
+        self.delta = delta
+        self.create_distribution_greedily = create_distribution_greedily()
+
+    

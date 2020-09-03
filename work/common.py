@@ -34,18 +34,54 @@
 # /
 
 from abc import ABC, abstractmethod
+import numpy as np
 
-class Critic(ABC):
+
+class PolicyBase(ABC):
+    """
+    A policy defines the learning agent's way of behaving at a given time. Roughly speaking,
+    a policy is a mapping from perceived states of the environment to actions to be taken
+    when in those states. It corresponds to what in psychology would be called a set of
+    stimulus-response rules or associations. In some cases the policy may be a simple function
+    or lookup table, whereas in others it may involve extensive computation such as a search
+    process. The policy is the core of a reinforcement learning agent in the sense that it alone
+    is suficient to determine behavior. In general, policies may be stochastic.
+
+    """
+
     @abstractmethod
-    def evaluate(self):
+    def _construct_distribution(self, state):
         pass
 
+    def get_action(self, state):
+        distribution = self._construct_distribution(state)
+        action = np.random.choice(np.arange(len(distribution)), p=distribution)
+        return action
 
-class Actor(ABC):
+
+class CriticBase(ABC):
+    """
+    The critic takes as input the policy and evaluates the action by computing the value function(value based)
+    """
+    @abstractmethod
+    def evaluate(self, policy):
+        pass
+
+    @abstractmethod
+    def get_value_function(self):
+        pass
+
+class ActorBase(ABC):
+    """
+    The actor takes as input the state and outputs the best action (policy based). It essentially controls how 
+    the agent behaves by learning the optimal policy. 
+
+    The most important is the process for the actor to improve the given policy. 
+    """
     @abstractmethod
     def improve(self):
-        pass 
+        pass
 
     @abstractmethod
     def get_optimal_policy(self):
-        pass 
+        pass

@@ -33,6 +33,20 @@
 #
 # /
 
+
+
+from common import ActorBase
+
+class Actor(ActorBase):
+    def __init__(self):
+
+    
+    def improve()
+    
+
+
+
+
 from lib.utility import create_distribution_greedily
 from policy.policy import TabularPolicy
 
