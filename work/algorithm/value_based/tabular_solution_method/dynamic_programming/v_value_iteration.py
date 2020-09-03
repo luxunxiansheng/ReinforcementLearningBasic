@@ -35,22 +35,12 @@
 
 
 
+from numpy.core.einsumfunc import _optimal_path
 from common import ActorBase
-
-class Actor(ActorBase):
-    def __init__(self):
-
-    
-    def improve()
-    
-
-
-
-
 from lib.utility import create_distribution_greedily
 from policy.policy import TabularPolicy
 
-class VValueIteration:
+class Actor(ActorBase):
     
     """
     One drawback to policy iteration method is that each of its iterations involves policy 
@@ -118,3 +108,18 @@ class VValueIteration:
 
     def _get_optimal_value_of_action(self, q_values):
         return max(q_values.values())
+
+
+class VValueIteration:
+    def __init__(self, v_table, p, delta=1e-8, discount=1.0):
+        self.v_table = v_table
+        self.transition_table = p
+        self.delta = delta
+        self.discount = discount
+        
+
+    def improve(self):
+        actor = Actor(self.v_table,self.transition_table,self.delta,self.discount)
+        actor.improve()
+        optimal = actor.get_optimal_policy()
+        return optimal

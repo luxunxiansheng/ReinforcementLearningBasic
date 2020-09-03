@@ -79,7 +79,7 @@ class ActorBase(ABC):
     The most important is the process for the actor to improve the given policy. 
     """
     @abstractmethod
-    def improve(self):
+    def improve(self): 
         pass
 
     @abstractmethod
