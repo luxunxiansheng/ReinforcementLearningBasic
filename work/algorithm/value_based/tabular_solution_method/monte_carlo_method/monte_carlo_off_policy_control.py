@@ -38,28 +38,21 @@ from collections import defaultdict
 
 import numpy as np
 from numpy.lib import utils
-
 from tqdm import tqdm
 
 from lib.utility import (create_distribution_epsilon_greedily,create_distribution_greedily)
+from common import ActorBase
 
-class MonteCarloOffPolicyControl:
-    """
-    As described in 5.7 section of Sutton' book 
-    1) Weighted importance sampling.
-    2) Incremental implementation
-
-    """
-
-    def __init__(self, q_table, behavior_policy, env, episodes=10000, discount=1.0):
+class Actor(ActorBase):
+    def __init__(self, q_table, behavior_policy, target_policy,env, episodes=100, discount=1.0,epsilon=0.01):
         self.q_table = q_table
         self.behavior_policy = behavior_policy
-        self.target_policy = copy.deepcopy(behavior_policy)
+        self.target_policy = target_policy
         self.env = env
         self.episodes = episodes
         self.discount = discount
         self.create_distribution_greedily = create_distribution_greedily()
-        self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(0.01)
+        self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(epsilon) 
 
     def improve(self):
         # it is necessary to keep the weight total for every state_action pair
@@ -82,14 +75,12 @@ class MonteCarloOffPolicyControl:
                 self.target_policy.policy_table[state_index] =  distibution
 
                 # If the action taken by the behavior policy is not the action
-                # taken by the target policy the probability will be 0 and we can break
+                # taken by the target policy,the probability will be 0 and we can break
                 if action_index != np.argmax(self.target_policy.policy_table[state_index]):
                     break
 
                 # probability product
                 W = W * 1. / self.behavior_policy.policy_table[state_index][action_index]
-
-                
             
     def _init_weight_total(self):
         weight_total = defaultdict(lambda: {})
@@ -111,8 +102,29 @@ class MonteCarloOffPolicyControl:
             if done:
                 break
             current_state_index = observation[0]
-
         return trajectory
 
     def get_optimal_policy(self):
         return self.target_policy
+
+
+class MonteCarloOffPolicyControl:
+    """
+    As described in 5.7 section of Sutton' book 
+    1) Weighted importance sampling.
+    2) Incremental implementation
+    """
+
+    def __init__(self, q_table, behavior_policy, target_policy,env, episodes=10000, discount=1.0,epsilon=0.01):
+        self.q_table = q_table
+        self.behavior_policy = behavior_policy
+        self.target_policy = target_policy
+        self.env = env
+        self.episodes = episodes
+        self.discount = discount
+        self.epsilon  = epsilon
+
+    def improve(self):
+        actor = Actor(self.q_table,self.behavior_policy,self.target_policy,self.env,self.episodes,self.discount,self.epsilon)
+        actor.improve()
+        return actor.get_optimal_policy()
