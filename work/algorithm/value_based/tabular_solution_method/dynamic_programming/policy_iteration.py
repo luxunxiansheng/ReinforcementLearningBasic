@@ -47,29 +47,30 @@ class Critic(CriticBase):
     iteratively. 
     """
     
-    def __init__(self,v_table,transition_table,delta,discount):
+    def __init__(self,v_table,policy,transition_table,delta,discount):
         self.v_table = v_table
+        self.policy = policy
         self.transition_table = transition_table
         self.delta = delta
         self.discount = discount
     
-    def evaluate(self,policy):
+    def evaluate(self):
         while True:
-            delta = self._evaluate_once(policy)
+            delta = self._evaluate_once()
             if delta < self.delta:
                 break
     
     def get_value_function(self):
         return self.v_table
         
-    def _evaluate_once(self,policy):
+    def _evaluate_once(self):
         delta = 1e-10
         for state_index, old_value_of_state in self.v_table.items():
             value_of_state = 0.0
             action_transitions = self.transition_table[state_index]
             for action_index, transitions in action_transitions.items():
                 value_of_action = self._get_value_of_action(transitions)
-                value_of_state += policy.get_action_probablity(state_index,action_index) * value_of_action
+                value_of_state += self.policy.get_action_probablity(state_index,action_index) * value_of_action
             self.v_table[state_index] = value_of_state
             delta = max(abs(value_of_state-old_value_of_state), delta)
         return delta
@@ -147,8 +148,8 @@ class PolicyIteration:
         
     
     def improve(self):
-        critic = Critic(self.v_table,self.transition_table,self.delta,self.discount)
-        critic.evaluate(self.policy)
+        critic = Critic(self.v_table,self.policy ,self.transition_table,self.delta,self.discount)
+        critic.evaluate()
         v_function = critic.get_value_function() 
 
         actor = Actor(v_function,self.policy,self.transition_table,self.delta,self.discount)

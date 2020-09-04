@@ -34,23 +34,17 @@
 # /
 
 from collections import defaultdict
+from common import CriticBase
 
-class MonteCarloOffPolicyEvaluation:
-    """
-    As described in 5.6 section of Sutton' book 
-
-    1) Weighted importance sampling.
-    2) Incremental implementation
-
-    """
-
-    def __init__(self, q_table, behavior_policy, target_policy, env, episodes=10000, discount=1.0):
+class Critic(CriticBase):
+    def __init__(self,q_table,behavior_policy,target_policy,env,episodes,discount):
         self.q_table = q_table
         self.behavior_policy = behavior_policy
-        self.target_policy = target_policy
+        self.target_policy   = target_policy
         self.env = env
         self.episodes = episodes
         self.discount = discount
+    
 
     def evaluate(self):
         # it is necessary to keep the weight total for every state_action pair
@@ -75,6 +69,10 @@ class MonteCarloOffPolicyEvaluation:
                 if W == 0:
                     break
 
+
+    def get_value_function(self):
+        return self.q_table
+
     def _init_weight_total(self):
         weight_total = defaultdict(lambda: {})
         for state_index, action_values in self.q_table.items():
@@ -96,3 +94,25 @@ class MonteCarloOffPolicyEvaluation:
             current_state_index = observation[0]
 
         return trajectory
+        
+class MonteCarloOffPolicyEvaluation:
+    """
+    As described in 5.6 section of Sutton' book 
+
+    1) Weighted importance sampling.
+    2) Incremental implementation
+    """
+
+    def __init__(self, q_table, behavior_policy, target_policy, env, episodes=10000, discount=1.0):
+        self.q_table = q_table
+        self.behavior_policy = behavior_policy
+        self.target_policy = target_policy
+        self.env = env
+        self.episodes = episodes
+        self.discount = discount
+    
+    def evaluate(self):
+        critic = Critic(self.q_table,self.behavior_policy,self.target_policy,self.env,self.episodes,self.discount)
+        critic.evaluate()
+        return critic.get_value_function()
+

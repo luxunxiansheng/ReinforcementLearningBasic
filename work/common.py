@@ -64,7 +64,7 @@ class CriticBase(ABC):
     The critic takes as input the policy and evaluates the action by computing the value function(value based)
     """
     @abstractmethod
-    def evaluate(self, policy):
+    def evaluate(self):
         pass
 
     @abstractmethod
