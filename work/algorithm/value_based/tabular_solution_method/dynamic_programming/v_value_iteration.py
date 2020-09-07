@@ -34,9 +34,20 @@
 # /
 
 
-from common import ActorBase
+from common import ActorBase, CriticBase
 from lib.utility import create_distribution_greedily
 from policy.policy import TabularPolicy
+
+class Critic(CriticBase):
+    def __init__(self):
+        pass
+
+    def evaluate(self):
+        pass
+
+    def get_value_function(self):
+        pass
+
 
 class Actor(ActorBase):
     def __init__(self, v_table, p, delta=1e-8, discount=1.0):
@@ -83,8 +94,7 @@ class Actor(ActorBase):
         for transition_prob, next_state_index, reward, done in transition:  # For each next state
             # the reward is also related to the next state
             value_of_next_state = 0 if done else self.v_table[next_state_index]
-            value_of_action += transition_prob * \
-                (self.discount * value_of_next_state+reward)
+            value_of_action += transition_prob * (self.discount * value_of_next_state+reward)
         return value_of_action
 
     def _get_optimal_value_of_action(self, q_values):

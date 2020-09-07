@@ -35,6 +35,10 @@
 
 
 import copy
+from argh.decorators import arg
+
+from markdown.test_tools import Kwargs
+from scipy.constants.codata import value
 
 from common import ActorBase, CriticBase
 from lib.utility import create_distribution_greedily
@@ -47,87 +51,84 @@ class Critic(CriticBase):
     iteratively. 
     """
     
-    def __init__(self,v_table,policy,transition_table,delta,discount):
-        self.v_table = v_table
-        self.policy = policy
+    def __init__(self,transition_table,delta,discount):
         self.transition_table = transition_table
         self.delta = delta
         self.discount = discount
-    
-    def evaluate(self):
+        
+    def evaluate(self,*args):
+        policy = args[0]
+        value_function = args[1]
+
         while True:
-            delta = self._evaluate_once()
+            delta = self._evaluate_once(policy,value_function)
             if delta < self.delta:
                 break
-    
-    def get_value_function(self):
-        return self.v_table
         
-    def _evaluate_once(self):
+        return value_function
+
+
+    def _evaluate_once(self,policy,value_function):
         delta = 1e-10
-        for state_index, old_value_of_state in self.v_table.items():
+        for state_index, old_value_of_state in value_function.items():
             value_of_state = 0.0
             action_transitions = self.transition_table[state_index]
             for action_index, transitions in action_transitions.items():
-                value_of_action = self._get_value_of_action(transitions)
-                value_of_state += self.policy.get_action_probablity(state_index,action_index) * value_of_action
-            self.v_table[state_index] = value_of_state
+                value_of_action = self._get_value_of_action(transitions,value_function)
+                value_of_state += policy.get_action_probablity(state_index,action_index) * value_of_action
+            value_function[state_index] = value_of_state
             delta = max(abs(value_of_state-old_value_of_state), delta)
         return delta
     
-    def _get_value_of_action(self, transitions):
+    def _get_value_of_action(self, transitions,value_function):
         value_of_action = 0.0
         for transition_prob, next_state_index, reward, done in transitions:  # For each next state
             # the reward is also related to the next state
-            value_of_next_state = 0 if done else self.v_table[next_state_index]
+            value_of_next_state = 0 if done else value_function[next_state_index]
             value_of_action += transition_prob * (self.discount*value_of_next_state+reward)
         return value_of_action
-
-
-
 
 class Actor(ActorBase):
     """
     It is trival for the actor to improve the policy by sweeping the state space. 
     
     """
-    def __init__(self,v_function,tabular_policy,transtion_table,delta,discount):
-        self.value_function = v_function
-        self.policy = tabular_policy
+    def __init__(self,transtion_table,delta,discount):
         self.model   = transtion_table
         self.delta = delta
         self.discount = discount
         
     
-    def improve(self):
+    def improve(self,*args):
+        policy = args[0]
+        value_function = args[1]
         while True:
-            delta = self._improve_once()
+            delta = self._improve_once(policy,value_function)
             if delta < self.delta:
                 break
+        
+        return policy
 
-    def get_optimal_policy(self):
-        return self.policy
-
-    def _improve_once(self):
+    def _improve_once(self,policy,value_function):
         delta = 1e-10
-        for state_index, actions in self.policy.policy_table.items():
-            old_policy = copy.deepcopy(self.policy.policy_table[state_index])
+        for state_index, actions in policy.policy_table.items():
+            old_policy = copy.deepcopy(policy.policy_table[state_index])
             q_values = {}
             for action_index, _ in actions.items():
                 transition = self.model[state_index][action_index]
-                q_values[action_index] = self._get_value_of_action(transition)
+                q_values[action_index] = self._get_value_of_action(transition,value_function)
             greedy_distibution = create_distribution_greedily()(q_values)
-            self.policy.policy_table[state_index] = greedy_distibution
+            policy.policy_table[state_index] = greedy_distibution
             new_old_policy_diff = {action_index: abs(old_policy[action_index]-greedy_distibution[action_index]) for action_index in greedy_distibution}
             delta = max(max(new_old_policy_diff.values()), delta)
         return delta
 
 
-    def _get_value_of_action(self, transitions):
+    def _get_value_of_action(self, transitions,value_function):
         value_of_action = 0.0
         for transition_prob, next_state_index, reward, done in transitions:  # For each next state
             # the reward is also related to the next state
-            value_of_next_state = 0 if done else self.value_function[next_state_index]
+            value_of_next_state = 0 if done else value_function[next_state_index]
             value_of_action += transition_prob * (self.discount*value_of_next_state+reward)
         return value_of_action
 
@@ -145,14 +146,11 @@ class PolicyIteration:
         self.transition_table= transition_table
         self.delta = delta
         self.discount = discount
+        self.critic = Critic(transition_table,delta,discount)
+        self.actor  = Actor(transition_table,delta,discount) 
         
     
     def improve(self):
-        critic = Critic(self.v_table,self.policy ,self.transition_table,self.delta,self.discount)
-        critic.evaluate()
-        v_function = critic.get_value_function() 
-
-        actor = Actor(v_function,self.policy,self.transition_table,self.delta,self.discount)
-        actor.improve()
-        optimal = actor.get_optimal_policy() 
-        return optimal
+        value_function=self.critic.evaluate(self.policy,self.v_table)
+        optimal_policy=self.actor.improve(self.policy,value_function)
+        return optimal_policy

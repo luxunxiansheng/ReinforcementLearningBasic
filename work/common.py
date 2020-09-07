@@ -34,6 +34,7 @@
 # /
 
 from abc import ABC, abstractmethod
+from markdown.test_tools import Kwargs
 import numpy as np
 
 
@@ -64,12 +65,10 @@ class CriticBase(ABC):
     The critic takes as input the policy and evaluates the action by computing the value function(value based)
     """
     @abstractmethod
-    def evaluate(self):
+    def evaluate(self,*args):
         pass
 
-    @abstractmethod
-    def get_value_function(self):
-        pass
+
 
 class ActorBase(ABC):
     """
@@ -79,9 +78,5 @@ class ActorBase(ABC):
     The most important is the process for the actor to improve the given policy. 
     """
     @abstractmethod
-    def improve(self): 
-        pass
-
-    @abstractmethod
-    def get_optimal_policy(self):
+    def improve(self,*args): 
         pass

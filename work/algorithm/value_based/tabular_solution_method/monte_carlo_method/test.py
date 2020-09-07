@@ -11,26 +11,19 @@ from test_setup import get_env
 
 real_env = get_env("grid_world")
 
-
-env = real_env
-
-q_table = env.build_Q_table()
-policy_table = env.build_policy_table()
-behavior_policy = TabularPolicy(policy_table)
-target_policy = copy.deepcopy(behavior_policy)
-
-rl_method = MonteCarloOffPolicyControl(q_table, behavior_policy, target_policy, env,100)
-
-rl_method.improve()
-
-env.show_policy(rl_method.get_optimal_policy())
+def test_mc_offpolicy_control_method(env):
+    q_table = env.build_Q_table()
+    policy_table = env.build_policy_table()
+    behavior_policy = TabularPolicy(policy_table)
+    target_policy = copy.deepcopy(behavior_policy)
+    rl_method = MonteCarloOffPolicyControl(q_table, behavior_policy, target_policy, env,100)
+    rl_method.improve()
+    env.show_policy(rl_method.get_optimal_policy())
 
 
-# %%
 test_mc_offpolicy_control_method(real_env)
 
 
-# %%
 from env.blackjack import BlackjackEnv
 
 def test_mc_offpolicy_evaluation_method_for_blackjack():
@@ -65,10 +58,8 @@ def test_mc_offpolicy_evaluation_method_for_blackjack():
         error[episode] = state_value*state_value/100
         print("{}:{:.3f}".format(episode, error[episode]))
     
-   
-
-
-# %%
 test_mc_offpolicy_evaluation_method_for_blackjack()
 
 
+
+# %%
