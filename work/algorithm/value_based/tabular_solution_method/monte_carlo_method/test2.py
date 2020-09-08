@@ -43,10 +43,6 @@ def test_mc_offpolicy_evaluation_method_for_blackjack():
         print("{}:{:.3f}".format(episode, error[episode]))
 
 
-def test_q_mc_es_control_method(env):
-    rl_method = MonteCarloESControl(q_table, table_policy, env)
-    rl_method.improve()
-    env.show_policy(rl_method.get_optimal_policy())
 
 
 def test_mc_offpolicy_control_method(env):

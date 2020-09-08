@@ -1,15 +1,43 @@
 
 import sys
+
+from sympy.functions import im
 sys.path.append("/home/ornot/workspace/ReinforcementLearningBasic/work")
 
 import copy
 
 from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_off_policy_evaluation import MonteCarloOffPolicyEvaluation
 from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_off_policy_control import MonteCarloOffPolicyControl
+from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_es_control import MonteCarloESControl
+from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_on_policy_control import MonteCarloOnPolicyControl
 from policy.policy import TabularPolicy
 from test_setup import get_env
 
-real_env = get_env("grid_world")
+real_env = get_env("blackjack")
+
+
+def test_q_mc_es_control_method(env):
+    q_table = env.build_Q_table()
+    policy_table = env.build_policy_table()
+    behavior_policy = TabularPolicy(policy_table)
+    rl_method = MonteCarloESControl(q_table, behavior_policy, env)
+    optimal_policy=rl_method.improve()
+    env.show_policy(optimal_policy)
+
+#test_q_mc_es_control_method(real_env)
+
+
+def test_mc_onpolicy_control_method(env):
+    q_table = env.build_Q_table()
+    policy_table = env.build_policy_table()
+    behavior_policy = TabularPolicy(policy_table)
+    rl_method = MonteCarloOnPolicyControl(q_table, behavior_policy, env)
+    optimal_policy=rl_method.improve()
+    env.show_policy(optimal_policy)
+
+test_mc_onpolicy_control_method(real_env)
+
+
 
 def test_mc_offpolicy_control_method(env):
     q_table = env.build_Q_table()
@@ -62,4 +90,3 @@ test_mc_offpolicy_evaluation_method_for_blackjack()
 
 
 
-# %%

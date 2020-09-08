@@ -35,7 +35,6 @@
 
 from collections import defaultdict
 
-
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
@@ -81,6 +80,7 @@ def score(hand):  # What is the score of this hand (0 if bust)
 
 def is_natural(hand):  # Is this hand a natural blackjack?
     return sorted(hand) == [1, 10]
+
 
 class BlackjackEnv(BaseDiscreteEnv):
     """Simple blackjack environment

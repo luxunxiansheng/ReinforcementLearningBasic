@@ -155,7 +155,7 @@ class MonteCarloOffPolicyControl:
     2) Incremental implementation
     """
 
-    def __init__(self, q_table, behavior_policy, target_policy,env, episodes=10000, discount=1.0,epsilon=0.01):
+    def __init__(self, q_table, behavior_policy, target_policy,env, episodes=10000, discount=1.0,epsilon=0.5):
         self.q_table = q_table
         self.behavior_policy = behavior_policy
         self.target_policy = target_policy
