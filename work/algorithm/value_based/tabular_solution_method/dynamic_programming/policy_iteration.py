@@ -93,8 +93,8 @@ class Actor(ActorBase):
     It is trival for the actor to improve the policy by sweeping the state space. 
     
     """
-    def __init__(self,transtion_table,delta,discount):
-        self.model   = transtion_table
+    def __init__(self,transition_table,delta,discount):
+        self.model   = transition_table
         self.delta = delta
         self.discount = discount
         

@@ -12,6 +12,17 @@ from policy.policy import TabularPolicy
 
 real_env = get_env("grid_world")
 
+def test_v_iteration(env):
+    v_table = env.build_V_table()
+    policy_table = env.build_policy_table()
+    table_policy = TabularPolicy(policy_table)
+    transition_table = env.P
+    rl_method = VValueIteration(v_table, transition_table,table_policy)
+    optimal_policy =rl_method.improve()
+    env.show_policy(optimal_policy)
+
+test_v_iteration(real_env)
+
 def test_policy_iteration(env):
     v_table = env.build_V_table()
     transition_table = env.P
@@ -33,14 +44,6 @@ def test_q_value_iteration(env):
 
 test_q_value_iteration(real_env)
 
-def test_v_iteration(env):
-    v_table = env.build_V_table()
-    transition_table = env.P
-    rl_method = VValueIteration(v_table, transition_table)
-    optimal_policy =rl_method.improve()
-    env.show_policy(optimal_policy)
-
-test_v_iteration(real_env)
 
 
 
