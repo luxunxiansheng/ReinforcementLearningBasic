@@ -34,15 +34,6 @@ def test_policy_iteration(env):
 
 test_policy_iteration(real_env)
 
-def test_q_value_iteration(env):
-    q_table = env.build_Q_table()
-    transition_table = env.P
-    
-    rl_method = QValueIteration(q_table, transition_table)
-    optimal_policy =rl_method.improve()
-    env.show_policy(optimal_policy)
-
-test_q_value_iteration(real_env)
 
 
 
