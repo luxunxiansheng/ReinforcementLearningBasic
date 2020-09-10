@@ -67,6 +67,10 @@ class CriticBase(ABC):
     @abstractmethod
     def evaluate(self,*args):
         pass
+    
+    @abstractmethod
+    def get_value_function(self):
+        pass 
 
 
 
@@ -79,4 +83,7 @@ class ActorBase(ABC):
     """
     @abstractmethod
     def improve(self,*args): 
+        pass
+
+    def get_optimal_policy(self):
         pass

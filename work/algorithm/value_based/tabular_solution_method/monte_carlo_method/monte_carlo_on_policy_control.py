@@ -48,17 +48,10 @@ class Critic(CriticBase):
         self.discount = discount
 
     def evaluate(self, *args):
-        policy = args[0]
-        state_count = self._init_state_count()
-        trajectory = self._run_one_episode(policy)
-        R = 0.0
-        for state_index, action_index, reward in trajectory[::-1]:
-            R = reward+self.discount*R
-            state_count[state_index][action_index] = (state_count[state_index][action_index][0] + 1, state_count[state_index][action_index][1] + R)
-            self.q_value_function[state_index][action_index] = state_count[state_index][action_index][1] / state_count[state_index][action_index][0]
-            
-        return self.q_value_function    
-                        
+        returns, count = args[0]
+        state_index, action_index =args[1]
+        self.q_value_function[state_index][action_index]= returns/count
+        
     def _init_state_count(self):
         state_count = defaultdict(lambda: {})
         for state_index, action_values in self.q_value_function.items():
@@ -67,7 +60,7 @@ class Critic(CriticBase):
         
         return state_count
 
-    def _run_one_episode(self,policy):
+    def run_one_episode(self,policy):
         trajectory = []
         current_state_index = self.env.reset(False)
         while True:
@@ -96,8 +89,6 @@ class Actor(ActorBase):
         table_policy = TabularPolicy(policy_table)
         return table_policy
 
-
-
 class MonteCarloOnPolicyControl:
     def __init__(self, q_value_function, policy, env, episodes=50000, discount=1.0,epsilon=0.01):
         self.q_value_function = q_value_function
@@ -114,7 +105,19 @@ class MonteCarloOnPolicyControl:
             q_value_function = self.critic.evaluate(self.policy)
             self.policy= self.actor.improve(q_value_function)
             #self.env.show_policy(self.policy)
-        
         return self.policy
+
+
+    def improve(self):
+        for _ in tqdm(range(0,self.episodes)):
+            state_count = self._init_state_count()
+            trajectory = self._run_one_episode(self.policy)
+            R = 0.0
+            for state_index, action_index, reward in trajectory[::-1]:
+                R = reward+self.discount*R
+                state_count[state_index][action_index] = (state_count[state_index][action_index][0] + 1, state_count[state_index][action_index][1] + R)
+                self.q_value_function[state_index][action_index] = self.critic.evaluate(state_count[state_index][action_index][1],state_count[state_index][action_index][0])
+                self.actor.improve(self.q_value_function,self.policy,state_index)
+
 
 

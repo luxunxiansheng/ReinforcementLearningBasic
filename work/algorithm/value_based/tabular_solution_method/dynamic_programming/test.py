@@ -5,8 +5,7 @@ sys.path.append("/home/ornot/workspace/ReinforcementLearningBasic/work")
 from test_setup import get_env
 
 from algorithm.value_based.tabular_solution_method.dynamic_programming.policy_iteration  import PolicyIteration
-from algorithm.value_based.tabular_solution_method.dynamic_programming.v_value_iteration import VValueIteration
-from algorithm.value_based.tabular_solution_method.dynamic_programming.q_value_iteration import QValueIteration
+from algorithm.value_based.tabular_solution_method.dynamic_programming.value_iteration   import ValueIteration
 
 from policy.policy import TabularPolicy
 
@@ -17,7 +16,7 @@ def test_v_iteration(env):
     policy_table = env.build_policy_table()
     table_policy = TabularPolicy(policy_table)
     transition_table = env.P
-    rl_method = VValueIteration(v_table, transition_table,table_policy)
+    rl_method = ValueIteration(v_table,transition_table,table_policy)
     optimal_policy =rl_method.improve()
     env.show_policy(optimal_policy)
 
@@ -33,7 +32,6 @@ def test_policy_iteration(env):
     env.show_policy(optimal_policy)
 
 test_policy_iteration(real_env)
-
 
 
 
