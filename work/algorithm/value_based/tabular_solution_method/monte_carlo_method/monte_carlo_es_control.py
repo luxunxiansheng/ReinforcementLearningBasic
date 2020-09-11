@@ -35,66 +35,33 @@
 
 
 from collections import defaultdict
-from email import policy
-from common import ActorBase, CriticBase
 
 from tqdm import tqdm
 
 from lib.utility import create_distribution_greedily
 from policy.policy import TabularPolicy
-
-class Critic(CriticBase):
-    def __init__(self,q_table,env,discount=1.0):
-        self.q_value_function = q_table
-        self.env= env
-        self.discount = discount
-
-    def evaluate(self, *args):
-        policy = args[0]
-        state_count = self._init_state_count()
-        trajectory = self._run_one_episode(policy)
-        R = 0.0
-        for state_index, action_index, reward in trajectory[::-1]:
-            R = reward+self.discount*R
-            state_count[state_index][action_index] = (state_count[state_index][action_index][0] + 1, state_count[state_index][action_index][1] + R)
-            self.q_value_function[state_index][action_index] = state_count[state_index][action_index][1] / state_count[state_index][action_index][0]
-            
-        return self.q_value_function    
-                        
-    def _init_state_count(self):
-        state_count = defaultdict(lambda: {})
-        for state_index, action_values in self.q_value_function.items():
-            for action_index, _ in action_values.items():
-                state_count[state_index][action_index] = (0, 0.0)
-        
-        return state_count
-
-    def _run_one_episode(self,policy):
-        trajectory = []
-        current_state_index = self.env.reset()
-        while True:
-            action_index = policy.get_action(current_state_index)
-            observation = self.env.step(action_index)
-            reward = observation[1]
-            trajectory.append((current_state_index, action_index, reward))
-            done = observation[2]
-            if done:
-                break
-            current_state_index = observation[0]
-
-        return trajectory
+from common import ActorBase
 
 class Actor(ActorBase):
-    def __init__(self) :
+    def __init__(self, q_value_function, policy,delta=1e-8, discount=1.0):
+        self.q_value_function = q_value_function
+        self.policy = policy
+        self.delta = delta
+        self.discount = discount
         self.create_distribution_greedily = create_distribution_greedily()
-    
+
     def improve(self, *args):
-        policy_table={}
-        q_value_function = args[0]
-        for state_index, action_values in q_value_function.items():
-            distibution = self.create_distribution_greedily(action_values)
-            policy_table[state_index]= distibution
-        
+        state_index = args[0]
+        q_values = self.q_value_function[state_index]
+        greedy_distibution = self.create_distribution_greedily(q_values)
+        self.policy.policy_table[state_index] = greedy_distibution
+
+    def get_optimal_policy(self):
+        policy_table = {}
+        for state_index, _ in self.q_value_function.items():
+            q_values = self.q_value_function[state_index]
+            greedy_distibution = self.create_distribution_greedily(q_values)
+            policy_table[state_index] = greedy_distibution
         table_policy = TabularPolicy(policy_table)
         return table_policy
 
@@ -104,21 +71,43 @@ class MonteCarloESControl:
 
     Basically, value iteration is followed in current implementaion. 
     """
-    def __init__(self, q_value_function, policy, env, episodes=500000, discount=1.0):
+    def __init__(self, q_value_function, policy, env, episodes=50000, discount=1.0):
         self.q_value_function = q_value_function
+        self.policy = policy
         self.env = env
         self.episodes = episodes
         self.discount = discount
-        self.policy = policy
-        
-        self.critic =Critic(q_value_function,env)
-        self.actor = Actor()
+        self.actor = Actor(q_value_function,policy, delta=1e-8, discount=1.0)
 
     def improve(self):
         for _ in tqdm(range(0, self.episodes)):
-            q_value_function = self.critic.evaluate(self.policy)
-            self.policy= self.actor.improve(q_value_function)
-        
-        return self.policy
-
-
+            state_count = self._init_state_count()
+            trajectory = self._run_one_episode()
+            R = 0.0
+            for state_index, action_index, reward in trajectory[::-1]:
+                R = reward+self.discount*R
+                state_count[state_index][action_index] = (state_count[state_index][action_index][0] + 1, state_count[state_index][action_index][1] + R)
+                self.q_value_function[state_index][action_index] = state_count[state_index][action_index][1] / state_count[state_index][action_index][0]
+                self.actor.improve(state_index)
+        return self.actor.get_optimal_policy()
+    
+    def _run_one_episode(self):
+        trajectory = []
+        current_state_index = self.env.reset()
+        while True:
+            action_index = self.policy.get_action(current_state_index)
+            observation = self.env.step(action_index)
+            reward = observation[1]
+            trajectory.append((current_state_index, action_index, reward))
+            done = observation[2]
+            if done:
+                break
+            current_state_index = observation[0]
+        return trajectory
+    
+    def _init_state_count(self):
+        state_count = defaultdict(lambda: {})
+        for state_index, action_values in self.q_value_function.items():
+            for action_index, _ in action_values.items():
+                state_count[state_index][action_index] = (0, 0.0)
+        return state_count

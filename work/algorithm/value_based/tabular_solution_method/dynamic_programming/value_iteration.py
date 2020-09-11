@@ -97,7 +97,6 @@ class ValueIteration:
     alrgorithm is so called Value Iteration. 
 
     Refer to the equation 4.2 in Sutton's book 
-
     """
 
     def __init__(self, v_table, transition_table, policy, delta=1e-8, discount=1.0):
