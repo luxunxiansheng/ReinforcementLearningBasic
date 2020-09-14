@@ -104,13 +104,7 @@ class MonteCarloOffPolicyEvaluation:
     """
 
     def __init__(self, q_table, behavior_policy, target_policy, env, episodes=10000, discount=1.0):
-        self.q_table = q_table
-        self.behavior_policy = behavior_policy
-        self.target_policy = target_policy
-        self.env = env
-        self.episodes = episodes
-        self.discount = discount
-        self.critic = Critic(self.q_table,self.behavior_policy,self.target_policy,self.env,self.episodes,self.discount)
+        self.critic = Critic(q_table,behavior_policy,target_policy,env,episodes,discount)
     
     def evaluate(self):
         self.critic.evaluate()

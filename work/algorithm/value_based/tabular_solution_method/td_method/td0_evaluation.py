@@ -34,26 +34,25 @@
 # /
 
 from tqdm import tqdm
+from common import CriticBase
 
-
-class TD0Evalutaion:
-    def __init__(self, v_table, policy, env, episodes=1000, discount=1.0, step_size=0.1):
-        self.v_table = v_table
+class Critic(CriticBase):
+    def __init__(self, value_function, policy, env, episodes=1000, discount=1.0, step_size=0.1):
+        self.value_function = value_function
         self.policy = policy
         self.env = env
         self.episodes = episodes
         self.discount = discount
         self.step_size = step_size
 
-    def evaluate(self):
+    def evaluate(self,*args):
         for _ in tqdm(range(0, self.episodes)):
             self._run_one_episode()
-        self.env.show_v_table(self.v_table)    
-
+        
     def _run_one_episode(self):
         """
-           Tabular TD(0) for estimating V(pi)
-           book 6.1 section
+        Tabular TD(0) for estimating V(pi)
+        book 6.1 section
         """
 
         current_state_index = self.env.reset()
@@ -64,11 +63,21 @@ class TD0Evalutaion:
             reward = observation[1]
             done = observation[2]
             
-            delta = reward + self.discount*self.v_table[next_state_index]-self.v_table[current_state_index]
-            self.v_table[current_state_index] += self.step_size*delta
+            delta = reward + self.discount*self.value_function[next_state_index]-self.value_function[current_state_index]
+            self.value_function[current_state_index] += self.step_size*delta
 
             if done:
                 break               
 
             current_state_index = next_state_index
+    
+    def get_value_function(self):
+        return self.value_function
             
+class TD0Evalutaion:
+    def __init__(self, value_function, policy, env, episodes=1000, discount=1.0, step_size=0.1):
+        self.critic= Critic(value_function,policy,env,episodes,discount,step_size)
+    
+    def evaluate(self,*args):
+        self.critic.evaluate()
+        return self.critic.get_value_function()
