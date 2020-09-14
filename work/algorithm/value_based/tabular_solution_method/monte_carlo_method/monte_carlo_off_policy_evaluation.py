@@ -46,7 +46,7 @@ class Critic(CriticBase):
         self.discount = discount
     
 
-    def evaluate(self):
+    def evaluate(self,*args):
         # it is necessary to keep the weight total for every state_action pair
         C = self._init_weight_total()
         for _ in range(0, self.episodes):
@@ -110,9 +110,9 @@ class MonteCarloOffPolicyEvaluation:
         self.env = env
         self.episodes = episodes
         self.discount = discount
+        self.critic = Critic(self.q_table,self.behavior_policy,self.target_policy,self.env,self.episodes,self.discount)
     
     def evaluate(self):
-        critic = Critic(self.q_table,self.behavior_policy,self.target_policy,self.env,self.episodes,self.discount)
-        critic.evaluate()
-        return critic.get_value_function()
+        self.critic.evaluate()
+        return self.critic.get_value_function()
 
