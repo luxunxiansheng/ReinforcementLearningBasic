@@ -71,7 +71,7 @@ class MonteCarloESControl:
 
     Basically, value iteration is followed in current implementaion. 
     """
-    def __init__(self, q_value_function, policy, env, episodes=50000, discount=1.0):
+    def __init__(self, q_value_function, policy, env, episodes=10000, discount=1.0):
         self.q_value_function = q_value_function
         self.policy = policy
         self.env = env
@@ -80,8 +80,8 @@ class MonteCarloESControl:
         self.actor = Actor(q_value_function,policy, delta=1e-8, discount=1.0)
 
     def improve(self):
+        state_count = self._init_state_count()
         for _ in tqdm(range(0, self.episodes)):
-            state_count = self._init_state_count()
             trajectory = self._run_one_episode()
             R = 0.0
             for state_index, action_index, reward in trajectory[::-1]:

@@ -1,7 +1,5 @@
 
 import sys
-
-from sympy.functions import im
 sys.path.append("/home/ornot/workspace/ReinforcementLearningBasic/work")
 
 import copy
@@ -16,39 +14,36 @@ from test_setup import get_env
 real_env = get_env("blackjack")
 
 
-def test_q_mc_es_control_method(env):
-    q_table = env.build_Q_table()
-    policy_table = env.build_policy_table()
-    behavior_policy = TabularPolicy(policy_table)
-    rl_method = MonteCarloESControl(q_table, behavior_policy, env)
-    optimal_policy=rl_method.improve()
-    env.show_policy(optimal_policy)
-
-test_q_mc_es_control_method(real_env)
-
-
 def test_mc_onpolicy_control_method(env):
     q_table = env.build_Q_table()
     policy_table = env.build_policy_table()
-    behavior_policy = TabularPolicy(policy_table)
-    rl_method = MonteCarloOnPolicyControl(q_table, behavior_policy, env)
+    target_policy = TabularPolicy(policy_table)
+    rl_method = MonteCarloOnPolicyControl(q_table,target_policy,env,0.8,800000)
     optimal_policy=rl_method.improve()
     env.show_policy(optimal_policy)
 
 test_mc_onpolicy_control_method(real_env)
+
+def test_q_mc_es_control_method(env):
+    q_table = env.build_Q_table()
+    policy_table = env.build_policy_table()
+    behavior_policy = TabularPolicy(policy_table)
+    rl_method = MonteCarloESControl(q_table, behavior_policy,env,800000)
+    optimal_policy=rl_method.improve()
+    env.show_policy(optimal_policy)
+
+test_q_mc_es_control_method(real_env)
 
 def test_mc_offpolicy_control_method(env):
     q_table = env.build_Q_table()
     policy_table = env.build_policy_table()
     behavior_policy = TabularPolicy(policy_table)
     target_policy = copy.deepcopy(behavior_policy)
-    rl_method = MonteCarloOffPolicyControl(q_table, behavior_policy, target_policy, env,100)
-    rl_method.improve()
-    env.show_policy(rl_method.get_optimal_policy())
-
+    rl_method = MonteCarloOffPolicyControl(q_table, behavior_policy, target_policy, env,800000)
+    optimal_policy=rl_method.improve()
+    env.show_policy(optimal_policy)
 
 test_mc_offpolicy_control_method(real_env)
-
 
 from env.blackjack import BlackjackEnv
 
