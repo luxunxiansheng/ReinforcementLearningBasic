@@ -34,12 +34,13 @@
 # /
 
 import numpy as np
+from numpy.core.numeric import cross
 from tqdm import tqdm
+from common import CriticBase
 
-
-class TDNEvalutaion:
+class Critic(CriticBase):
     def __init__(self,  v_table, policy, env, n_steps, episodes=1000, discount=1.0, step_size=0.1):
-        self.v_table = v_table
+        self.value_function = v_table
         self.policy = policy
         self.env = env
         self.episodes = episodes
@@ -47,14 +48,13 @@ class TDNEvalutaion:
         self.steps = n_steps
         self.step_size = step_size
 
-    def evaluate(self):
+    def evaluate(self,*args):
         for _ in tqdm(range(0, self.episodes)):
             self._run_one_episode()
-        self.env.show_v_table(self.v_table)
-
+        
     def _run_one_episode(self):
         """
-           Tabular TD(N) for estimating V(pi) book 7.1 section
+        Tabular TD(N) for estimating V(pi) book 7.1 section
         """
         current_timestamp = 0
         final_timestamp = np.inf
@@ -71,7 +71,6 @@ class TDNEvalutaion:
                 trajectory.append((current_state_index,reward))
                 if done:
                     final_timestamp = current_timestamp+1
-                
                 current_state_index = next_state_index
 
             updated_timestamp = current_timestamp-self.steps 
@@ -80,13 +79,21 @@ class TDNEvalutaion:
                 for i in range(updated_timestamp , min(updated_timestamp + self.steps , final_timestamp)):
                     G += np.power(self.discount, i - updated_timestamp ) * trajectory[i][1]
                 if updated_timestamp + self.steps < final_timestamp:
-                    G += np.power(self.discount, self.steps) * self.v_table[trajectory[current_timestamp][0]]
+                    G += np.power(self.discount, self.steps) * self.value_function[trajectory[current_timestamp][0]]
 
-                delta = G-self.v_table[trajectory[updated_timestamp][0]]
-                self.v_table[trajectory[updated_timestamp][0]] += self.step_size*delta
+                delta = G-self.value_function[trajectory[updated_timestamp][0]]
+                self.value_function[trajectory[updated_timestamp][0]] += self.step_size*delta
 
                 if updated_timestamp == final_timestamp - 1:
                     break
 
             current_timestamp += 1
 
+
+class TDNEvalutaion:
+    def __init__(self,  v_table, policy, env, n_steps, episodes=1000, discount=1.0, step_size=0.1):
+        self.critic= Critic(v_table,policy,env,n_steps,episodes,discount,step_size)
+    
+    def evaluate(self):
+        self.critic.evaluate()
+        return self.critic.get_value_function()
