@@ -1,43 +1,139 @@
+import sys
+sys.path.append("/home/ornot/workspace/ReinforcementLearningBasic/work")
+
+
+from lib.plotting import plot_episode_error
 import numpy as np
 
-from pyinstrument import Profiler
-
+from tqdm import tqdm
+from algorithm.value_based.tabular_solution_method.td_method.double_q_learning import DoubleQLearning
+from algorithm.value_based.tabular_solution_method.td_method.dyna_q import (PRIORITY, TRIVAL, DynaQ)
+from algorithm.value_based.tabular_solution_method.td_method.expected_sarsa import ExpectedSARSA
+from algorithm.value_based.tabular_solution_method.td_method.n_steps_expected_sarsa import NStepsExpectedSARSA
+from algorithm.value_based.tabular_solution_method.td_method.n_steps_sarsa import NStepsSARSA
+from algorithm.value_based.tabular_solution_method.td_method.off_policy_n_steps_sarsa import OffPolicyNStepsSARSA
+from algorithm.value_based.tabular_solution_method.td_method.q_lambda import QLambda
 from algorithm.value_based.tabular_solution_method.td_method.q_learning import QLearning
 from algorithm.value_based.tabular_solution_method.td_method.sarsa import SARSA
 from algorithm.value_based.tabular_solution_method.td_method.sarsa_lambda import SARSALambda
 from algorithm.value_based.tabular_solution_method.td_method.td0_evaluation import TD0Evalutaion
-from algorithm.value_based.tabular_solution_method.td_method.expected_sarsa import ExpectedSARSA
-from algorithm.value_based.tabular_solution_method.td_method.double_q_learning import DoubleQLearning
-from algorithm.value_based.tabular_solution_method.td_method.tdn_evaluation import TDNEvalutaion
-from algorithm.value_based.tabular_solution_method.td_method.n_steps_sarsa import NStepsSARSA
-from algorithm.value_based.tabular_solution_method.td_method.n_steps_expected_sarsa import NStepsExpectedSARSA
-from algorithm.value_based.tabular_solution_method.td_method.off_policy_n_steps_sarsa import OffPolicyNStepsSARSA
-from algorithm.value_based.tabular_solution_method.td_method.dyna_q import DynaQ, TRIVAL, PRIORITY
 from algorithm.value_based.tabular_solution_method.td_method.td_lambda_evaluation import TDLambdaEvalutaion
-from algorithm.value_based.tabular_solution_method.td_method.q_lambda import QLambda
-
-from lib import plotting
+from algorithm.value_based.tabular_solution_method.td_method.tdn_evaluation import TDNEvalutaion
+from lib.plotting import plot_episode_error
 from policy.policy import TabularPolicy
+from test_setup import get_env
+from env.blackjack import BlackjackEnv
 
 
 num_episodes = 100000
-n_steps = 4
+n_steps = 1
+
+real_env = get_env("blackjack")
 
 
-def test_td0_evaluation_method(env):
+def test_td0_evaluation_method_for_blackjack():
+    env = BlackjackEnv()
+
     v_table = env.build_V_table()
-    b_policy_table = env.build_policy_table()
-    b_policy = TabularPolicy(b_policy_table)
-    td0_method = TD0Evalutaion(v_table, b_policy, env)
-    td0_method.evaluate()
+
+    # spcific target policy only for blackjack
+    t_policy_table = env.build_policy_table()
+    for state_index, _ in t_policy_table.items():
+        card_sum = state_index[0]
+        if card_sum < 20:
+            t_policy_table[state_index][BlackjackEnv.HIT] = 1.0
+            t_policy_table[state_index][BlackjackEnv.STICK] = 0.0
+        else:
+            t_policy_table[state_index][BlackjackEnv.HIT] = 0.0
+            t_policy_table[state_index][BlackjackEnv.STICK] = 1.0
+    t_policy = TabularPolicy(t_policy_table)
+
+    error = []
+    init_state = env.reset(False)
+    for episodes in tqdm(range(5000)):
+        error_square = 0.0
+        rounds = 1
+        for _ in range(rounds):
+            rl_method = TD0Evalutaion(v_table,t_policy, env,episodes)
+            current_value= rl_method.evaluate()
+            error_square = error_square+(current_value[init_state] + 0.27726)*(current_value[init_state] + 0.27726)
+        
+        error.append(error_square/rounds)
+
+    plot_episode_error(error)        
+
+
+test_td0_evaluation_method_for_blackjack()
+
+
+
+
+def test_tdn_evaluation_method_for_blackjack():
+    env = BlackjackEnv()
+
+    v_table = env.build_V_table()
+
+    # spcific target policy only for blackjack
+    t_policy_table = env.build_policy_table()
+    for state_index, _ in t_policy_table.items():
+        card_sum = state_index[0]
+        if card_sum < 20:
+            t_policy_table[state_index][BlackjackEnv.HIT] = 1.0
+            t_policy_table[state_index][BlackjackEnv.STICK] = 0.0
+        else:
+            t_policy_table[state_index][BlackjackEnv.HIT] = 0.0
+            t_policy_table[state_index][BlackjackEnv.STICK] = 1.0
+    t_policy = TabularPolicy(t_policy_table)
+
+    
+    error = []
+    init_state = env.reset(False)
+    for episode in tqdm(range(500)):
+        error_square = 0.0
+        for _ in range(10):
+            rl_method = TDNEvalutaion(v_table,t_policy, env, n_steps,episodes=100)
+            current_value= rl_method.evaluate()
+            error_square = error_square+(current_value[init_state] + 0.27726)*(current_value[init_state] + 0.27726)
+        
+        error.append(error_square/100)
+
+    plot_episode_error(error)        
+
+test_tdn_evaluation_method_for_blackjack()
+
 
 def test_td_lambda_evalution_method(env):
-    v_table = env.build_V_table()
-    b_policy_table = env.build_policy_table()
-    b_policy = TabularPolicy(b_policy_table)
-    tdlambda_method = TDLambdaEvalutaion(v_table, b_policy, env)
-    tdlambda_method.evaluate()
+    env = BlackjackEnv()
 
+    v_table = env.build_V_table()
+
+    # spcific target policy only for blackjack
+    t_policy_table = env.build_policy_table()
+    for state_index, _ in t_policy_table.items():
+        card_sum = state_index[0]
+        if card_sum < 20:
+            t_policy_table[state_index][BlackjackEnv.HIT] = 1.0
+            t_policy_table[state_index][BlackjackEnv.STICK] = 0.0
+        else:
+            t_policy_table[state_index][BlackjackEnv.HIT] = 0.0
+            t_policy_table[state_index][BlackjackEnv.STICK] = 1.0
+    t_policy = TabularPolicy(t_policy_table)
+
+    error = []
+    init_state = env.reset(False)
+    for episode in tqdm(range(500)):
+        error_square = 0.0
+        for _ in range(10):
+            rl_method = TDLambdaEvalutaion(v_table,t_policy, env,episodes=100)
+            current_value= rl_method.evaluate()
+            error_square = error_square+(current_value[init_state] + 0.27726)*(current_value[init_state] + 0.27726)
+        
+        error.append(error_square/100)
+
+    plot_episode_error(error)     
+
+
+test_td_lambda_evalution_method()
 
 
 def test_sarsa_method(env):

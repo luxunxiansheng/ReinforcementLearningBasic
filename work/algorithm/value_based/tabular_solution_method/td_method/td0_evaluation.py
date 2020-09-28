@@ -33,11 +33,14 @@
 #
 # /
 
+### Have problem 
+
+
 from tqdm import tqdm
 from common import CriticBase
 
 class Critic(CriticBase):
-    def __init__(self, value_function, policy, env, episodes=1000, discount=1.0, step_size=0.1):
+    def __init__(self, value_function, policy, env, episodes=1000, discount=1.0, step_size=0.01):
         self.value_function = value_function
         self.policy = policy
         self.env = env
@@ -46,7 +49,7 @@ class Critic(CriticBase):
         self.step_size = step_size
 
     def evaluate(self,*args):
-        for _ in tqdm(range(0, self.episodes)):
+        for _ in range(0, self.episodes):
             self._run_one_episode()
         
     def _run_one_episode(self):

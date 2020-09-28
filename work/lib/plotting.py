@@ -60,6 +60,16 @@ def plot_episode_stats(stats, smoothing_window=10, noshow=False):
 
     return fig1, fig2, fig3
 
+def plot_episode_error(errors):
+    # Plot the episode length over time
+    fig1 = plt.figure(figsize=(10, 5))
+    plt.plot(errors,label='Error')
+
+    plt.legend()
+    plt.xlabel("Episode")
+    plt.ylabel("Error")
+    plt.title("Evaluation Error")
+    plt.show(fig1) 
 
 def  plot_state_value(env,value_function_stats,noshow=False):
     # Plot the episode length over time

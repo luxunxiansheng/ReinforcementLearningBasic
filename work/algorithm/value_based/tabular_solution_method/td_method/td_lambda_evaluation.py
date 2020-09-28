@@ -33,29 +33,28 @@
 #
 # /
 
+import numpy as np
+from numpy.core.numeric import cross
 from tqdm import tqdm
-from copy import deepcopy
+from common import CriticBase
 
-
-class TDLambdaEvalutaion:
-    def __init__(self, v_table, policy, env, episodes=1000, discount=1.0, step_size=0.1 , lamb =0):
-        self.v_table = v_table
+class Critic(CriticBase):
+    def __init__(self,  v_table, policy, env, n_steps, episodes=1000, discount=1.0, step_size=0.1):
+        self.value_function = v_table
         self.policy = policy
         self.env = env
         self.episodes = episodes
         self.discount = discount
+        self.steps = n_steps
         self.step_size = step_size
-        self.lamb =lamb
 
-        self.eligibility = {}
-        for state_index in v_table:
-            self.eligibility[state_index] = 0.0
-        
-    def evaluate(self):
-        for _ in tqdm(range(0, self.episodes)):
+    def evaluate(self,*args):
+        for _ in range(self.episodes):
             self._run_one_episode()
-        self.env.show_v_table(self.v_table)     
-
+    
+    def get_value_function(self):
+        return self.value_function
+        
     def _run_one_episode(self):
         """
         Tabular TD(lambda) for estimating V(pi) 
@@ -68,15 +67,24 @@ class TDLambdaEvalutaion:
             reward = observation[1]
             done = observation[2]
             
-            delta = reward + self.discount*self.v_table[next_state_index]-self.v_table[current_state_index]
+            delta = reward + self.discount*self.value_function[next_state_index]-self.value_function[current_state_index]
             self.eligibility[current_state_index] += 1.0
 
             for state_index in self.eligibility:
-                self.v_table[state_index] = self.v_table[state_index] + self.step_size * delta * self.eligibility[state_index]
+                self.value_function[state_index] = self.value_function[state_index] + self.step_size * delta * self.eligibility[state_index]
                 self.eligibility[state_index] = self.lamb * self.discount * self.eligibility[state_index]
 
             if done:
                 break               
 
             current_state_index = next_state_index
-            
+
+
+class TDLambdaEvalutaion:
+    def __init__(self,  v_table, policy, env, episodes=1000, discount=1.0, step_size=0.1,lamb =0):
+        self.critic= Critic(v_table,policy,env,episodes,discount,step_size,lamb)
+    
+    def evaluate(self):
+        self.critic.evaluate()
+        return self.critic.get_value_function()
+

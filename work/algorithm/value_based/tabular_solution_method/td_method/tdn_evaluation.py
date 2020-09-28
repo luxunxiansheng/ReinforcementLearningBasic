@@ -49,8 +49,11 @@ class Critic(CriticBase):
         self.step_size = step_size
 
     def evaluate(self,*args):
-        for _ in tqdm(range(0, self.episodes)):
+        for _ in range(self.episodes):
             self._run_one_episode()
+    
+    def get_value_function(self):
+        return self.value_function
         
     def _run_one_episode(self):
         """
