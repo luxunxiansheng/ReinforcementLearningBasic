@@ -49,13 +49,14 @@ class Critic(CriticBase):
         self.step_size = step_size
 
     def evaluate(self,*args):
-        for _ in range(self.episodes):
-            self._run_one_episode()
+        evaluated_state = self.env.reset(False)
+        for _ in range(0, self.episodes):
+            self._run_one_episode(evaluated_state)
     
     def get_value_function(self):
         return self.value_function
         
-    def _run_one_episode(self):
+    def _run_one_episode(self,init_state):
         """
         Tabular TD(N) for estimating V(pi) book 7.1 section
         """
@@ -63,7 +64,7 @@ class Critic(CriticBase):
         final_timestamp = np.inf
 
         trajectory = []
-        current_state_index = self.env.reset()
+        current_state_index = self.env.reset(False)
         while True:
             if current_timestamp < final_timestamp:
                 action_index = self.policy.get_action(current_state_index)

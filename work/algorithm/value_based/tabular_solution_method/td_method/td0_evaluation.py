@@ -33,9 +33,6 @@
 #
 # /
 
-### Have problem 
-
-
 from tqdm import tqdm
 from common import CriticBase
 
@@ -57,8 +54,8 @@ class Critic(CriticBase):
         Tabular TD(0) for estimating V(pi)
         book 6.1 section
         """
-
-        current_state_index = self.env.reset()
+        
+        current_state_index = self.env.reset(False)
         while True:
             action_index = self.policy.get_action(current_state_index)
             observation = self.env.step(action_index)
@@ -67,18 +64,17 @@ class Critic(CriticBase):
             done = observation[2]
             
             delta = reward + self.discount*self.value_function[next_state_index]-self.value_function[current_state_index]
+                        
             self.value_function[current_state_index] += self.step_size*delta
-
             if done:
-                break               
-
+                break   
             current_state_index = next_state_index
     
     def get_value_function(self):
         return self.value_function
             
 class TD0Evalutaion:
-    def __init__(self, value_function, policy, env, episodes=1000, discount=1.0, step_size=0.1):
+    def __init__(self, value_function, policy, env, episodes=1000, discount=1.0, step_size=0.01):
         self.critic= Critic(value_function,policy,env,episodes,discount,step_size)
     
     def evaluate(self,*args):

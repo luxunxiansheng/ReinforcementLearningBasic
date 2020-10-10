@@ -157,8 +157,7 @@ class BlackjackEnv(BaseDiscreteEnv):
             for showcard_index in range(self.observation_space[1].n):
                 for usable_ace_index in range(self.observation_space[2].n):
                     for action_index in range(self.action_space.n):
-                        policy_table[((sum_index, showcard_index, usable_ace_index))
-                                     ][action_index] = 1.0/self.action_space.n
+                        policy_table[((sum_index, showcard_index, usable_ace_index))][action_index] = 1.0/self.action_space.n
 
         return policy_table
 
