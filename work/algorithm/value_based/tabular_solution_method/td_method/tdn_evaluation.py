@@ -39,7 +39,7 @@ from tqdm import tqdm
 from common import CriticBase
 
 class Critic(CriticBase):
-    def __init__(self,  v_table, policy, env, n_steps, episodes=1000, discount=1.0, step_size=0.1):
+    def __init__(self,  v_table, policy, env,  n_steps=1, episodes=1000, discount=1.0, step_size=0.1):
         self.value_function = v_table
         self.policy = policy
         self.env = env
@@ -47,16 +47,15 @@ class Critic(CriticBase):
         self.discount = discount
         self.steps = n_steps
         self.step_size = step_size
-
+        
     def evaluate(self,*args):
-        evaluated_state = self.env.reset(False)
         for _ in range(0, self.episodes):
-            self._run_one_episode(evaluated_state)
+            self._run_one_episode()
     
     def get_value_function(self):
         return self.value_function
         
-    def _run_one_episode(self,init_state):
+    def _run_one_episode(self):
         """
         Tabular TD(N) for estimating V(pi) book 7.1 section
         """
@@ -64,7 +63,7 @@ class Critic(CriticBase):
         final_timestamp = np.inf
 
         trajectory = []
-        current_state_index = self.env.reset(False)
+        current_state_index = self.env.reset()
         while True:
             if current_timestamp < final_timestamp:
                 action_index = self.policy.get_action(current_state_index)
@@ -95,7 +94,7 @@ class Critic(CriticBase):
 
 
 class TDNEvalutaion:
-    def __init__(self,  v_table, policy, env, n_steps, episodes=1000, discount=1.0, step_size=0.1):
+    def __init__(self,  v_table, policy, env, n_steps=1, episodes=1000, discount=1.0, step_size=0.01):
         self.critic= Critic(v_table,policy,env,n_steps,episodes,discount,step_size)
     
     def evaluate(self):

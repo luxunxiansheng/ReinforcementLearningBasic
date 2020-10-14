@@ -38,8 +38,11 @@ from numpy.core.numeric import cross
 from tqdm import tqdm
 from common import CriticBase
 
+from copy import deepcopy
+
+
 class Critic(CriticBase):
-    def __init__(self,  v_table, policy, env, n_steps, episodes=1000, discount=1.0, step_size=0.1):
+    def __init__(self,  v_table, policy,env,episodes=1000, n_steps=3,discount=1.0, step_size=0.01,lamb=0):
         self.value_function = v_table
         self.policy = policy
         self.env = env
@@ -47,6 +50,11 @@ class Critic(CriticBase):
         self.discount = discount
         self.steps = n_steps
         self.step_size = step_size
+        self.lamb= lamb
+        self.eligibility=self._build_eligibility_from_value_function(v_table)
+    
+    def _build_eligibility_from_value_function(self,v_table):
+        return deepcopy(v_table)
 
     def evaluate(self,*args):
         for _ in range(self.episodes):
@@ -59,7 +67,8 @@ class Critic(CriticBase):
         """
         Tabular TD(lambda) for estimating V(pi) 
         """
-        current_state_index = self.env.reset()
+        current_state_index =  self.env.reset()
+
         while True:
             action_index = self.policy.get_action(current_state_index)
             observation = self.env.step(action_index)
@@ -70,7 +79,7 @@ class Critic(CriticBase):
             delta = reward + self.discount*self.value_function[next_state_index]-self.value_function[current_state_index]
             self.eligibility[current_state_index] += 1.0
 
-            for state_index in self.eligibility:
+            for state_index in self.value_function:
                 self.value_function[state_index] = self.value_function[state_index] + self.step_size * delta * self.eligibility[state_index]
                 self.eligibility[state_index] = self.lamb * self.discount * self.eligibility[state_index]
 
@@ -81,8 +90,8 @@ class Critic(CriticBase):
 
 
 class TDLambdaEvalutaion:
-    def __init__(self,  v_table, policy, env, episodes=1000, discount=1.0, step_size=0.1,lamb =0):
-        self.critic= Critic(v_table,policy,env,episodes,discount,step_size,lamb)
+    def __init__(self,v_table, policy, env, episodes=1000, n_steps=1 ,discount=1.0, step_size=0.01,lamb =0):
+        self.critic= Critic(v_table,policy,env,episodes,n_steps,discount,step_size,lamb)
     
     def evaluate(self):
         self.critic.evaluate()

@@ -116,11 +116,11 @@ class BlackjackEnv(BaseDiscreteEnv):
     STICK = 0
     HIT = 1
 
-    def __init__(self, natural=False):
+    def __init__(self, random_start=True,natural=False):
 
         self.action_space = spaces.Discrete(2)
         self.observation_space = spaces.Tuple((
-            spaces.Discrete(32),
+            spaces.Discrete(33),
             spaces.Discrete(11),
             spaces.Discrete(2)))
 
@@ -130,7 +130,11 @@ class BlackjackEnv(BaseDiscreteEnv):
         # Ref: http://www.bicyclecards.com/how-to-play/blackjack/
         self.natural = natural
         # Start the first game
+
+        self.random_start = random_start
+
         self.reset()
+
 
     def build_V_table(self):
         v_table = {}
@@ -147,8 +151,7 @@ class BlackjackEnv(BaseDiscreteEnv):
             for showcard_index in range(self.observation_space[1].n):
                 for usable_ace_index in range(self.observation_space[2].n):
                     for action_index in range(self.action_space.n):
-                        q_table[((sum_index, showcard_index,
-                                  usable_ace_index))][action_index] = 0.0
+                        q_table[((sum_index, showcard_index,usable_ace_index))][action_index] = 0.0
         return q_table
 
     def build_policy_table(self):
@@ -182,19 +185,20 @@ class BlackjackEnv(BaseDiscreteEnv):
             reward = cmp(score(self.player), score(self.dealer))
             if self.natural and is_natural(self.player) and reward == 1:
                 reward = 1.5
-        return self._get_obs(), reward, done, {}
 
-    def _get_obs(self):
-        return (sum_hand(self.player), self.dealer[0], usable_ace(self.player))
+        return self._get_obs(done), reward, done, {}
 
-    def reset(self, randomly=True):
-        if randomly:
+    def _get_obs(self,done):
+        return (22 if done else sum_hand(self.player), self.dealer[0], usable_ace(self.player))
+
+    def reset(self):
+        if self.random_start:
             self.dealer = draw_hand(self.np_random)
             self.player = draw_hand(self.np_random)
         else:
             self.dealer = [2, draw_card(self.np_random)]
             self.player = [1, 2]
-        return self._get_obs()
+        return self._get_obs(False)
 
     def show_v_table(self, v_table):
 
