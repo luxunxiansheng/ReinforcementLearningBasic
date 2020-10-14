@@ -43,11 +43,9 @@ from policy.policy import TabularPolicy
 from common import ActorBase
 
 class Actor(ActorBase):
-    def __init__(self, q_value_function, policy,delta=1e-8, discount=1.0):
+    def __init__(self, q_value_function, policy):
         self.q_value_function = q_value_function
         self.policy = policy
-        self.delta = delta
-        self.discount = discount
         self.create_distribution_greedily = create_distribution_greedily()
 
     def improve(self, *args):
@@ -77,7 +75,7 @@ class MonteCarloESControl:
         self.env = env
         self.episodes = episodes
         self.discount = discount
-        self.actor = Actor(q_value_function,policy, delta=1e-8, discount=1.0)
+        self.actor = Actor(q_value_function,policy)
 
     def improve(self):
         state_count = self._init_state_count()

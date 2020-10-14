@@ -33,23 +33,19 @@
 #
 # /
 
-import copy
 from collections import defaultdict
 
 import numpy as np
-from tqdm import tqdm
-
-from lib.utility import (create_distribution_epsilon_greedily,create_distribution_greedily)
 from common import ActorBase
+from lib.utility import create_distribution_greedily
 from policy.policy import TabularPolicy
+from tqdm import tqdm
 
 
 class Actor(ActorBase):
-    def __init__(self, q_value_function, policy,delta=1e-8, discount=1.0):
+    def __init__(self, q_value_function, policy):
         self.q_value_function = q_value_function
         self.policy = policy
-        self.delta = delta
-        self.discount = discount
         self.create_distribution_greedily = create_distribution_greedily()
 
     def improve(self, *args):
@@ -66,7 +62,6 @@ class Actor(ActorBase):
             policy_table[state_index] = greedy_distibution
         table_policy = TabularPolicy(policy_table)
         return table_policy
-        
         
     
 
@@ -85,7 +80,7 @@ class MonteCarloOffPolicyControl:
         self.episodes = episodes
         self.discount = discount
         self.epsilon  = epsilon
-        self.actor = Actor(q_value_function,target_policy, delta=1e-8, discount=1.0)
+        self.actor = Actor(q_value_function,target_policy, delta=1e-8)
 
     def improve(self):
         # it is necessary to keep the weight total for every state_action pair

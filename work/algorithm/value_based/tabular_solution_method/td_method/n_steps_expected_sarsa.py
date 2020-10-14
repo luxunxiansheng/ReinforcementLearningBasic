@@ -34,9 +34,33 @@
 # /
 
 import numpy as np
+from common import ActorBase
+from lib.utility import (create_distribution_epsilon_greedily,create_distribution_greedily)
+from policy.policy import TabularPolicy
 from tqdm import tqdm
 
-from lib.utility import create_distribution_epsilon_greedily
+class Actor(ActorBase):
+    def __init__(self, q_value_function, policy,episilon):
+        self.q_value_function = q_value_function
+        self.policy = policy
+        self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(episilon)
+        self.create_distribution_greedily = create_distribution_greedily()
+
+    def improve(self, *args):
+        state_index = args[0]
+        q_values = self.q_value_function[state_index]
+        soft_greedy_distibution = self.create_distribution_epsilon_greedily(q_values)
+        self.policy.policy_table[state_index] = soft_greedy_distibution
+
+    def get_optimal_policy(self):
+        policy_table = {}
+        for state_index, _ in self.q_value_function.items():
+            q_values = self.q_value_function[state_index]
+            greedy_distibution = self.create_distribution_greedily(q_values)
+            policy_table[state_index] = greedy_distibution
+        table_policy = TabularPolicy(policy_table)
+        return table_policy
+
 
 class NStepsExpectedSARSA:
     """
@@ -50,8 +74,10 @@ class NStepsExpectedSARSA:
         self.episodes = episodes
         self.step_size = step_size
         self.discount = discount
-        self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(epsilon)
         self.steps = steps
+
+        self.actor = Actor(q_table,table_policy, epsilon) 
+
 
         self.statistics = statistics
 
@@ -109,9 +135,7 @@ class NStepsExpectedSARSA:
                 self.q_table[trajectory[updated_timestamp][0]][trajectory[updated_timestamp][1]] += self.step_size*delta
 
                 # update policy softly
-                q_values = self.q_table[trajectory[updated_timestamp][0]]
-                distribution = self.create_distribution_epsilon_greedily(q_values)
-                self.policy.policy_table[trajectory[updated_timestamp][0]] = distribution
+                self.actor.improve(current_state_index)
 
                 if updated_timestamp == final_timestamp - 1:
                     break

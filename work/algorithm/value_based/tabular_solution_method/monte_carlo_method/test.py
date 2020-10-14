@@ -23,7 +23,7 @@ real_env = get_env("blackjack")
 
 
 def test_mc_offpolicy_evaluation_method_for_blackjack():
-    env = BlackjackEnv()
+    env = BlackjackEnv(False)
 
     q_table = env.build_Q_table()
 
@@ -44,7 +44,7 @@ def test_mc_offpolicy_evaluation_method_for_blackjack():
     t_policy = TabularPolicy(t_policy_table)
 
     error = []
-    init_state = env.reset(False)
+    init_state = env.reset()
     for episode in tqdm(range(100)):
         error_square = 0.0
         for _ in range(100):

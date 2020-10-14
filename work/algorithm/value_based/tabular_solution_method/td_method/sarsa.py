@@ -33,9 +33,55 @@
 #
 # /
 
+from common import ActorBase
+from lib.utility import (create_distribution_epsilon_greedily,create_distribution_greedily)
+from policy.policy import TabularPolicy
 from tqdm import tqdm
 
-from lib.utility import create_distribution_epsilon_greedily
+
+class Actor(ActorBase):
+    def __init__(self, q_value_function, policy,episilon):
+        self.q_value_function = q_value_function
+        self.policy = policy
+        self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(episilon)
+        self.create_distribution_greedily = create_distribution_greedily()
+
+    def improve(self, *args):
+        
+        current_state_index  = args[0]
+        current_action_index = args[1]
+        episode_rewards      = args[2]
+    
+        observation = self.env.step(current_action_index)
+    
+        # R
+        reward = observation[1]
+        done = observation[2]
+
+        #self.statistics.episode_rewards[episode] += reward
+        #self.statistics.episode_lengths[episode] += 1
+
+        # S'
+        next_state_index = observation[0]
+
+        # A'
+        next_action_index = self.policy.get_action(next_state_index)
+
+        delta = reward + self.discount * self.q_value_function[next_state_index][next_action_index] - self.q_value_function[current_state_index][current_action_index]
+        self.q_value_function[current_state_index][current_action_index] += self.step_size * delta
+
+        q_values = self.q_value_function[current_state_index]
+        soft_greedy_distibution = self.create_distribution_epsilon_greedily(q_values)
+        self.policy.policy_table[current_state_index] = soft_greedy_distibution
+
+    def get_optimal_policy(self):
+        policy_table = {}
+        for state_index, _ in self.q_value_function.items():
+            q_values = self.q_value_function[state_index]
+            greedy_distibution = self.create_distribution_greedily(q_values)
+            policy_table[state_index] = greedy_distibution
+        table_policy = TabularPolicy(policy_table)
+        return table_policy
 
 
 class SARSA:
@@ -43,23 +89,22 @@ class SARSA:
     SARSA algorithm: On-policy TD control. Finds the optimal epsilon-greedy policy.
     """
 
-    def __init__(self, q_table, table_policy, epsilon,env, statistics,episodes,step_size=0.1,discount=1.0):
-        self.q_table = q_table
+    def __init__(self, q_value_function, table_policy, epsilon,env, statistics,episodes,step_size=0.1,discount=1.0):
+        self.q_value_function = q_value_function
         self.policy = table_policy
         self.env = env
-        
         self.episodes = episodes
         self.step_size = step_size
         self.discount = discount
-        self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(
-            epsilon)
+        self.actor = Actor(q_value_function,table_policy, epsilon)
 
         self.statistics = statistics
-        
 
     def improve(self):
         for episode in tqdm(range(0, self.episodes)):
             self._run_one_episode(episode)
+
+        return self.actor.get_optimal_policy()
 
     def _run_one_episode(self,episode):
         # S
@@ -83,13 +128,10 @@ class SARSA:
             # A'
             next_action_index = self.policy.get_action(next_state_index)
 
-            delta = reward + self.discount * self.q_table[next_state_index][next_action_index] - self.q_table[current_state_index][current_action_index]
-            self.q_table[current_state_index][current_action_index] += self.step_size * delta
+            delta = reward + self.discount * self.q_value_function[next_state_index][next_action_index] - self.q_value_function[current_state_index][current_action_index]
+            self.q_value_function[current_state_index][current_action_index] += self.step_size * delta
 
-            # update policy softly
-            q_values = self.q_table[current_state_index]
-            distribution = self.create_distribution_epsilon_greedily(q_values)
-            self.policy.policy_table[current_state_index] = distribution
+            self.actor.improve(current_state_index)
 
             if done:
                 break

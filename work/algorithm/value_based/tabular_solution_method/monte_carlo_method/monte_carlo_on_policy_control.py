@@ -36,20 +36,16 @@
 
 from collections import defaultdict
 
+from common import ActorBase
+from lib.utility import (create_distribution_epsilon_greedily,create_distribution_greedily)
+from policy.policy import TabularPolicy
 from tqdm import tqdm
 
 
-from lib.utility import create_distribution_epsilon_greedily
-from lib.utility import create_distribution_greedily
-from policy.policy import TabularPolicy
-from common import ActorBase
-
 class Actor(ActorBase):
-    def __init__(self, q_value_function, policy,episilon,delta=1e-8, discount=1.0):
+    def __init__(self, q_value_function, policy,episilon,discount=1.0):
         self.q_value_function = q_value_function
         self.policy = policy
-        self.delta = delta
-        self.discount = discount
         self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(episilon)
         self.create_distribution_greedily = create_distribution_greedily()
 
@@ -80,7 +76,7 @@ class MonteCarloOnPolicyControl:
         self.env = env
         self.episodes = episodes
         self.discount = discount
-        self.actor = Actor(q_value_function,policy, episilon, delta=1e-8, discount=1.0)
+        self.actor = Actor(q_value_function,policy, episilon, 1e-8)
 
     def improve(self):
         state_count = self._init_state_count()

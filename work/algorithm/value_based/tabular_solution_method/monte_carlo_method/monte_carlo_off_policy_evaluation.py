@@ -82,7 +82,7 @@ class Critic(CriticBase):
 
     def _run_one_episode(self):
         trajectory = []
-        current_state_index = self.env.reset(False)
+        current_state_index = self.env.reset()
         while True:
             action_index = self.behavior_policy.get_action(current_state_index)
             observation = self.env.step(action_index)
