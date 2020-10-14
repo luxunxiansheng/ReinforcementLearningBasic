@@ -49,7 +49,6 @@ class Actor(ActorBase):
         self.create_distribution_greedily = create_distribution_greedily()
 
     def improve(self, *args):
-        
         current_state_index  = args[0]
         current_action_index = args[1]
         reward = args[2]

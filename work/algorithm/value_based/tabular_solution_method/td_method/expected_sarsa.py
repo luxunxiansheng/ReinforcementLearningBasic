@@ -40,17 +40,32 @@ from tqdm import tqdm
 
 
 class Actor(ActorBase):
-    def __init__(self, q_value_function, policy,episilon):
+    def __init__(self, q_value_function, policy,discount,step_size,episilon):
         self.q_value_function = q_value_function
         self.policy = policy
+        self.discount= discount
+        self.step_size = step_size
         self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(episilon)
         self.create_distribution_greedily = create_distribution_greedily()
 
     def improve(self, *args):
-        state_index = args[0]
-        q_values = self.q_value_function[state_index]
+        current_state_index  = args[0]
+        current_action_index = args[1]
+        reward = args[2]
+        next_state_index = args[3]
+
+        expected_next_q = 0
+        next_actions = self.policy.policy_table[next_state_index]
+        for action, action_prob in next_actions.items():
+            expected_next_q += action_prob * self.q_value_function[next_state_index][action]
+            
+        delta = reward + self.discount * expected_next_q - self.q_value_function[current_state_index][current_action_index]
+        self.q_value_function[current_state_index][current_action_index] += self.step_size * delta
+        
+        q_values = self.q_value_function[current_state_index]
+        
         soft_greedy_distibution = self.create_distribution_epsilon_greedily(q_values)
-        self.policy.policy_table[state_index] = soft_greedy_distibution
+        self.policy.policy_table[current_state_index] = soft_greedy_distibution
 
     def get_optimal_policy(self):
         policy_table = {}
@@ -75,7 +90,7 @@ class ExpectedSARSA:
         self.episodes = episodes
         self.step_size = step_size
         self.discount = discount
-        self.actor = Actor(q_table,table_policy, epsilon) 
+        self.actor = Actor(q_table,table_policy, discount,step_size,epsilon) 
 
         self.statistics = statistics
 
@@ -92,28 +107,15 @@ class ExpectedSARSA:
             current_action_index = self.policy.get_action(current_state_index)
 
             observation = self.env.step(current_action_index)
-            #self.env.render()
-            # R
+            
+            next_state_index = observation[0]
             reward = observation[1]
             done = observation[2]
 
             self.statistics.episode_rewards[episode] += reward
             self.statistics.episode_lengths[episode] += 1
 
-            # S'
-            next_state_index = observation[0]
-
-            # expected Q value, actullay the v(s)
-            expected_next_q = 0
-            next_actions = self.policy.policy_table[next_state_index]
-            for action, action_prob in next_actions.items():
-                expected_next_q += action_prob * self.q_table[next_state_index][action]
-
-            delta = reward + self.discount * expected_next_q - self.q_table[current_state_index][current_action_index]
-            self.q_table[current_state_index][current_action_index] += self.step_size * delta
-
-            
-            self.actor.improve(current_state_index)
+            self.actor.improve(current_state_index,current_action_index,reward,next_state_index)
 
             if done:
                 break

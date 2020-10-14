@@ -24,7 +24,7 @@ from policy.policy import TabularPolicy
 from test_setup import get_env
 from tqdm import tqdm
 
-num_episodes = 1000
+num_episodes = 200
 n_steps = 4
 
 
