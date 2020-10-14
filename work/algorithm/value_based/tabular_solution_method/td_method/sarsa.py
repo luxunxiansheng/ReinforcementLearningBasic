@@ -40,9 +40,11 @@ from tqdm import tqdm
 
 
 class Actor(ActorBase):
-    def __init__(self, q_value_function, policy,episilon):
+    def __init__(self, q_value_function, policy, step_size, discount, episilon):
         self.q_value_function = q_value_function
         self.policy = policy
+        self.discount = discount
+        self.step_size = step_size 
         self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(episilon)
         self.create_distribution_greedily = create_distribution_greedily()
 
@@ -50,21 +52,9 @@ class Actor(ActorBase):
         
         current_state_index  = args[0]
         current_action_index = args[1]
-        episode_rewards      = args[2]
-    
-        observation = self.env.step(current_action_index)
-    
-        # R
-        reward = observation[1]
-        done = observation[2]
+        reward = args[2]
+        next_state_index = args[3]
 
-        #self.statistics.episode_rewards[episode] += reward
-        #self.statistics.episode_lengths[episode] += 1
-
-        # S'
-        next_state_index = observation[0]
-
-        # A'
         next_action_index = self.policy.get_action(next_state_index)
 
         delta = reward + self.discount * self.q_value_function[next_state_index][next_action_index] - self.q_value_function[current_state_index][current_action_index]
@@ -73,6 +63,8 @@ class Actor(ActorBase):
         q_values = self.q_value_function[current_state_index]
         soft_greedy_distibution = self.create_distribution_epsilon_greedily(q_values)
         self.policy.policy_table[current_state_index] = soft_greedy_distibution
+
+        return next_action_index
 
     def get_optimal_policy(self):
         policy_table = {}
@@ -96,7 +88,7 @@ class SARSA:
         self.episodes = episodes
         self.step_size = step_size
         self.discount = discount
-        self.actor = Actor(q_value_function,table_policy, epsilon)
+        self.actor = Actor(q_value_function,table_policy, step_size, discount, epsilon)
 
         self.statistics = statistics
 
@@ -115,23 +107,16 @@ class SARSA:
 
         while True:
             observation = self.env.step(current_action_index)
-            # R
+
+            # S'
+            next_state_index=observation[0]
             reward = observation[1]
             done = observation[2]
-
+            
             self.statistics.episode_rewards[episode] += reward
             self.statistics.episode_lengths[episode] += 1
 
-            # S'
-            next_state_index = observation[0]
-
-            # A'
-            next_action_index = self.policy.get_action(next_state_index)
-
-            delta = reward + self.discount * self.q_value_function[next_state_index][next_action_index] - self.q_value_function[current_state_index][current_action_index]
-            self.q_value_function[current_state_index][current_action_index] += self.step_size * delta
-
-            self.actor.improve(current_state_index)
+            next_action_index = self.actor.improve(current_state_index,current_action_index,reward,next_state_index)
 
             if done:
                 break
