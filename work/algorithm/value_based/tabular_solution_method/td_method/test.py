@@ -25,7 +25,7 @@ from test_setup import get_env
 from tqdm import tqdm
 
 num_episodes = 200
-n_steps = 4
+n_steps = 0
 
 
 
@@ -160,6 +160,17 @@ def test_expected_sarsa_method(env):
     return expectedsarsa_statistics
 
 
+def test_n_steps_sarsa_method(env):
+
+    q_table = env.build_Q_table()
+    b_policy_table = env.build_policy_table()
+    b_policy = TabularPolicy(b_policy_table)
+    n_sarsa_statistics = EpisodeStats("N_Steps_Sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes),q_value=None)
+    n_sarsa_method = NStepsSARSA(q_table, b_policy, 0.1, env,  n_steps, n_sarsa_statistics, num_episodes)
+    n_sarsa_method.improve()
+    return n_sarsa_statistics
+
+
 def test_sarsa_lambda_method(env):
     q_table = env.build_Q_table()
     b_policy_table = env.build_policy_table()
@@ -214,15 +225,7 @@ def test_double_q_learning_method(env):
 
 
 
-def test_n_steps_sarsa_method(env):
 
-    q_table = env.build_Q_table()
-    b_policy_table = env.build_policy_table()
-    b_policy = TabularPolicy(b_policy_table)
-    n_sarsa_statistics = EpisodeStats("N_Steps_Sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes),q_value=None)
-    n_sarsa_method = NStepsSARSA(q_table, b_policy, 0.1, env,  n_steps, n_sarsa_statistics, num_episodes)
-    n_sarsa_method.improve()
-    return n_sarsa_statistics
 
 
 def test_n_setps_expected_sarsa(env):
