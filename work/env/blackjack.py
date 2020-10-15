@@ -202,8 +202,8 @@ class BlackjackEnv(BaseDiscreteEnv):
 
     def show_v_table(self, v_table):
 
-        ace_usable = np.zeros([32, 11])
-        ace_no_usable = np.zeros([32, 11])
+        ace_usable = np.zeros([33, 11])
+        ace_no_usable = np.zeros([33, 11])
 
         for obs, value in v_table.items():
             sumary = obs[0]
@@ -219,12 +219,12 @@ class BlackjackEnv(BaseDiscreteEnv):
         plt.subplots_adjust(wspace=0.1, hspace=0.2)
         axes = axes.flatten()
 
-        fig = sns.heatmap(np.flipud(ace_usable), cmap="YlGnBu", ax=axes[0], xticklabels=range(1, 11),yticklabels=list(reversed(range(1, 32))))
+        fig = sns.heatmap(np.flipud(ace_usable), cmap="YlGnBu", ax=axes[0], xticklabels=range(1, 11),yticklabels=list(reversed(range(1, 33))))
         fig.set_ylabel('player sum', fontsize=30)
         fig.set_xlabel('dealer showing', fontsize=30)
         fig.set_title('Usable Ace', fontsize=30)
 
-        fig = sns.heatmap(np.flipud(ace_no_usable), cmap="YlGnBu", ax=axes[1], xticklabels=range(1, 11), yticklabels=list(reversed(range(1, 32))))
+        fig = sns.heatmap(np.flipud(ace_no_usable), cmap="YlGnBu", ax=axes[1], xticklabels=range(1, 11), yticklabels=list(reversed(range(1, 33))))
         fig.set_ylabel('player sum', fontsize=30)
         fig.set_xlabel('dealer showing', fontsize=30)
         fig.set_title('No Usable ace', fontsize=30)
@@ -232,8 +232,8 @@ class BlackjackEnv(BaseDiscreteEnv):
         plt.show()
 
     def show_policy(self, table_policy):
-        ace_usable = np.zeros([32, 11])
-        ace_no_usable = np.zeros([32, 11])
+        ace_usable = np.zeros([33, 11])
+        ace_no_usable = np.zeros([33, 11])
 
         for state, action_values in table_policy.policy_table.items():
             summary = state[0]
@@ -250,12 +250,12 @@ class BlackjackEnv(BaseDiscreteEnv):
         plt.subplots_adjust(wspace=0.1, hspace=0.2)
         axes = axes.flatten()
 
-        fig = sns.heatmap(np.flipud(ace_usable), cmap="YlGnBu", ax=axes[0], xticklabels=range(0, 11), yticklabels=list(reversed(range(1, 32))))
+        fig = sns.heatmap(np.flipud(ace_usable), cmap="YlGnBu", ax=axes[0], xticklabels=range(0, 11), yticklabels=list(reversed(range(1, 33))))
         fig.set_ylabel('player sum', fontsize=30)
         fig.set_xlabel('dealer showing', fontsize=30)
         fig.set_title('Usable Ace', fontsize=30)
 
-        fig = sns.heatmap(np.flipud(ace_no_usable), cmap="YlGnBu", ax=axes[1], xticklabels=range(1, 11),yticklabels=list(reversed(range(1, 32))))
+        fig = sns.heatmap(np.flipud(ace_no_usable), cmap="YlGnBu", ax=axes[1], xticklabels=range(1, 11),yticklabels=list(reversed(range(1, 33))))
         fig.set_ylabel('player sum', fontsize=30)
         fig.set_xlabel('dealer showing', fontsize=30)
         fig.set_title('No Usable ace', fontsize=30)
