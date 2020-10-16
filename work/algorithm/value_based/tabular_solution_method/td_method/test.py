@@ -25,7 +25,7 @@ from test_setup import get_env
 from tqdm import tqdm
 
 num_episodes = 2000
-n_steps = 2
+n_steps = 1
 
 def test_td0_evaluation_method_for_blackjack():
     env = BlackjackEnv(False)
@@ -282,7 +282,7 @@ def test_dynaQ_method_priority(env):
 
 
 def test_td_control_method(env):
-    plot_episode_stats([test_sarsa_method(env),test_expected_sarsa_method(env),test_n_steps_sarsa_method(env),test_n_setps_expected_sarsa(env)])
+    plot_episode_stats([test_sarsa_method(env),test_expected_sarsa_method(env),test_n_steps_sarsa_method(env),test_n_setps_expected_sarsa(env),test_sarsa_lambda_method(env)])
 
 
 real_env = get_env("cliffwalking")

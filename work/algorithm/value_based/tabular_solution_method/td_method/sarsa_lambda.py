@@ -34,15 +34,14 @@
 # /
 
 from tqdm import tqdm
-
+from common import ActorBase
 from lib.utility import create_distribution_epsilon_greedily
 from copy import deepcopy
 
-class SARSALambda:
+class Actor(ActorBase):
     """
     SARSA algorithm with backward view: On-policy TD control. Finds the optimal epsilon-greedy policy
     """
-
     def __init__(self, q_table, table_policy, epsilon,env, statistics,episodes,step_size=0.1,discount=1.0, lamb= 0.0):
         self.q_table = q_table
         self.policy = table_policy
@@ -108,3 +107,18 @@ class SARSALambda:
 
             current_state_index = next_state_index
             current_action_index = next_action_index
+
+
+
+class SARSALambda:
+    """
+    SARSA algorithm: On-policy TD control. Finds the optimal epsilon-greedy policy.
+    """
+
+    def __init__(self, q_table, table_policy, epsilon,env, statistics,episodes,step_size=0.1,discount=1.0, lamb= 0.0):
+
+        self.actor = Actor(q_table, table_policy, epsilon,env, statistics,episodes,step_size,discount, lamb)
+
+    def improve(self):
+        self.actor.improve()
+        return self.actor.get_optimal_policy()
