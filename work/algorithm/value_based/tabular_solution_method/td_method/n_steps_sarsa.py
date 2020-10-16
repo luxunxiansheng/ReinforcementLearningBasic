@@ -33,25 +33,30 @@
 #
 # /
 
+from matplotlib.pyplot import disconnect
 import numpy as np
 from common import ActorBase
-from lib.utility import (create_distribution_epsilon_greedily,
-                         create_distribution_greedily)
+from lib.utility import (create_distribution_epsilon_greedily,create_distribution_greedily)
 from policy.policy import TabularPolicy
 from tqdm import tqdm
 
 class Actor(ActorBase):
-    def __init__(self, q_value_function, policy,episilon):
-        self.q_value_function = q_value_function
-        self.policy = policy
-        self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(episilon)
+    def __init__(self, q_table, table_policy, epsilon, env, steps, statistics, episodes, step_size, discount):
+        self.q_value_function = q_table
+        self.policy = table_policy
+        self.epsilon= epsilon
+        self.env = env
+        self.steps = steps
+        self.statistics = statistics
+        self.episodes = episodes
+        self.step_size = step_size
+        self.discount = discount
+        self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(epsilon)
         self.create_distribution_greedily = create_distribution_greedily()
 
     def improve(self, *args):
-        state_index = args[0]
-        q_values = self.q_value_function[state_index]
-        soft_greedy_distibution = self.create_distribution_epsilon_greedily(q_values)
-        self.policy.policy_table[state_index] = soft_greedy_distibution
+        for episode in tqdm(range(0, self.episodes)):
+            self._run_one_episode(episode)
 
     def get_optimal_policy(self):
         policy_table = {}
@@ -61,30 +66,7 @@ class Actor(ActorBase):
             policy_table[state_index] = greedy_distibution
         table_policy = TabularPolicy(policy_table)
         return table_policy
-
-class NStepsSARSA:
-    """
-    N steps SARSA algorithm: On-policy TD control. Finds the optimal epsilon-greedy policy.
-    """
-
-    def __init__(self, q_table, table_policy, epsilon, env, steps, statistics, episodes, step_size=0.1, discount=1.0):
-        self.q_table = q_table
-        self.policy = table_policy
-        self.env = env
-        self.episodes = episodes
-        self.step_size = step_size
-        self.discount = discount
-        
-        self.steps = steps
     
-        self.actor = Actor(q_table,table_policy, epsilon) 
-
-        self.statistics = statistics
-
-    def improve(self):
-        for episode in tqdm(range(0, self.episodes)):
-            self._run_one_episode(episode)
-
     def _run_one_episode(self, episode):
 
         current_timestamp = 0
@@ -124,12 +106,15 @@ class NStepsSARSA:
                 for i in range(updated_timestamp, min(updated_timestamp + self.steps, final_timestamp)):
                     G += np.power(self.discount, i - updated_timestamp) * trajectory[i][2]
                 if updated_timestamp + self.steps < final_timestamp:
-                    G += np.power(self.discount, self.steps) * self.q_table[trajectory[current_timestamp][0]][trajectory[current_timestamp][1]]
+                    G += np.power(self.discount, self.steps) * self.q_value_function[trajectory[current_timestamp][0]][trajectory[current_timestamp][1]]
 
-                delta = G - self.q_table[trajectory[updated_timestamp][0]][trajectory[updated_timestamp][1]]
-                self.q_table[trajectory[updated_timestamp][0]][trajectory[updated_timestamp][1]] += self.step_size*delta
+                delta = G - self.q_value_function[trajectory[updated_timestamp][0]][trajectory[updated_timestamp][1]]
+                self.q_value_function[trajectory[updated_timestamp][0]][trajectory[updated_timestamp][1]] += self.step_size*delta
 
-                self.actor.improve(current_state_index)
+                q_values = self.q_value_function[current_state_index]
+                soft_greedy_distibution = self.create_distribution_epsilon_greedily(q_values)
+                self.policy.policy_table[current_state_index] = soft_greedy_distibution
+
 
                 if updated_timestamp == final_timestamp - 1:
                     break
@@ -137,3 +122,16 @@ class NStepsSARSA:
             current_timestamp += 1
             current_state_index = next_state_index
             current_action_index = next_action_index
+
+class NStepsSARSA:
+    """
+    N steps SARSA algorithm: On-policy TD control. Finds the optimal epsilon-greedy policy.
+    """
+
+    def __init__(self, q_table, table_policy, epsilon, env, steps, statistics, episodes, step_size=0.1, discount=1.0):
+        self.actor = Actor(q_table, table_policy, epsilon, env, steps, statistics, episodes, step_size ,discount) 
+
+    def improve(self):
+        self.actor.improve()
+        return self.actor.get_optimal_policy()
+    

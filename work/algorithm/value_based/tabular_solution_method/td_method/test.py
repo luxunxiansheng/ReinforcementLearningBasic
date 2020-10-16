@@ -25,7 +25,7 @@ from test_setup import get_env
 from tqdm import tqdm
 
 num_episodes = 200
-n_steps = 0
+n_steps = 1
 
 
 
