@@ -24,10 +24,8 @@ from policy.policy import TabularPolicy
 from test_setup import get_env
 from tqdm import tqdm
 
-num_episodes = 200
-n_steps = 1
-
-
+num_episodes = 2000
+n_steps = 2
 
 def test_td0_evaluation_method_for_blackjack():
     env = BlackjackEnv(False)
@@ -222,11 +220,6 @@ def test_double_q_learning_method(env):
     double_qlearning_method.improve()
 
     return double_q_learning_statistics
-
-
-
-
-
 
 def test_n_setps_expected_sarsa(env):
 
