@@ -24,7 +24,7 @@ from policy.policy import TabularPolicy
 from test_setup import get_env
 from tqdm import tqdm
 
-num_episodes = 2000
+num_episodes = 200
 n_steps = 1
 
 def test_td0_evaluation_method_for_blackjack():
@@ -181,16 +181,6 @@ def test_sarsa_lambda_method(env):
     return sarsa_statistics
 
 
-def test_q_lambda_method(env):
-    q_table = env.build_Q_table()
-    b_policy_table = env.build_policy_table()
-    b_policy = TabularPolicy(b_policy_table)
-
-    q_lambda_statistics = EpisodeStats("Q_labmda", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes),q_value=None)
-    q_lambda_method = QLambda(q_table, b_policy, 0.1, env, q_lambda_statistics, num_episodes)
-    q_lambda_method.improve()
-
-    return q_lambda_statistics
 
 def test_qlearning_method(env):
     q_table = env.build_Q_table()
@@ -204,6 +194,21 @@ def test_qlearning_method(env):
     qlearning_method.improve()
 
     return q_learning_statistics
+
+
+
+def test_q_lambda_method(env):
+    q_table = env.build_Q_table()
+    b_policy_table = env.build_policy_table()
+    b_policy = TabularPolicy(b_policy_table)
+
+    q_lambda_statistics = EpisodeStats("Q_labmda", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes),q_value=None)
+    q_lambda_method = QLambda(q_table, b_policy, 0.1, env, q_lambda_statistics, num_episodes)
+    q_lambda_method.improve()
+
+    return q_lambda_statistics
+
+
 
 
 
@@ -282,7 +287,7 @@ def test_dynaQ_method_priority(env):
 
 
 def test_td_control_method(env):
-    plot_episode_stats([test_sarsa_method(env),test_expected_sarsa_method(env),test_n_steps_sarsa_method(env),test_n_setps_expected_sarsa(env),test_sarsa_lambda_method(env)])
+    plot_episode_stats([test_sarsa_method(env),test_expected_sarsa_method(env),test_n_steps_sarsa_method(env),test_n_setps_expected_sarsa(env),test_sarsa_lambda_method(env),test_qlearning_method(env)])
 
 
 real_env = get_env("cliffwalking")

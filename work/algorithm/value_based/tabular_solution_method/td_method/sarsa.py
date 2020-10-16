@@ -39,7 +39,15 @@ from policy.policy import TabularPolicy
 from tqdm import tqdm
 
 
+
+
 class Actor(ActorBase):
+    """
+    The reason that sarsa is on-policy is that it updates its Q-Values using the Q-value of the next state S' 
+    and the current policy's action A'. It estimates the return for state-action pairs assuming the current 
+    policy continues to be followed.
+    """
+    
     def __init__(self, q_value_function, policy, epsilon, env, statistics, episodes, step_size=0.1, discount=1.0):
         self.q_value_function = q_value_function
         self.policy = policy
@@ -48,8 +56,7 @@ class Actor(ActorBase):
         self.env = env
         self.episodes = episodes
         self.statistics = statistics
-        self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(
-            epsilon)
+        self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(epsilon)
         self.create_distribution_greedily = create_distribution_greedily()
 
     def improve(self, *args):
@@ -76,14 +83,11 @@ class Actor(ActorBase):
                 # A'
                 next_action_index = self.policy.get_action(next_state_index)
 
-                delta = reward + self.discount * \
-                    self.q_value_function[next_state_index][next_action_index] - \
-                    self.q_value_function[current_state_index][current_action_index]
+                delta = reward + self.discount * self.q_value_function[next_state_index][next_action_index] - self.q_value_function[current_state_index][current_action_index]
                 self.q_value_function[current_state_index][current_action_index] += self.step_size * delta
 
                 q_values = self.q_value_function[current_state_index]
-                soft_greedy_distibution = self.create_distribution_epsilon_greedily(
-                    q_values)
+                soft_greedy_distibution = self.create_distribution_epsilon_greedily(q_values)
                 self.policy.policy_table[current_state_index] = soft_greedy_distibution
 
                 if done:

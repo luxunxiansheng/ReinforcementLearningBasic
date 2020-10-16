@@ -31,16 +31,17 @@
 #
 # /
 
+from common import ActorBase
+from lib.utility import (create_distribution_epsilon_greedily,create_distribution_greedily)
+from policy.policy import TabularPolicy
 from tqdm import tqdm
 
-from lib.utility import (create_distribution_epsilon_greedily)
 
-
-class QLearning:
+class Actor(ActorBase):
     """
-    Q-Learning algorithm: Off-policy TD control. Finds the optimal greedy policy
-    while following an epsilon-greedy policy
-   """
+    The reason that Q-learning is off-policy is that it updates its Q-values using the Q-value of the 
+    next state s' and the greedy action a' no matter what the current policy is .
+    """
     def __init__(self, q_table, behavior_table_policy, epsilon, env, statistics, episodes, step_size=0.1,  discount=1.0):
         self.q_table = q_table
         self.policy = behavior_table_policy
@@ -49,6 +50,7 @@ class QLearning:
         self.step_size = step_size
         self.discount = discount
         self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(epsilon)
+        self.create_distribution_greedily = create_distribution_greedily()
         self.statistics = statistics
 
     def improve(self):
@@ -77,8 +79,7 @@ class QLearning:
 
             q_values_next_state = self.q_table[next_state_index]
             max_value = max(q_values_next_state.values())
-            delta = reward + self.discount * max_value - \
-                self.q_table[current_state_index][current_action_index]
+            delta = reward + self.discount * max_value - self.q_table[current_state_index][current_action_index]
             self.q_table[current_state_index][current_action_index] += self.step_size * delta
 
             # update policy softly
@@ -90,3 +91,23 @@ class QLearning:
                 break
 
             current_state_index = next_state_index
+
+    def get_optimal_policy(self):
+        policy_table = {}
+        for state_index, _ in self.q_table.items():
+            q_values = self.q_table[state_index]
+            greedy_distibution = self.create_distribution_greedily(q_values)
+            policy_table[state_index] = greedy_distibution
+        table_policy = TabularPolicy(policy_table)
+        return table_policy
+
+
+
+class QLearning:
+    def __init__(self, q_value_function, table_policy, epsilon, env, statistics, episodes, step_size=0.1, discount=1.0):
+
+        self.actor = Actor(q_value_function, table_policy, epsilon,env, statistics, episodes, step_size, discount)
+
+    def improve(self):
+        self.actor.improve()
+        return self.actor.get_optimal_policy()
