@@ -239,7 +239,6 @@ def test_q_lambda_method(env):
 
 
 def test_double_q_learning_method(env):
-
     q_table = env.build_Q_table()
     b_policy_table = env.build_policy_table()
     b_policy = TabularPolicy(b_policy_table)

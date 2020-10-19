@@ -33,7 +33,6 @@
 #
 # /
 
-
 from copy import deepcopy
 
 import numpy as np 
@@ -43,9 +42,12 @@ from lib.utility import (create_distribution_epsilon_greedily,create_distributio
 from policy.policy import TabularPolicy
 from tqdm import tqdm
 
-
-
 class Actor(ActorBase):
+    '''
+    Refer the article 'Double Q-Learning, the Easy Way'
+    https://towardsdatascience.com/double-q-learning-the-easy-way-a924c4085ec3  
+    '''
+
     def __init__(self, q_table, behavior_table_policy, epsilon, env, statistics, episodes, step_size=0.1,  discount=1.0):
         self.q_table_1 = deepcopy(q_table)
         self.q_table_2 = deepcopy(q_table)
@@ -99,6 +101,8 @@ class Actor(ActorBase):
 
             # update policy softly
             q_values = {}
+            
+            # add 
             for action_index, q_value in self.q_table_1[current_state_index].items():
                 q_values[action_index] = q_value + self.q_table_2[current_state_index][action_index]
 
