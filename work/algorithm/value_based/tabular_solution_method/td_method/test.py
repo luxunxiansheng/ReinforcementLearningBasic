@@ -246,13 +246,10 @@ def test_double_q_learning_method(env):
 
     double_q_learning_statistics = EpisodeStats("Double_Q_Learning", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes),q_value=None)
 
-    double_qlearning_method = DoubleQLearning(
-        q_table, b_policy, 0.1, env, double_q_learning_statistics, num_episodes)
+    double_qlearning_method = DoubleQLearning(q_table, b_policy, 0.1, env, double_q_learning_statistics, num_episodes)
     double_qlearning_method.improve()
 
     return double_q_learning_statistics
-
-
 
 def test_dynaQ_method_trival(env):
     q_table = env.build_Q_table()
@@ -281,7 +278,7 @@ def test_dynaQ_method_priority(env):
 
 
 def test_td_control_method(env):
-    plot_episode_stats([test_sarsa_method(env),test_expected_sarsa_method(env),test_n_steps_sarsa_method(env),test_n_setps_expected_sarsa(env),test_sarsa_lambda_method(env),test_off_policy_n_steps_sarsa(env),test_qlearning_method(env),test_q_lambda_method(env)]) 
+    plot_episode_stats([test_sarsa_method(env),test_expected_sarsa_method(env),test_n_steps_sarsa_method(env),test_n_setps_expected_sarsa(env),test_sarsa_lambda_method(env),test_off_policy_n_steps_sarsa(env),test_qlearning_method(env),test_q_lambda_method(env),test_double_q_learning_method(env)]) 
     
     #lot_episode_stats([test_q_lambda_method(env)])
     
