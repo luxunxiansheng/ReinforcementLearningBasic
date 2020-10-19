@@ -33,12 +33,13 @@
 #
 # /
 
-from matplotlib.pyplot import disconnect
 import numpy as np
 from common import ActorBase
 from lib.utility import (create_distribution_epsilon_greedily,create_distribution_greedily)
+from matplotlib.pyplot import disconnect
 from policy.policy import TabularPolicy
 from tqdm import tqdm
+
 
 class Actor(ActorBase):
     def __init__(self, q_table, table_policy, epsilon, env, steps, statistics, episodes, step_size, discount):

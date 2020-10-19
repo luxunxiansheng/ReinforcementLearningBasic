@@ -33,15 +33,15 @@
 #
 # /
 
+from common import ActorBase
 import numpy as np
-from tqdm import tqdm
-
 from lib.utility import create_distribution_greedily
+from tqdm import tqdm
+from policy.policy import TabularPolicy
 
-
-class OffPolicyNStepsSARSA:
+class Actor(ActorBase):
     """
-     Section 7.3 
+    Section 7.3 
     """
 
     def __init__(self, q_table, behavior_table_policy, target_table_policy, env, steps, statistics, episodes, step_size=0.1, discount=1.0):
@@ -54,13 +54,12 @@ class OffPolicyNStepsSARSA:
         self.discount = discount
         self.create_distribution_greedily = create_distribution_greedily()
         self.steps = steps
-
         self.statistics = statistics
 
     def improve(self):
         for episode in tqdm(range(0, self.episodes)):
             self._run_one_episode(episode)
-   
+
     
     def _run_one_episode(self, episode):
 
@@ -79,14 +78,15 @@ class OffPolicyNStepsSARSA:
                 # R
                 reward = observation[1]
                 done = observation[2]
+                trajectory.append((current_state_index, current_action_index, reward))
+
+                self.statistics.episode_rewards[episode] += reward
+                self.statistics.episode_lengths[episode] += 1
 
                 # S'
                 next_state_index = observation[0]
-
                 # A'
                 next_action_index = self.behavior_policy.get_action(next_state_index)
-
-                trajectory.append((current_state_index, current_action_index, reward))
 
                 if done:
                     final_timestamp = current_timestamp + 1
@@ -104,7 +104,8 @@ class OffPolicyNStepsSARSA:
 
                 G = 0
                 for i in range(updated_timestamp, min(updated_timestamp + self.steps, final_timestamp)):
-                    G += np.power(self.discount, i - updated_timestamp) * trajectory[i][2]
+                    reward = trajectory[i][2]
+                    G += np.power(self.discount, i - updated_timestamp) * reward
 
                 if updated_timestamp + self.steps < final_timestamp:
                     G += np.power(self.discount, self.steps) * self.q_table[trajectory[current_timestamp][0]][trajectory[current_timestamp][1]]
@@ -112,7 +113,7 @@ class OffPolicyNStepsSARSA:
                 delta = G - self.q_table[trajectory[updated_timestamp][0]][trajectory[updated_timestamp][1]]
                 self.q_table[trajectory[updated_timestamp][0]][trajectory[updated_timestamp][1]] += self.step_size*delta*p
 
-                # update policy softly
+                # update policy greedily
                 q_values = self.q_table[trajectory[updated_timestamp][0]]
                 distribution = self.create_distribution_greedily(q_values)
                 self.target_policy.policy_table[trajectory[updated_timestamp][0]] = distribution
@@ -122,3 +123,22 @@ class OffPolicyNStepsSARSA:
             current_timestamp += 1
             current_state_index = next_state_index
             current_action_index = next_action_index
+
+
+    def get_optimal_policy(self):
+        policy_table = {}
+        for state_index, _ in self.q_table.items():
+            q_values = self.q_table[state_index]
+            greedy_distibution = self.create_distribution_greedily(q_values)
+            policy_table[state_index] = greedy_distibution
+        table_policy = TabularPolicy(policy_table)
+        return table_policy
+
+
+class OffPolicyNStepsSARSA:
+    def __init__(self, q_table, behavior_table_policy, target_table_policy, env, steps, statistics, episodes, step_size=0.1, discount=1.0):
+        self.actor = Actor(q_table, behavior_table_policy, target_table_policy, env, steps, statistics, episodes, step_size, discount) 
+
+    def improve(self):
+        self.actor.improve()
+        return self.actor.get_optimal_policy()

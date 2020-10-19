@@ -2,7 +2,6 @@ import sys
 
 sys.path.append("/home/ornot/workspace/ReinforcementLearningBasic/work")
 
-
 import numpy as np
 from algorithm.value_based.tabular_solution_method.td_method.double_q_learning import DoubleQLearning
 from algorithm.value_based.tabular_solution_method.td_method.dyna_q import (PRIORITY, TRIVAL, DynaQ)
@@ -129,9 +128,6 @@ def test_td_lambda_evalution_method_for_blackjack():
 # test_td_lambda_evalution_method_for_blackjack()
 
 
-
-
-
 def test_sarsa_method(env):
     q_table = env.build_Q_table()
     b_policy_table = env.build_policy_table()
@@ -181,6 +177,39 @@ def test_sarsa_lambda_method(env):
     return sarsa_statistics
 
 
+def test_n_setps_expected_sarsa(env):
+
+    q_table = env.build_Q_table()
+    b_policy_table = env.build_policy_table()
+    b_policy = TabularPolicy(b_policy_table)
+
+    n_steps_expectedsarsa_statistics = EpisodeStats("N_Steps_Expected_Sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes),q_value=None)
+
+    n_steps_expectedsarsa_method = NStepsExpectedSARSA(
+        q_table, b_policy, 0.1, env,  n_steps, n_steps_expectedsarsa_statistics, num_episodes)
+    n_steps_expectedsarsa_method.improve()
+
+    return n_steps_expectedsarsa_statistics
+
+
+def test_off_policy_n_steps_sarsa(env):
+    q_table = env.build_Q_table()
+
+    b_policy_table = env.build_policy_table()
+    b_policy = TabularPolicy(b_policy_table)
+
+    t_policy_table = env.build_policy_table()
+    t_policy = TabularPolicy(t_policy_table)
+
+    n_steps_off_policy_sarsa_statistics = EpisodeStats("N_Steps_Offpolicy_Sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes),q_value=None)
+
+    n_steps_offpolicy_sarsa_method = OffPolicyNStepsSARSA(q_table, b_policy, t_policy, env, n_steps, n_steps_off_policy_sarsa_statistics, num_episodes)
+
+    n_steps_offpolicy_sarsa_method.improve()
+
+    return n_steps_off_policy_sarsa_statistics
+
+
 
 def test_qlearning_method(env):
     q_table = env.build_Q_table()
@@ -209,9 +238,6 @@ def test_q_lambda_method(env):
     return q_lambda_statistics
 
 
-
-
-
 def test_double_q_learning_method(env):
 
     q_table = env.build_Q_table()
@@ -226,38 +252,6 @@ def test_double_q_learning_method(env):
 
     return double_q_learning_statistics
 
-def test_n_setps_expected_sarsa(env):
-
-    q_table = env.build_Q_table()
-    b_policy_table = env.build_policy_table()
-    b_policy = TabularPolicy(b_policy_table)
-
-    n_steps_expectedsarsa_statistics = EpisodeStats("N_Steps_Expected_Sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes),q_value=None)
-
-    n_steps_expectedsarsa_method = NStepsExpectedSARSA(
-        q_table, b_policy, 0.1, env,  n_steps, n_steps_expectedsarsa_statistics, num_episodes)
-    n_steps_expectedsarsa_method.improve()
-
-    return n_steps_expectedsarsa_statistics
-
-
-def test_off_policy_n_steps_sarsa(env):
-    q_table = env.build_Q_table()
-
-    b_policy_table = env.build_policy_table()
-    b_policy = TabularPolicy(b_policy_table)
-
-    t_policy_table = env.build_policy_table()
-    t_policy = TabularPolicy(t_policy_table)
-
-    n_steps_off_policy_sarsa_statistics = EpisodeStats("N_Steps_Offpolicy_Sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes),q_value=None)
-
-    n_steps_offpolicy_sarsa_method = OffPolicyNStepsSARSA(
-        q_table, b_policy, t_policy, env, n_steps, n_steps_off_policy_sarsa_statistics, num_episodes)
-
-    n_steps_offpolicy_sarsa_method.improve()
-
-    return n_steps_off_policy_sarsa_statistics
 
 
 def test_dynaQ_method_trival(env):
@@ -287,8 +281,7 @@ def test_dynaQ_method_priority(env):
 
 
 def test_td_control_method(env):
-    plot_episode_stats([test_sarsa_method(env),test_expected_sarsa_method(env),test_n_steps_sarsa_method(env),test_n_setps_expected_sarsa(env),test_sarsa_lambda_method(env),test_qlearning_method(env)])
-
-
+    plot_episode_stats([test_sarsa_method(env),test_expected_sarsa_method(env),test_n_steps_sarsa_method(env),test_n_setps_expected_sarsa(env),test_sarsa_lambda_method(env),test_off_policy_n_steps_sarsa(env),test_qlearning_method(env)])
+    
 real_env = get_env("cliffwalking")
 test_td_control_method(real_env)
