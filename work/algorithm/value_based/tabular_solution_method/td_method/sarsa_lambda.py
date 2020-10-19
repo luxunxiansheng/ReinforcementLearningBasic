@@ -35,7 +35,8 @@
 
 from tqdm import tqdm
 from common import ActorBase
-from lib.utility import create_distribution_epsilon_greedily
+from lib.utility import (create_distribution_epsilon_greedily,create_distribution_greedily)
+from policy.policy import TabularPolicy
 from copy import deepcopy
 
 class Actor(ActorBase):
@@ -51,7 +52,7 @@ class Actor(ActorBase):
         self.step_size = step_size
         self.discount = discount
         self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(epsilon)
-        
+        self.create_distribution_greedily = create_distribution_greedily()
         self.statistics = statistics
 
         self.lamb =lamb
@@ -108,6 +109,14 @@ class Actor(ActorBase):
             current_state_index = next_state_index
             current_action_index = next_action_index
 
+    def get_optimal_policy(self):
+        policy_table = {}
+        for state_index, _ in self.q_table.items():
+            q_values = self.q_table[state_index]
+            greedy_distibution = self.create_distribution_greedily(q_values)
+            policy_table[state_index] = greedy_distibution
+        table_policy = TabularPolicy(policy_table)
+        return table_policy
 
 
 class SARSALambda:

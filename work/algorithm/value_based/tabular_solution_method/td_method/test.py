@@ -281,7 +281,9 @@ def test_dynaQ_method_priority(env):
 
 
 def test_td_control_method(env):
-    plot_episode_stats([test_sarsa_method(env),test_expected_sarsa_method(env),test_n_steps_sarsa_method(env),test_n_setps_expected_sarsa(env),test_sarsa_lambda_method(env),test_off_policy_n_steps_sarsa(env),test_qlearning_method(env)])
+    plot_episode_stats([test_sarsa_method(env),test_expected_sarsa_method(env),test_n_steps_sarsa_method(env),test_n_setps_expected_sarsa(env),test_sarsa_lambda_method(env),test_off_policy_n_steps_sarsa(env),test_qlearning_method(env),test_q_lambda_method(env)]) 
+    
+    #lot_episode_stats([test_q_lambda_method(env)])
     
 real_env = get_env("cliffwalking")
 test_td_control_method(real_env)
