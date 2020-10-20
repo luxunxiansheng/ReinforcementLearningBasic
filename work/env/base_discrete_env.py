@@ -42,8 +42,12 @@ from gym.envs.toy_text import discrete
 from mpl_toolkits.mplot3d import Axes3D
 
 
-class BaseDiscreteEnv(discrete.DiscreteEnv):
-    
+class PureDiscreteEnv(discrete.DiscreteEnv):
+    """
+    Both the state space and the action space are discrete
+ 
+    """
+
     @abstractmethod
     def reset(self, randomly=True):
         if randomly:

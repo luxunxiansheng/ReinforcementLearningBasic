@@ -34,7 +34,7 @@
 # /
 from common import ActorBase
 from lib.utility import create_distribution_greedily
-from policy.policy import TabularPolicy
+from policy.policy import PureTabularPolicy
 
 class Actor(ActorBase):
     def __init__(self, value_function, policy,transition_table, delta=1e-8, discount=1.0):
@@ -80,7 +80,7 @@ class Actor(ActorBase):
             greedy_distibution = self.create_distribution_greedily(q_values)
             policy_table[state_index] = greedy_distibution
 
-        table_policy = TabularPolicy(policy_table)
+        table_policy = PureTabularPolicy(policy_table)
         return table_policy
 
 

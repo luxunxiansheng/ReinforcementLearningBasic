@@ -39,7 +39,7 @@ import numpy as np
 
 from common import ActorBase
 from lib.utility import (create_distribution_epsilon_greedily,create_distribution_greedily)
-from policy.policy import TabularPolicy
+from policy.policy import PureTabularPolicy
 from tqdm import tqdm
 
 class Actor(ActorBase):
@@ -122,7 +122,7 @@ class Actor(ActorBase):
                 q_values[action_index] = q_value + self.q_table_2[state_index][action_index]
             distribution = self.create_distribution_greedily(q_values)
             self.policy.policy_table[state_index] = distribution
-        table_policy = TabularPolicy(policy_table)
+        table_policy = PureTabularPolicy(policy_table)
         return table_policy
 
 class DoubleQLearning:

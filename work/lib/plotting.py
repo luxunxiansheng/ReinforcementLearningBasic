@@ -15,7 +15,7 @@ StateValues = namedtuple("StateValues", ['appr_method','state_value'])
 def plot_episode_stats(stats, smoothing_window=10, noshow=False):
     # Plot the episode length over time
     fig1 = plt.figure(figsize=(10, 5))
-   
+
     for index in range(len(stats)):
         plt.plot(stats[index].episode_lengths, label=stats[index].algo)
     
@@ -78,7 +78,7 @@ def  plot_state_value(env,value_function_stats,noshow=False):
     for index in range(len(value_function_stats)):
         state_value = np.asarray([value_function_stats[index].state_value.predict(state_index) for state_index in range(env.nS)])
         plt.plot(state_value,label=value_function_stats[index].appr_method)
- 
+
     state_value = np.asarray([ (state_index+1)/env.nS for state_index in range(env.nS)])
     plt.plot(state_value,label='True Value')
 
@@ -92,12 +92,12 @@ def  plot_state_value(env,value_function_stats,noshow=False):
         plt.show(fig1) 
 
 
-def plot_2d_q_value(env, stats, noshow = False):
+def plot_3d_q_value(env, stats, noshow = False):
     
     fig1 = plt.figure(figsize=(10, 5))
     ax = fig1.add_subplot(111, projection='3d')
     grid_size = 40
-   
+
     
         
     xs = np.linspace(env.observation_space.low[0],env.observation_space.high[0], grid_size)
@@ -112,12 +112,12 @@ def plot_2d_q_value(env, stats, noshow = False):
                 axis_x.append(x)
                 axis_y.append(y)
                 axis_z.append(cost_to_go(stats[index].q_value.q_function,[x,y],env.action_space))
-        ax.scatter(axis_x, axis_y, axis_z)
+        ax.scatter(axis_x, axis_y, axis_z,label=stats[index].algo)
             
     ax.set_xlabel(stats[0].q_value.x_name)
     ax.set_ylabel(stats[0].q_value.y_name)
     ax.set_zlabel('cost to go')
-      
+    
     if noshow:
         plt.close(fig1)
     else:

@@ -1,6 +1,6 @@
 import numpy as np
 
-from env.base_discrete_env import BaseDiscreteEnv
+from env.base_discrete_env import PureDiscreteEnv
 
 """
    A simple grid world which has walls bolck. Refer to https://courses.cs.washington.edu/courses/cse473/13au/slides/15-mdp.pdf
@@ -13,7 +13,7 @@ LEFT = 1
 RIGHT = 2
 DOWN = 3
 
-class GridWorldWithWallsBlockEnv(BaseDiscreteEnv):
+class GridWorldWithWallsBlockEnv(PureDiscreteEnv):
     def __init__(self,reward_non_terminals=-0.01):
         self.reward_non_terminals = reward_non_terminals
         self.shape = [3, 4]

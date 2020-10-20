@@ -37,6 +37,10 @@ from gym import Env
 from abc import abstractmethod
 
 class DiscreteActionEnv(Env):
+    """
+    Only the action space is discrete while the state space is continuous. 
+    """
+
     @property
     @abstractmethod
     def action_space(self):

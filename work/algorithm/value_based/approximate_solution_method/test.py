@@ -1,25 +1,21 @@
+import sys
+sys.path.append("/home/ornot/workspace/ReinforcementLearningBasic/work")
+
 import numpy as np
 
-from algorithm.value_based.approximate_solution_method.episodic_semi_gradient_expected_sarsa_control import \
-    EpisodicSemiGradientExpectedSarsaControl
-from algorithm.value_based.approximate_solution_method.episodic_semi_gradient_q_learning_control import \
-    EpisodicSemiGradientQLearningControl
-from algorithm.value_based.approximate_solution_method.episodic_semi_gradient_sarsa_control import \
-    EpisodicSemiGradientSarsaControl
-from algorithm.value_based.approximate_solution_method.estimator.q_value_estimator import \
-    TileCodingBasesQValueEstimator
-from algorithm.value_based.approximate_solution_method.estimator.v_value_estimator import (
-    FourierBasesVValueEsimator, PolynomialBasesVValueEsitmator,
+from algorithm.value_based.approximate_solution_method.episodic_semi_gradient_expected_sarsa_control import EpisodicSemiGradientExpectedSarsaControl
+from algorithm.value_based.approximate_solution_method.episodic_semi_gradient_q_learning_control import EpisodicSemiGradientQLearningControl
+from algorithm.value_based.approximate_solution_method.episodic_semi_gradient_sarsa_control import EpisodicSemiGradientSarsaControl
+from algorithm.value_based.approximate_solution_method.estimator.q_value_estimator import TileCodingBasesQValueEstimator
+from algorithm.value_based.approximate_solution_method.estimator.v_value_estimator import (FourierBasesVValueEsimator, PolynomialBasesVValueEsitmator,
     StateAggregationVValueEstimator)
-from algorithm.value_based.approximate_solution_method.gradient_monte_carlo_evaluation import \
-    GradientMonteCarloEvaluation
-from algorithm.value_based.approximate_solution_method.semi_gradient_td_lambda_evaluation import \
-    SemiGradientTDLambdaEvaluation
-from algorithm.value_based.approximate_solution_method.semi_gradient_tdn_evaluation import \
-    SemiGradientTDNEvalution
+from algorithm.value_based.approximate_solution_method.gradient_monte_carlo_evaluation import GradientMonteCarloEvaluation
+from algorithm.value_based.approximate_solution_method.semi_gradient_td_lambda_evaluation import SemiGradientTDLambdaEvaluation
+from algorithm.value_based.approximate_solution_method.semi_gradient_tdn_evaluation import SemiGradientTDNEvalution
 from lib import plotting
 from lib.utility import create_distribution_epsilon_greedily
-from policy.policy import ApproximatePolicy, TabularPolicy
+from policy.policy import ContinuousStateTabularPolicy, PureTabularPolicy
+from test_setup import get_env
 
 num_episodes = 1000
 n_steps = 4
@@ -27,7 +23,7 @@ n_steps = 4
 
 def test_approximation_evaluation(env):
     b_policy_table = env.build_policy_table()
-    b_policy = TabularPolicy(b_policy_table)
+    b_policy = PureTabularPolicy(b_policy_table)
 
     distribution = np.zeros(env.nS)
 
@@ -61,19 +57,17 @@ def test_approximation_control_sarsa(env):
     observation_space = env.observation_space
 
     tile_coding_step_size = 0.3
-    q_function = TileCodingBasesQValueEstimator(
-        tile_coding_step_size, observation_space.high[0], observation_space.low[0], observation_space.high[1], observation_space.low[1])
-
-    discreteactionpolicy = ApproximatePolicy(action_space, q_function)
-    discreteactionpolicy.create_distribution_fn = create_distribution_epsilon_greedily(
-        0.1)
+    q_function = TileCodingBasesQValueEstimator(tile_coding_step_size, observation_space.high[0], observation_space.low[0], observation_space.high[1], observation_space.low[1])
+    
+    discretestatepolicy = ContinuousStateTabularPolicy(action_space, q_function)
+    discretestatepolicy.create_distribution_fn = create_distribution_epsilon_greedily(0.1)
 
     q_v = plotting.QValue('Position', 'Speed', q_function)
     approximation_control_statistics = plotting.EpisodeStats("SARSA", episode_lengths=np.zeros(
         num_episodes), episode_rewards=np.zeros(num_episodes), q_value=q_v)
 
     episodicsemigradsarsacontrol = EpisodicSemiGradientSarsaControl(
-        q_function, discreteactionpolicy, env, approximation_control_statistics, num_episodes)
+        q_function, discretestatepolicy, env, approximation_control_statistics, num_episodes)
     episodicsemigradsarsacontrol.improve()
 
     return approximation_control_statistics
@@ -89,7 +83,7 @@ def test_approximation_control_expected_sarsa(env):
     q_function = TileCodingBasesQValueEstimator(
         tile_coding_step_size, observation_space.high[0], observation_space.low[0], observation_space.high[1], observation_space.low[1])
 
-    discreteactionpolicy = ApproximatePolicy(action_space, q_function)
+    discreteactionpolicy = ContinuousStateTabularPolicy(action_space, q_function)
     discreteactionpolicy.create_distribution_fn = create_distribution_epsilon_greedily(
         0.1)
 
@@ -114,7 +108,7 @@ def test_approximation_control_q_learning(env):
     q_function = TileCodingBasesQValueEstimator(
         tile_coding_step_size, observation_space.high[0], observation_space.low[0], observation_space.high[1], observation_space.low[1])
 
-    discreteactionpolicy = ApproximatePolicy(action_space, q_function)
+    discreteactionpolicy = ContinuousStateTabularPolicy(action_space, q_function)
     discreteactionpolicy.create_distribution_fn = create_distribution_epsilon_greedily(
         0.1)
 
@@ -131,7 +125,15 @@ def test_approximation_control_q_learning(env):
 
 def test_approximation_control_method(env):
 
-    episode_stats = [test_approximation_control_sarsa(env), test_approximation_control_expected_sarsa(
-        env), test_approximation_control_q_learning(env)]
+    episode_stats = [test_approximation_control_sarsa(env)]
     plotting.plot_episode_stats(episode_stats)
-    plotting.plot_2d_q_value(env, episode_stats)
+    plotting.plot_3d_q_value(env, episode_stats)
+
+
+real_env = get_env("mountaincar")
+
+test_approximation_control_method(real_env)
+
+
+
+

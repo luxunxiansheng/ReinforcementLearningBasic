@@ -40,10 +40,10 @@ import gym
 import numpy as np
 from gym import spaces
 
-from env.base_discrete_env import BaseDiscreteEnv
+from env.base_discrete_env import PureDiscreteEnv
 
 
-class RoomEnv(BaseDiscreteEnv):
+class RoomEnv(PureDiscreteEnv):
     ROOMS= 6
 
     def __init__(self):

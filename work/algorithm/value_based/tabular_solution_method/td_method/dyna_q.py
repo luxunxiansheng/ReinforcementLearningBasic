@@ -41,7 +41,7 @@ import numpy as np
 from tqdm import tqdm
 
 from lib.utility import create_distribution_epsilon_greedily,create_distribution_greedily
-from policy.policy import TabularPolicy
+from policy.policy import PureTabularPolicy
 from copy import deepcopy
 
 TRIVAL = 1
@@ -96,6 +96,7 @@ class Actor(ActorBase):
             delta = reward + self.discount * max_value - self.q_table[current_state_index][current_action_index]
             self.q_table[current_state_index][current_action_index] += self.step_size * delta
             self.model.plan(self.q_table, self.discount, self.step_size, self.iterations, current_state_index, current_action_index, next_state_index, reward)
+            
             # update policy softly
             q_values = self.q_table[current_state_index]
             distribution = self.create_distribution_epsilon_greedily(q_values)
@@ -112,7 +113,7 @@ class Actor(ActorBase):
             q_values = self.q_table[state_index]
             greedy_distibution = self.create_distribution_greedily(q_values)
             policy_table[state_index] = greedy_distibution
-        table_policy = TabularPolicy(policy_table)
+        table_policy = PureTabularPolicy(policy_table)
         return table_policy
 
 

@@ -23,10 +23,10 @@ import sys
 
 import numpy as np
 
-from env.base_discrete_env import BaseDiscreteEnv
+from env.base_discrete_env import PureDiscreteEnv
 
 
-class GridworldEnv(BaseDiscreteEnv):
+class GridworldEnv(PureDiscreteEnv):
     UP = 0
     RIGHT = 1
     DOWN = 2

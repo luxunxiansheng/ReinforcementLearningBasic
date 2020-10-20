@@ -4,7 +4,7 @@ sys.path.append("/home/ornot/workspace/ReinforcementLearningBasic/work")
 from lib.plotting import plot_episode_error, plot_episode_stats
 from tqdm import tqdm
 from test_setup import get_env
-from policy.policy import TabularPolicy
+from policy.policy import PureTabularPolicy
 from lib.plotting import EpisodeStats
 from env.blackjack import BlackjackEnv
 from algorithm.value_based.tabular_solution_method.td_method.tdn_evaluation import TDNEvalutaion
@@ -46,7 +46,7 @@ def test_td0_evaluation_method_for_blackjack():
         else:
             t_policy_table[state_index][BlackjackEnv.HIT] = 0.0
             t_policy_table[state_index][BlackjackEnv.STICK] = 1.0
-    t_policy = TabularPolicy(t_policy_table)
+    t_policy = PureTabularPolicy(t_policy_table)
 
     error = []
     init_state = env.reset()
@@ -80,7 +80,7 @@ def test_tdn_evaluation_method_for_blackjack():
         else:
             t_policy_table[state_index][BlackjackEnv.HIT] = 0.0
             t_policy_table[state_index][BlackjackEnv.STICK] = 1.0
-    t_policy = TabularPolicy(t_policy_table)
+    t_policy = PureTabularPolicy(t_policy_table)
 
     error = []
     init_state = env.reset()
@@ -117,7 +117,7 @@ def test_td_lambda_evalution_method_for_blackjack():
         else:
             t_policy_table[state_index][BlackjackEnv.HIT] = 0.0
             t_policy_table[state_index][BlackjackEnv.STICK] = 1.0
-    t_policy = TabularPolicy(t_policy_table)
+    t_policy = PureTabularPolicy(t_policy_table)
 
     error = []
     init_state = env.reset()
@@ -142,7 +142,7 @@ def test_td_lambda_evalution_method_for_blackjack():
 def test_sarsa_method(env):
     q_table = env.build_Q_table()
     b_policy_table = env.build_policy_table()
-    b_policy = TabularPolicy(b_policy_table)
+    b_policy = PureTabularPolicy(b_policy_table)
 
     sarsa_statistics = EpisodeStats("sarsa", episode_lengths=np.zeros(
         num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
@@ -157,7 +157,7 @@ def test_expected_sarsa_method(env):
 
     q_table = env.build_Q_table()
     b_policy_table = env.build_policy_table()
-    b_policy = TabularPolicy(b_policy_table)
+    b_policy = PureTabularPolicy(b_policy_table)
 
     expectedsarsa_statistics = EpisodeStats("Expected_Sarsa", episode_lengths=np.zeros(
         num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
@@ -173,7 +173,7 @@ def test_n_steps_sarsa_method(env):
 
     q_table = env.build_Q_table()
     b_policy_table = env.build_policy_table()
-    b_policy = TabularPolicy(b_policy_table)
+    b_policy = PureTabularPolicy(b_policy_table)
     n_sarsa_statistics = EpisodeStats("N_Steps_Sarsa", episode_lengths=np.zeros(
         num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
     n_sarsa_method = NStepsSARSA(
@@ -185,7 +185,7 @@ def test_n_steps_sarsa_method(env):
 def test_sarsa_lambda_method(env):
     q_table = env.build_Q_table()
     b_policy_table = env.build_policy_table()
-    b_policy = TabularPolicy(b_policy_table)
+    b_policy = PureTabularPolicy(b_policy_table)
 
     sarsa_statistics = EpisodeStats("sarsa_labmda", episode_lengths=np.zeros(
         num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
@@ -200,7 +200,7 @@ def test_n_setps_expected_sarsa(env):
 
     q_table = env.build_Q_table()
     b_policy_table = env.build_policy_table()
-    b_policy = TabularPolicy(b_policy_table)
+    b_policy = PureTabularPolicy(b_policy_table)
 
     n_steps_expectedsarsa_statistics = EpisodeStats("N_Steps_Expected_Sarsa", episode_lengths=np.zeros(
         num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
@@ -216,10 +216,10 @@ def test_off_policy_n_steps_sarsa(env):
     q_table = env.build_Q_table()
 
     b_policy_table = env.build_policy_table()
-    b_policy = TabularPolicy(b_policy_table)
+    b_policy = PureTabularPolicy(b_policy_table)
 
     t_policy_table = env.build_policy_table()
-    t_policy = TabularPolicy(t_policy_table)
+    t_policy = PureTabularPolicy(t_policy_table)
 
     n_steps_off_policy_sarsa_statistics = EpisodeStats("N_Steps_Offpolicy_Sarsa", episode_lengths=np.zeros(
         num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
@@ -235,7 +235,7 @@ def test_off_policy_n_steps_sarsa(env):
 def test_qlearning_method(env):
     q_table = env.build_Q_table()
     b_policy_table = env.build_policy_table()
-    b_policy = TabularPolicy(b_policy_table)
+    b_policy = PureTabularPolicy(b_policy_table)
 
     q_learning_statistics = EpisodeStats("Q_Learning", episode_lengths=np.zeros(
         num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
@@ -250,7 +250,7 @@ def test_qlearning_method(env):
 def test_q_lambda_method(env):
     q_table = env.build_Q_table()
     b_policy_table = env.build_policy_table()
-    b_policy = TabularPolicy(b_policy_table)
+    b_policy = PureTabularPolicy(b_policy_table)
 
     q_lambda_statistics = EpisodeStats("Q_labmda", episode_lengths=np.zeros(
         num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
@@ -264,7 +264,7 @@ def test_q_lambda_method(env):
 def test_double_q_learning_method(env):
     q_table = env.build_Q_table()
     b_policy_table = env.build_policy_table()
-    b_policy = TabularPolicy(b_policy_table)
+    b_policy = PureTabularPolicy(b_policy_table)
 
     double_q_learning_statistics = EpisodeStats("Double_Q_Learning", episode_lengths=np.zeros(
         num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
@@ -279,7 +279,7 @@ def test_double_q_learning_method(env):
 def test_dynaQ_method_trival(env):
     q_table = env.build_Q_table()
     b_policy_table = env.build_policy_table()
-    b_policy = TabularPolicy(b_policy_table)
+    b_policy = PureTabularPolicy(b_policy_table)
 
     dyna_q_statistics = EpisodeStats("Dyna_Q", episode_lengths=np.zeros(
         num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
@@ -294,7 +294,7 @@ def test_dynaQ_method_trival(env):
 def test_dynaQ_method_priority(env):
     q_table = env.build_Q_table()
     b_policy_table = env.build_policy_table()
-    b_policy = TabularPolicy(b_policy_table)
+    b_policy = PureTabularPolicy(b_policy_table)
 
     dyna_q_statistics = EpisodeStats("Dyna_Q_PRIORITY", episode_lengths=np.zeros(
         num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)

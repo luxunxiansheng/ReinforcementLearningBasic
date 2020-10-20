@@ -38,10 +38,10 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
-from env.base_discrete_env import BaseDiscreteEnv
+from env.base_discrete_env import PureDiscreteEnv
 
 
-class GamblersProblemEnv(BaseDiscreteEnv):
+class GamblersProblemEnv(PureDiscreteEnv):
 
     def __init__(self, goal=100, head_prob=0.4):
         self.goal = goal

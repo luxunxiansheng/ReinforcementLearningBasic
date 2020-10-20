@@ -39,7 +39,7 @@ from collections import defaultdict
 from tqdm import tqdm
 
 from lib.utility import create_distribution_greedily
-from policy.policy import TabularPolicy
+from policy.policy import PureTabularPolicy
 from common import ActorBase
 
 class Actor(ActorBase):
@@ -72,7 +72,7 @@ class Actor(ActorBase):
             q_values = self.q_value_function[state_index]
             greedy_distibution = self.create_distribution_greedily(q_values)
             policy_table[state_index] = greedy_distibution
-        table_policy = TabularPolicy(policy_table)
+        table_policy = PureTabularPolicy(policy_table)
         return table_policy
     
     def _run_one_episode(self):
