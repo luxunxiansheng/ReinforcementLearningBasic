@@ -41,7 +41,7 @@ import numpy as np
 from tqdm import tqdm
 
 from lib.utility import create_distribution_epsilon_greedily,create_distribution_greedily
-from policy.policy import PureTabularPolicy
+from policy.policy import DiscreteStateValueBasedPolicy
 from copy import deepcopy
 
 TRIVAL = 1

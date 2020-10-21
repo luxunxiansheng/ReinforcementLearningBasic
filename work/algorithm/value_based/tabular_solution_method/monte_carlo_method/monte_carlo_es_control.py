@@ -39,7 +39,6 @@ from collections import defaultdict
 from tqdm import tqdm
 
 from lib.utility import create_distribution_greedily
-from policy.policy import PureTabularPolicy
 from common import ActorBase
 
 class Actor(ActorBase):

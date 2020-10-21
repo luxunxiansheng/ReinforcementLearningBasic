@@ -12,7 +12,7 @@ from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carl
 from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_on_policy_control import MonteCarloOnPolicyControl
 from env.blackjack import BlackjackEnv
 from lib.plotting import plot_episode_error
-from policy.policy import PureTabularPolicy
+from policy.policy import DiscreteStateValueBasedPolicy
 from test_setup import get_env
 
 sys.path.append("/home/ornot/workspace/ReinforcementLearningBasic/work")
@@ -25,8 +25,8 @@ real_env = get_env("blackjack")
 def test_q_mc_es_control_method(env):
     q_table = env.build_Q_table()
     policy_table = env.build_policy_table()
-    behavior_policy = PureTabularPolicy(policy_table)
-    rl_method = MonteCarloESControl(q_table, behavior_policy,env,80000)
+    behavior_policy = DiscreteStateValueBasedPolicy(policy_table)
+    rl_method = MonteCarloESControl(q_table, behavior_policy,env,800000)
     optimal_policy=rl_method.improve()
     env.show_policy(optimal_policy)
 
@@ -35,7 +35,7 @@ test_q_mc_es_control_method(real_env)
 def test_mc_onpolicy_control_method(env):
     q_table = env.build_Q_table()
     policy_table = env.build_policy_table()
-    target_policy = PureTabularPolicy(policy_table)
+    target_policy = DiscreteStateValueBasedPolicy(policy_table)
     rl_method = MonteCarloOnPolicyControl(q_table,target_policy,env,0.8,800000)
     optimal_policy=rl_method.improve()
     env.show_policy(optimal_policy)
@@ -46,7 +46,7 @@ test_mc_onpolicy_control_method(real_env)
 def test_mc_offpolicy_control_method(env):
     q_table = env.build_Q_table()
     policy_table = env.build_policy_table()
-    behavior_policy = PureTabularPolicy(policy_table)
+    behavior_policy = DiscreteStateValueBasedPolicy(policy_table)
     target_policy = copy.deepcopy(behavior_policy)
     rl_method = MonteCarloOffPolicyControl(q_table, behavior_policy, target_policy, env,800000)
     optimal_policy=rl_method.improve()
@@ -62,7 +62,7 @@ def test_mc_offpolicy_evaluation_method_for_blackjack():
 
     # Random behavior policy
     b_policy_table = env.build_policy_table()
-    b_policy = PureTabularPolicy(b_policy_table)
+    b_policy = DiscreteStateValueBasedPolicy(b_policy_table)
 
     # spcific target policy only for blackjack
     t_policy_table = env.build_policy_table()
@@ -74,7 +74,7 @@ def test_mc_offpolicy_evaluation_method_for_blackjack():
         else:
             t_policy_table[state_index][BlackjackEnv.HIT] = 0.0
             t_policy_table[state_index][BlackjackEnv.STICK] = 1.0
-    t_policy = PureTabularPolicy(t_policy_table)
+    t_policy = DiscreteStateValueBasedPolicy(t_policy_table)
 
     error = []
     init_state = env.reset()

@@ -38,7 +38,7 @@ from collections import defaultdict
 
 from common import ActorBase
 from lib.utility import (create_distribution_epsilon_greedily,create_distribution_greedily)
-from policy.policy import PureTabularPolicy
+
 from tqdm import tqdm
 
 

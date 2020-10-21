@@ -39,7 +39,7 @@ import numpy as np
 
 from common import ActorBase
 from lib.utility import (create_distribution_epsilon_greedily,create_distribution_greedily)
-from policy.policy import PureTabularPolicy
+from policy.policy import DiscreteStateValueBasedPolicy
 from tqdm import tqdm
 
 class Actor(ActorBase):

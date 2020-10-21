@@ -87,6 +87,8 @@ class ContinuousStateValueBasedPolicy(DiscreteActionPolicy):
         
         return  list(self.create_distribution_fn(q_values).values())
     
+    def get_action_distribution(self,q_values):
+        return list(self.create_distribution_fn(q_values).values())
 
 class ParameterizedPolicy(DiscreteActionPolicy):
     """

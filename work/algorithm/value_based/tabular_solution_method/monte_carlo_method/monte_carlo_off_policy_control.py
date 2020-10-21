@@ -38,7 +38,7 @@ from collections import defaultdict
 import numpy as np
 from common import ActorBase
 from lib.utility import create_distribution_greedily
-from policy.policy import PureTabularPolicy
+
 from tqdm import tqdm
 
 

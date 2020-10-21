@@ -21,8 +21,6 @@ def test_v_iteration(env):
 
 test_v_iteration(real_env)
 
-print("***************************************************")
-
 def test_policy_iteration(env):
     v_table = env.build_V_table()
     transition_table = env.P

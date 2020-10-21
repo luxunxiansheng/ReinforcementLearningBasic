@@ -74,7 +74,10 @@ class Actor(ActorBase):
             # S'
             next_state = observation[0]
 
+        
             # expected q value of the next state 
+            
+            
             q_values = {}
             for action_index in range(self.env.action_space.n):
                 q_values[action_index] = self.q_value_estimator.predict(next_state,action_index)
