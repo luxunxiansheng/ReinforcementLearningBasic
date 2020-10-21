@@ -121,13 +121,7 @@ class Actor(ActorBase):
             current_action_index = next_action_index
 
     def get_optimal_policy(self):
-        policy_table = {}
-        for state_index, _ in self.q_table.items():
-            q_values = self.q_table[state_index]
-            greedy_distibution = self.create_distribution_greedily(q_values)
-            policy_table[state_index] = greedy_distibution
-        table_policy = PureTabularPolicy(policy_table)
-        return table_policy
+        return self.policy
         
 class QLambda:
     def __init__(self, q_table, table_policy, epsilon,env, statistics,episodes,step_size=0.1,discount=1.0, lamb= 0.0):

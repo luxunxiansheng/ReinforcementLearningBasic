@@ -115,15 +115,7 @@ class Actor(ActorBase):
             current_state_index = next_state_index
 
     def get_optimal_policy(self):
-        policy_table = {}
-        for state_index, _ in self.q_table_1.items():
-            q_values = {}
-            for action_index, q_value in self.q_table_1[state_index].items():
-                q_values[action_index] = q_value + self.q_table_2[state_index][action_index]
-            distribution = self.create_distribution_greedily(q_values)
-            self.policy.policy_table[state_index] = distribution
-        table_policy = PureTabularPolicy(policy_table)
-        return table_policy
+        return self.policy
 
 class DoubleQLearning:
     def __init__(self, q_table, table_policy, epsilon,env, statistics,episodes,step_size=0.1,discount=1.0):

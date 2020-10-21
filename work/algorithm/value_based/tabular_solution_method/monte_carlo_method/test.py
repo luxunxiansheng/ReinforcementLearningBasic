@@ -30,7 +30,7 @@ def test_q_mc_es_control_method(env):
     optimal_policy=rl_method.improve()
     env.show_policy(optimal_policy)
 
-# test_q_mc_es_control_method(real_env)
+test_q_mc_es_control_method(real_env)
 
 def test_mc_onpolicy_control_method(env):
     q_table = env.build_Q_table()
@@ -40,7 +40,7 @@ def test_mc_onpolicy_control_method(env):
     optimal_policy=rl_method.improve()
     env.show_policy(optimal_policy)
 
-# test_mc_onpolicy_control_method(real_env)
+test_mc_onpolicy_control_method(real_env)
 
 
 def test_mc_offpolicy_control_method(env):

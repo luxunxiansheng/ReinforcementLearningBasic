@@ -84,6 +84,7 @@ class ActorBase(ABC):
     @abstractmethod
     def improve(self,*args): 
         pass
-
+    
+    @abstractmethod
     def get_optimal_policy(self):
         pass

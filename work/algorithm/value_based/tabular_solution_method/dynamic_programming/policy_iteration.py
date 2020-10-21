@@ -105,9 +105,6 @@ class Actor(ActorBase):
             delta = self._improve_once()
             if delta < self.delta:
                 break
-    
-    def get_optimal_policy(self):
-        return self.policy
         
     def _improve_once(self):
         delta = 1e-10
@@ -133,6 +130,8 @@ class Actor(ActorBase):
             value_of_action += transition_prob * (self.discount*value_of_next_state+reward)
         return value_of_action
 
+    def get_optimal_policy(self):
+        return self.policy
 
 
 class PolicyIteration:

@@ -72,16 +72,11 @@ class Actor(ActorBase):
             value_of_action = self._get_value_of_action(state_index, action_index)
             q_values[action_index] = value_of_action
         return q_values    
-
+    
     def get_optimal_policy(self):
-        policy_table = {}
-        for state_index, _ in self.value_function.items():
-            q_values = self._get_q_values_of_state(state_index)
-            greedy_distibution = self.create_distribution_greedily(q_values)
-            policy_table[state_index] = greedy_distibution
+        return self.policy
 
-        table_policy = PureTabularPolicy(policy_table)
-        return table_policy
+
 
 
 class ValueIteration:

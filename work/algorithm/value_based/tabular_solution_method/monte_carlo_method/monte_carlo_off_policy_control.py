@@ -81,15 +81,6 @@ class Actor(ActorBase):
                 W = W * 1. / self.behavior_policy.policy_table[state_index][action_index]
         
         
-    def get_optimal_policy(self):
-        policy_table = {}
-        for state_index, _ in self.q_value_function.items():
-            q_values = self.q_value_function[state_index]
-            greedy_distibution = self.create_distribution_greedily(q_values)
-            policy_table[state_index] = greedy_distibution
-        table_policy = PureTabularPolicy(policy_table)
-        return table_policy
-        
     def _init_weight_total(self):
         weight_total = defaultdict(lambda: {})
         for state_index, action_values in self.q_value_function.items():
@@ -110,6 +101,9 @@ class Actor(ActorBase):
                 break
             current_state_index = observation[0]
         return trajectory
+
+    def get_optimal_policy(self):
+        return self.target_policy
 
 class MonteCarloOffPolicyControl:
     """

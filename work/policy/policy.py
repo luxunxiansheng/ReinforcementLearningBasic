@@ -68,11 +68,12 @@ class PureTabularPolicy(Policy):
     and the optimal policy.
 
     More specifically, each entry of the table  will contain a state to actions' probability mapping.
-    """
 
+    PureTabularPolicy is the one whose state and action both are discrete. 
+
+    """
     def __init__(self, pi):
         self.policy_table = pi
-    
     
     def _construct_distribution(self, state):
         distribution = list(self.policy_table[state].values())
@@ -82,10 +83,13 @@ class PureTabularPolicy(Policy):
         return self.policy_table[state][action]
 
 class ContinuousStateTabularPolicy(Policy):
-    def __init__(self,action_space,q_value_estimator):
+    """
+    ContinuousStateTabularPolicy is the one whose state is continuous while action is discrete
+    """
+    def __init__(self,action_space,q_value_estimator,create_distribution_fn):
         self.q_value_estimator = q_value_estimator
         self.action_space = action_space
-        self.create_distribution_fn = None
+        self.create_distribution_fn = create_distribution_fn
 
     def _construct_distribution(self, state):
         q_values ={}

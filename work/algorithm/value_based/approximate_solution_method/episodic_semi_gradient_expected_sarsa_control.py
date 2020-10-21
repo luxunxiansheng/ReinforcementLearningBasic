@@ -33,24 +33,25 @@
 #
 # /
 
+from common import ActorBase
 import numpy as np
 from tqdm import tqdm
 
-class EpisodicSemiGradientExpectedSarsaControl:
+class Actor(ActorBase):
     """
     Expected SARSA algorithm: On-policy TD control. Finds the optimal epsilon-greedy policy with approximation of q funciton 
     """
 
-    def __init__(self, estimator, discreteactionpolicy, env, statistics, episodes, step_size=0.1, discount=1.0):
+    def __init__(self, estimator, continuous_state_policy, env, statistics, episodes, step_size=0.1, discount=1.0):
         self.q_value_estimator = estimator
-        self.policy = discreteactionpolicy
+        self.policy = continuous_state_policy
         self.env = env
         self.step_size = step_size
         self.discount = discount
         self.statistics = statistics
         self.episodes = episodes
 
-    def improve(self):
+    def improve(self,*args):
         for episode in tqdm(range(0, self.episodes)):
             self._run_one_episode(episode)
 
@@ -93,3 +94,18 @@ class EpisodicSemiGradientExpectedSarsaControl:
                 break
 
             current_state = next_state
+
+
+    def get_optimal_policy(self):
+        return self.policy
+
+
+
+
+class EpisodicSemiGradientExpectedSarsaControl:
+    def __init__(self, estimator, discreteactionpolicy, env, statistics, episodes, step_size=0.1, discount=1.0):
+        self.actor= Actor(estimator, discreteactionpolicy, env, statistics, episodes, step_size, discount)
+
+    def improve(self):
+        self.actor.improve()
+        return self.actor.policy

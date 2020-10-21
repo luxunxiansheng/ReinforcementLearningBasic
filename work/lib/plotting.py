@@ -124,8 +124,6 @@ def plot_3d_q_value(env, stats, noshow = False):
         plt.show(fig1) 
 
 
-
-# get # of steps to reach the goal under current state value function
 def cost_to_go(estimator,state,actions):
     costs = []
     for action in range(actions.n):

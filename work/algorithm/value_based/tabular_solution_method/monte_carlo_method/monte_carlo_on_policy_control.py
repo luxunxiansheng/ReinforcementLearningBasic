@@ -64,16 +64,7 @@ class Actor(ActorBase):
                 q_values = self.q_value_function[state_index]
                 soft_greedy_distibution = self.create_distribution_epsilon_greedily(q_values)
                 self.policy.policy_table[state_index] = soft_greedy_distibution
-        
-    def get_optimal_policy(self):
-        policy_table = {}
-        for state_index, _ in self.q_value_function.items():
-            q_values = self.q_value_function[state_index]
-            greedy_distibution = self.create_distribution_greedily(q_values)
-            policy_table[state_index] = greedy_distibution
-        table_policy = PureTabularPolicy(policy_table)
-        return table_policy
-    
+
     def _run_one_episode(self):
         trajectory = []
         current_state_index = self.env.reset()
@@ -94,6 +85,10 @@ class Actor(ActorBase):
             for action_index, _ in action_values.items():
                 state_count[state_index][action_index] = (0, 0.0)
         return state_count
+
+    def get_optimal_policy(self):
+        return self.policy    
+
 
 class MonteCarloOnPolicyControl:
     """

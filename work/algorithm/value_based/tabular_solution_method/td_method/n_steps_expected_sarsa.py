@@ -58,14 +58,6 @@ class Actor(ActorBase):
         for episode in tqdm(range(0, self.episodes)):
             self._run_one_episode(episode)
 
-    def get_optimal_policy(self):
-        policy_table = {}
-        for state_index, _ in self.q_value_function.items():
-            q_values = self.q_value_function[state_index]
-            greedy_distibution = self.create_distribution_greedily(q_values)
-            policy_table[state_index] = greedy_distibution
-        table_policy = PureTabularPolicy(policy_table)
-        return table_policy
     
     def _run_one_episode(self, episode):
 
@@ -127,6 +119,9 @@ class Actor(ActorBase):
             current_timestamp += 1
             current_state_index = next_state_index
             current_action_index = next_action_index
+    
+    def get_optimal_policy(self):
+        return self.policy    
 
 class NStepsExpectedSARSA:
     """
