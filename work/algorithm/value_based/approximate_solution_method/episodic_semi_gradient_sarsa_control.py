@@ -33,11 +33,12 @@
 #
 # /
 
+from common import ActorBase
 import numpy as np
 from tqdm import tqdm
 
 
-class EpisodicSemiGradientSarsaControl:
+class Actor(ActorBase):
     """
     SARSA algorithm: On-policy TD control. Finds the optimal epsilon-greedy policy with approximation of q funciton 
     """
@@ -89,3 +90,15 @@ class EpisodicSemiGradientSarsaControl:
 
             current_state = next_state
             current_action_index = next_action_index
+    
+    def get_optimal_policy(self):
+        return self.policy
+
+
+class EpisodicSemiGradientSarsaControl:
+    def __init__(self, estimator, discreteactionpolicy, env, statistics, episodes, step_size=0.1, discount=1.0):
+        self.actor= Actor(estimator, discreteactionpolicy, env, statistics, episodes, step_size, discount)
+    
+    def improve(self):
+        self.actor.improve()
+        return self.actor.get_optimal_policy()

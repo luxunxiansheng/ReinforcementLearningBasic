@@ -108,4 +108,4 @@ class EpisodicSemiGradientExpectedSarsaControl:
 
     def improve(self):
         self.actor.improve()
-        return self.actor.policy
+        return self.actor.get_optimal_policy()

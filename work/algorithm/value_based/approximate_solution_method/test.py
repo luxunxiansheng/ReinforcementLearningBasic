@@ -17,7 +17,7 @@ from lib.utility import create_distribution_epsilon_greedily
 from policy.policy import ContinuousStateTabularPolicy, PureTabularPolicy
 from test_setup import get_env
 
-num_episodes = 1000
+num_episodes = 100
 n_steps = 4
 
 

@@ -61,16 +61,6 @@ class Policy(ABC):
 
 class PureTabularPolicy(Policy):
     """
-    Tabular policy describes almost all the core ideas of reinforcement learning algorithms in
-    their simplest forms in which the state and action spaces are small enough for the
-    approximate value functions to be represented as arrays, or tables. In this case, the methods
-    can often find exact solutions, that is, they can often find exactly the optimal value function
-    and the optimal policy.
-
-    More specifically, each entry of the table  will contain a state to actions' probability mapping.
-
-    PureTabularPolicy is the one whose state and action both are discrete. 
-
     """
     def __init__(self, pi):
         self.policy_table = pi
@@ -104,7 +94,12 @@ class ContinuousStateTabularPolicy(Policy):
     
     
 class ParameterizedPolicy(Policy):
-    def __init__(self,policy_estimator) -> None:
+    """
+    In tabular policy, the actions' probability distribution is built from the Q values. In ParameterizedPolicy, the distribution 
+    is a direct output of a parameterized function. 
+    """
+    
+    def __init__(self,policy_estimator):
         self.policy_estimator = policy_estimator
 
     def _construct_distribution(self, state):
