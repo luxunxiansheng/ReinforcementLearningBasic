@@ -39,6 +39,7 @@ import copy
 
 from common import ActorBase, CriticBase
 from lib.utility import create_distribution_greedily
+from policy.policy import DiscreteStateValueBasedPolicy
 
 
 class Critic(CriticBase):

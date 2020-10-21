@@ -33,8 +33,8 @@
 #
 # /
 from common import ActorBase
+from policy.policy import DiscreteStateValueBasedPolicy
 from lib.utility import create_distribution_greedily
-from policy.policy import PureTabularPolicy
 
 class Actor(ActorBase):
     def __init__(self, value_function, policy,transition_table, delta=1e-8, discount=1.0):
@@ -74,7 +74,14 @@ class Actor(ActorBase):
         return q_values    
     
     def get_optimal_policy(self):
-        return self.policy
+        policy_table = {}
+        for state_index, _ in self.value_function.items():
+            q_values = self._get_q_values_of_state(state_index)
+            greedy_distibution = self.create_distribution_greedily(q_values)
+            policy_table[state_index] = greedy_distibution
+
+        table_policy = DiscreteStateValueBasedPolicy(policy_table)
+        return table_policy
 
 
 
@@ -100,7 +107,6 @@ class ValueIteration:
         self.policy = policy
         self.delta = delta
         self.discount = discount
-        self.create_distribution_greedily = create_distribution_greedily()
         self.actor = Actor(v_table, policy,transition_table, delta, discount)
 
     def improve(self):

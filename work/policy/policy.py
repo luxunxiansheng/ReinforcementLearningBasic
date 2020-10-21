@@ -34,10 +34,17 @@
 # /
 
 from abc import ABC, abstractmethod
+from lib.utility import create_distribution_epsilon_greedily
 
 import numpy as np
 
 class Policy(ABC):
+    @abstractmethod
+    def get_action(self,state):
+        pass
+
+
+class DiscreteActionPolicy(ABC):
     """
     A policy defines the learning agent's way of behaving at a given time. Roughly speaking,
     a policy is a mapping from perceived states of the environment to actions to be taken
@@ -48,52 +55,40 @@ class Policy(ABC):
     is suficient to determine behavior. In general, policies may be stochastic.
 
     """
-
     @abstractmethod
-    def _construct_distribution(self,state):
+    def _construct_discrete_distribution(self,state):
         pass   
 
     def get_action(self, state):
-        distribution = self._construct_distribution(state)
+        distribution = self._construct_discrete_distribution(state)
         action = np.random.choice(np.arange(len(distribution)), p=distribution)
         return action
 
 
-class PureTabularPolicy(Policy):
-    """
-    """
-    def __init__(self, pi):
-        self.policy_table = pi
-    
-    def _construct_distribution(self, state):
-        distribution = list(self.policy_table[state].values())
-        return distribution
-    
-    def get_action_probablity(self,state,action):
-        return self.policy_table[state][action]
+class DiscreteStateValueBasedPolicy(DiscreteActionPolicy):
+    def __init__(self,policy_table):
+        self.policy_table = policy_table
 
-class ContinuousStateTabularPolicy(Policy):
-    """
-    ContinuousStateTabularPolicy is the one whose state is continuous while action is discrete
-    """
+    def _construct_discrete_distribution(self, state):
+        return list(self.policy_table[state].values())
+
+
+class ContinuousStateValueBasedPolicy(DiscreteActionPolicy):
     def __init__(self,action_space,q_value_estimator,create_distribution_fn):
+        self.create_distribution_fn = create_distribution_fn
         self.q_value_estimator = q_value_estimator
         self.action_space = action_space
-        self.create_distribution_fn = create_distribution_fn
+        
 
-    def _construct_distribution(self, state):
+    def _construct_discrete_distribution(self,state):
         q_values ={}
         for action_index in range(self.action_space.n):
             q_values[action_index] = self.q_value_estimator.predict(state,action_index)
         
-        distribution = self.get_action_distribution(q_values)
-        return distribution
-    
-    def get_action_distribution(self,q_values):
         return  list(self.create_distribution_fn(q_values).values())
     
-    
-class ParameterizedPolicy(Policy):
+
+class ParameterizedPolicy(DiscreteActionPolicy):
     """
     In tabular policy, the actions' probability distribution is built from the Q values. In ParameterizedPolicy, the distribution 
     is a direct output of a parameterized function. 
