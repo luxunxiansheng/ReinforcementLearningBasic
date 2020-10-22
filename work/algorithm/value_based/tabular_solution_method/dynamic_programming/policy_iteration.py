@@ -39,7 +39,7 @@ import copy
 
 from common import ActorBase, CriticBase
 from lib.utility import create_distribution_greedily
-from policy.policy import DiscreteStateValueBasedPolicy
+
 
 
 class Critic(CriticBase):
@@ -120,9 +120,6 @@ class Actor(ActorBase):
             new_old_policy_diff = {action_index: abs(old_policy[action_index]-greedy_distibution[action_index]) for action_index in greedy_distibution}
             delta = max(max(new_old_policy_diff.values()), delta)
         return delta    
-
-
-
 
     def _get_value_of_action(self, transitions,value_function):
         value_of_action = 0.0

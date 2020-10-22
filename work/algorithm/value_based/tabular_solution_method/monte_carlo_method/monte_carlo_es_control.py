@@ -69,12 +69,11 @@ class Actor(ActorBase):
         self.policy = policy
         self.critic = critic
         self.create_distribution_greedily = create_distribution_greedily()
+
     
     def improve(self,*args): 
-        state_index = args[0]
-        q_value_function = self.critic.get_value_function()
-        greedy_distibution = self.create_distribution_greedily(q_value_function[state_index])
-        self.policy.policy_table[state_index] = greedy_distibution       
+        self.critic.evaluate()
+        
     
     def get_optimal_policy(self):
         return self.policy

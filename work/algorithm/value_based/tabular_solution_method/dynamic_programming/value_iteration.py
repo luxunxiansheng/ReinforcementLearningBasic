@@ -32,27 +32,34 @@
 # #### END LICENSE BLOCK #####
 #
 # /
-from common import ActorBase
+from algorithm.value_based.tabular_solution_method.dynamic_programming.policy_iteration import Critic
+from common import ActorBase,CriticBase
 from policy.policy import DiscreteStateValueBasedPolicy
 from lib.utility import create_distribution_greedily
 
-class Actor(ActorBase):
+
+
+
+class Critic(CriticBase):
     def __init__(self, value_function, policy,transition_table, delta=1e-8, discount=1.0):
         self.value_function = value_function
         self.policy = policy
         self.model = transition_table
         self.delta = delta
         self.discount = discount
-        self.create_distribution_greedily = create_distribution_greedily()
-
-    def improve(self, *args):
-        state_index = args[0]
-        value_of_optimal_action = self._get_value_of_optimal_action(state_index)
-        self.value_function[state_index] = value_of_optimal_action
     
-    def get_value_function(self, state_index):
-        return self.value_function[state_index]
 
+    def evaluate(self, *args):
+        while True:
+            delta = 1e-10
+            for state_index, old_value_of_state in self.value_function.items():
+                value_of_optimal_action = self._get_value_of_optimal_action(state_index)
+                self.value_function[state_index] = value_of_optimal_action
+                delta = max(delta,abs(value_of_optimal_action-old_value_of_state))
+
+            if delta < self.delta:
+                return 
+    
     def _get_value_of_optimal_action(self, state_index):
         return max(self._get_q_values_of_state(state_index).values())
 
@@ -73,16 +80,30 @@ class Actor(ActorBase):
             q_values[action_index] = value_of_action
         return q_values    
     
+    def get_value_function(self):
+        return self.value_function
+
     def get_optimal_policy(self):
-        policy_table = {}
-        for state_index, _ in self.value_function.items():
-            q_values = self._get_q_values_of_state(state_index)
-            greedy_distibution = self.create_distribution_greedily(q_values)
-            policy_table[state_index] = greedy_distibution
+        for state_index, action_distribution in self.policy.policy_table.items():
+            q_values={}
+            for action_index, _ in action_distribution.items():
+                q_values[action_index] = self._get_value_of_action(state_index, action_index)
+            greedy_distibution = create_distribution_greedily()(q_values)
+            self.policy.policy_table[state_index] = greedy_distibution
+            
+        return self.policy    
 
-        table_policy = DiscreteStateValueBasedPolicy(policy_table)
-        return table_policy
 
+class Actor(ActorBase):
+    def __init__(self,critic):
+        self.critic = critic
+    
+    
+    def improve(self,*args): 
+        self.critic.evaluate()
+        
+    def get_optimal_policy(self):
+        return self.critic.get_optimal_policy()
 
 class ValueIteration:
     """
@@ -105,15 +126,9 @@ class ValueIteration:
         self.policy = policy
         self.delta = delta
         self.discount = discount
-        self.actor = Actor(v_table, policy,transition_table, delta, discount)
+        self.critic = Critic(v_table, policy,transition_table, delta, discount)
+        self.actor  = Actor(self.critic)
 
     def improve(self):
-        while True:
-            delta = 1e-10
-            for state_index, old_value_of_state in self.value_function.items():
-                self.actor.improve(state_index)
-                new_value_of_state = self.actor.get_value_function(state_index)
-                delta = max(delta,abs(new_value_of_state-old_value_of_state))
-
-            if delta < self.delta:
-                    return self.actor.get_optimal_policy()
+        self.actor.improve()
+        return self.actor.get_optimal_policy()
