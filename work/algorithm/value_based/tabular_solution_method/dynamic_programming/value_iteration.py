@@ -84,8 +84,6 @@ class Actor(ActorBase):
         return table_policy
 
 
-
-
 class ValueIteration:
     """
     One drawback to policy iteration method is that each of its iterations involves policy 

@@ -36,77 +36,34 @@
 
 from collections import defaultdict
 
-from common import ActorBase, CriticBase
+from common import ActorBase
 from lib.utility import (create_distribution_epsilon_greedily,create_distribution_greedily)
-from policy.policy import DiscreteStateValueBasedPolicy
+
 from tqdm import tqdm
 
-class Critic(CriticBase):
-    def __init__(self, q_value_function):
-        self.state_count=self._init_state_count()
-        self.q_value_function=q_value_function
-
-    def evaluate(self,*args):
-        state_index= args[0]
-        action_index = args[1]
-        R= args[2]
-
-        self.state_count[state_index][action_index] = (self.state_count[state_index][action_index][0] + 1, self.state_count[state_index][action_index][1] + R)
-        self.q_value_function[state_index][action_index] = self.state_count[state_index][action_index][1] / self.state_count[state_index][action_index][0]
-    
-    def get_value_function(self):
-        return self.q_value_function
-    
-    def _init_state_count(self):
-        state_count = defaultdict(lambda: {})
-        for state_index, action_values in self.q_value_function.items():
-            for action_index, _ in action_values.items():
-                state_count[state_index][action_index] = (0, 0.0)
-        return state_count
 
 class Actor(ActorBase):
-    def __init__(self,policy,critic,episilon):
-        self.policy = policy
-        self.critic = critic
-        self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(episilon)
-        self.create_distribution_greedily = create_distribution_greedily()
-    
-    def improve(self,*args): 
-        state_index = args[0]
-        q_value_function = self.critic.get_value_function()
-        soft_greedy_distibution = self.create_distribution_epsilon_greedily(q_value_function[state_index])
-        self.policy.policy_table[state_index] = soft_greedy_distibution       
-    
-    def get_optimal_policy(self):
-        policy_table = {}
-        q_value_function = self.critic.get_value_function()
-        for state_index, _ in q_value_function.items():
-            q_values = q_value_function(state_index)
-            greedy_distibution = self.create_distribution_greedily(q_values)
-            policy_table[state_index] = greedy_distibution
-        table_policy = DiscreteStateValueBasedPolicy(policy_table)
-        return table_policy
-
-
-class MonteCarloOnPolicyControl:
     def __init__(self, q_value_function, policy, env, episilon= 0.1,episodes=10000, discount=1.0):
-        self.env = env
+        self.q_value_function = q_value_function
         self.policy = policy
+        self.env = env
         self.episodes = episodes
         self.discount = discount
-        self.critic = Critic(q_value_function) 
-        self.actor = Actor(policy,self.critic,episilon)
+        self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(episilon)
+        self.create_distribution_greedily = create_distribution_greedily()
 
     def improve(self, *args):
+        state_count = self._init_state_count()
         for _ in tqdm(range(0, self.episodes)):
             trajectory = self._run_one_episode()
             R = 0.0
             for state_index, action_index, reward in trajectory[::-1]:
                 R = reward+self.discount*R
-                self.critic.evaluate(state_index,action_index,R)
-                self.actor.improve(state_index)
-                
-        return self.actor.get_optimal_policy()
+                state_count[state_index][action_index] = (state_count[state_index][action_index][0] + 1, state_count[state_index][action_index][1] + R)
+                self.q_value_function[state_index][action_index] = state_count[state_index][action_index][1] / state_count[state_index][action_index][0]
+                q_values = self.q_value_function[state_index]
+                soft_greedy_distibution = self.create_distribution_epsilon_greedily(q_values)
+                self.policy.policy_table[state_index] = soft_greedy_distibution
 
     def _run_one_episode(self):
         trajectory = []
@@ -129,7 +86,21 @@ class MonteCarloOnPolicyControl:
                 state_count[state_index][action_index] = (0, 0.0)
         return state_count
 
+    def get_optimal_policy(self):
+        return self.policy    
 
 
+class MonteCarloOnPolicyControl:
+    """
+    On Policy method and the Exploration comes from the random initial states.
+
+    Basically, value iteration is followed in current implementaion. 
+    """
+    def __init__(self, q_value_function, policy, env, episilon= 0.1,episodes=10000, discount=1.0):
+        self.actor = Actor(q_value_function, policy, env, episilon,episodes, discount)
+
+    def improve(self):
+        self.actor.improve()
+        return self.actor.get_optimal_policy()
     
     

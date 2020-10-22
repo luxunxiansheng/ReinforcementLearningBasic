@@ -109,18 +109,19 @@ class Actor(ActorBase):
         
     def _improve_once(self):
         delta = 1e-10
-        for state_index, _ in self.value_function.items():
-            old_policy = copy.deepcopy(self.policy.policy_table[state_index])
-            actions = self.policy.policy_table[state_index]
-            q_values = {}
-            for action_index, _ in actions.items():
+        for state_index, action_distribution in self.policy.policy_table.items():
+            old_policy = copy.deepcopy(action_distribution)
+            q_values={}
+            for action_index, _ in action_distribution.items():
                 transition = self.model[state_index][action_index]
                 q_values[action_index] = self._get_value_of_action(transition,self.value_function)
             greedy_distibution = create_distribution_greedily()(q_values)
             self.policy.policy_table[state_index] = greedy_distibution
             new_old_policy_diff = {action_index: abs(old_policy[action_index]-greedy_distibution[action_index]) for action_index in greedy_distibution}
             delta = max(max(new_old_policy_diff.values()), delta)
-        return delta
+        return delta    
+
+
 
 
     def _get_value_of_action(self, transitions,value_function):
