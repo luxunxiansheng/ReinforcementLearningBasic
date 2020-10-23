@@ -43,8 +43,9 @@ from tqdm import tqdm
 
 class Critic(CriticBase):
     def __init__(self, q_value_function):
-        self.state_count=self._init_state_count()
         self.q_value_function=q_value_function
+        self.state_count=self._init_state_count()
+        
 
     def evaluate(self,*args):
         state_index= args[0]
@@ -81,7 +82,7 @@ class Actor(ActorBase):
         policy_table = {}
         q_value_function = self.critic.get_value_function()
         for state_index, _ in q_value_function.items():
-            q_values = q_value_function(state_index)
+            q_values = q_value_function[state_index]
             greedy_distibution = self.create_distribution_greedily(q_values)
             policy_table[state_index] = greedy_distibution
         table_policy = DiscreteStateValueBasedPolicy(policy_table)

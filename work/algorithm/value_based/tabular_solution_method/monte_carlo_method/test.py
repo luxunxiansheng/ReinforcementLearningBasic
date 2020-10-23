@@ -26,7 +26,7 @@ def test_q_mc_es_control_method(env):
     q_table = env.build_Q_table()
     policy_table = env.build_policy_table()
     behavior_policy = DiscreteStateValueBasedPolicy(policy_table)
-    rl_method = MonteCarloESControl(q_table, behavior_policy,env,800000)
+    rl_method = MonteCarloESControl(q_table, behavior_policy,env,8000)
     optimal_policy=rl_method.improve()
     env.show_policy(optimal_policy)
 
@@ -36,7 +36,7 @@ def test_mc_onpolicy_control_method(env):
     q_table = env.build_Q_table()
     policy_table = env.build_policy_table()
     target_policy = DiscreteStateValueBasedPolicy(policy_table)
-    rl_method = MonteCarloOnPolicyControl(q_table,target_policy,env,0.8,800000)
+    rl_method = MonteCarloOnPolicyControl(q_table,target_policy,env,0.8,8000)
     optimal_policy=rl_method.improve()
     env.show_policy(optimal_policy)
 
@@ -48,7 +48,7 @@ def test_mc_offpolicy_control_method(env):
     policy_table = env.build_policy_table()
     behavior_policy = DiscreteStateValueBasedPolicy(policy_table)
     target_policy = copy.deepcopy(behavior_policy)
-    rl_method = MonteCarloOffPolicyControl(q_table, behavior_policy, target_policy, env,800000)
+    rl_method = MonteCarloOffPolicyControl(q_table, behavior_policy, target_policy, env,8000)
     optimal_policy=rl_method.improve()
     env.show_policy(optimal_policy)
 

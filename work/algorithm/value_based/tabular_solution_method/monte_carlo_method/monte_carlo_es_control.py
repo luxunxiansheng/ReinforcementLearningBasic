@@ -42,8 +42,9 @@ from policy.policy import DiscreteStateValueBasedPolicy
 
 class Critic(CriticBase):
     def __init__(self, q_value_function):
+        self.q_value_function= q_value_function
         self.state_count=self._init_state_count()
-        self.q_value_function=q_value_function
+        
 
     def evaluate(self,*args):
         state_index= args[0]
@@ -69,11 +70,12 @@ class Actor(ActorBase):
         self.policy = policy
         self.critic = critic
         self.create_distribution_greedily = create_distribution_greedily()
-
     
     def improve(self,*args): 
-        self.critic.evaluate()
-        
+        state_index = args[0]
+        q_value_function = self.critic.get_value_function()
+        soft_greedy_distibution = self.create_distribution_greedily(q_value_function[state_index])
+        self.policy.policy_table[state_index] = soft_greedy_distibution       
     
     def get_optimal_policy(self):
         return self.policy

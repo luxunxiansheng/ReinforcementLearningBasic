@@ -36,26 +36,77 @@
 from collections import defaultdict
 
 import numpy as np
-from common import ActorBase
+from common import ActorBase, CriticBase
 from lib.utility import create_distribution_greedily
-
 from tqdm import tqdm
 
+class Critic(CriticBase):
+    def __init__(self, q_value_function):
+        self.q_value_function = q_value_function
+    
+        # it is necessary to keep the weight total for every state_action pair
+        self.C = self._init_weight_total()
+
+    def evaluate(self, *args):
+        state_index  = args[0]
+        action_index = args[1]
+        G = args[2]
+        W = args[3]
+        
+        # weight total for current state_action pair
+        self.C[state_index][action_index] += W
+
+        # q_value calculated incrementally with off policy
+        self.q_value_function[state_index][action_index] += W / self.C[state_index][action_index] * (G-self.q_value_function[state_index][action_index])
+        
+
+    def _init_weight_total(self):
+        weight_total = defaultdict(lambda: {})
+        for state_index, action_values in self.q_value_function.items():
+            for action_index, _ in action_values.items():
+                weight_total[state_index][action_index] = 0.0
+        return weight_total
+
+    def get_value_function(self):
+        return self.q_value_function
+    
 
 class Actor(ActorBase):
-    def __init__(self, q_value_function, behavior_policy, target_policy,env, episodes=500000, discount=1.0,epsilon=0.5):
-        self.q_value_function = q_value_function
-        self.behavior_policy = behavior_policy
+    def __init__(self,target_policy,critic):
         self.target_policy = target_policy
+        self.critic = critic
+        self.create_distribution_greedily = create_distribution_greedily()
+
+    def improve(self, *args):
+        state_index = args[0]
+        q_value_function = self.critic.get_value_function()
+        greedy_distibution = self.create_distribution_greedily(q_value_function[state_index])
+        self.target_policy.policy_table[state_index] = greedy_distibution
+
+    def get_optimal_policy(self):
+        return self.target_policy
+
+    def get_action_distribution(self,state_index):
+        return self.target_policy.policy_table[state_index]
+
+class MonteCarloOffPolicyControl:
+    """
+    As described in 5.7 section of Sutton' book 
+    1) Weighted importance sampling.
+    2) Incremental implementation
+    """
+
+    def __init__(self, q_value_function, behavior_policy, target_policy,env, episodes=500000, discount=1.0,epsilon=0.5):
+        self.behavior_policy = behavior_policy
         self.env = env
         self.episodes = episodes
         self.discount = discount
         self.epsilon  = epsilon
-        self.create_distribution_greedily = create_distribution_greedily()
+        
+        self.critic= Critic(q_value_function)
+        self.actor = Actor(target_policy,self.critic)
 
-    def improve(self, *args):
-        # it is necessary to keep the weight total for every state_action pair
-        C = self._init_weight_total()
+    def improve(self):
         for _ in tqdm(range(0, self.episodes)):
             trajectory = self._run_one_episode()
             G = 0.0
@@ -63,24 +114,20 @@ class Actor(ActorBase):
             for state_index, action_index, reward in trajectory[::-1]:
                 # The return for current state_action pair
                 G = reward + self.discount*G
-                # weight total for current state_action pair
-                C[state_index][action_index] += W
-
-                # q_value calculated incrementally with off policy
-                self.q_value_function[state_index][action_index] += W / C[state_index][action_index] * (G-self.q_value_function[state_index][action_index])
-
-                q_values = self.q_value_function[state_index]
-                greedy_distibution = self.create_distribution_greedily(q_values)
-                self.target_policy.policy_table[state_index] = greedy_distibution
-
+                # The return for current state_action pair
+                self.critic.evaluate(state_index, action_index, G, W)
+                self.actor.improve(state_index)
+            
                 # If the action taken by the behavior policy is not the action taken by the target policy,the probability will be 0 and we can break
-                if action_index != np.argmax(self.target_policy.policy_table[state_index]):
+                if action_index != np.argmax(self.actor.get_action_distribution(state_index)):
                     break
 
                 # probability product
                 W = W * 1. / self.behavior_policy.policy_table[state_index][action_index]
         
-        
+        return self.actor.get_optimal_policy()
+
+
     def _init_weight_total(self):
         weight_total = defaultdict(lambda: {})
         for state_index, action_values in self.q_value_function.items():
@@ -102,21 +149,25 @@ class Actor(ActorBase):
             current_state_index = observation[0]
         return trajectory
 
-    def get_optimal_policy(self):
-        return self.target_policy
 
-class MonteCarloOffPolicyControl:
-    """
-    As described in 5.7 section of Sutton' book 
-    1) Weighted importance sampling.
-    2) Incremental implementation
-    """
 
-    def __init__(self, q_value_function, behavior_policy, target_policy,env, episodes=500000, discount=1.0,epsilon=0.5):
-        self.actor = Actor(q_value_function, behavior_policy, target_policy,env, episodes,discount,epsilon)
 
-    def improve(self):
-        self.actor.improve()
-        return self.actor.get_optimal_policy()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
