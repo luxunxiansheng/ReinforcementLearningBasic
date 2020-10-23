@@ -47,10 +47,9 @@ class Critic(CriticBase):
         current_state_index = args[0]
         current_action_index = args[1]
         reward = args[2]
-        next_state_index = args[3]
-        next_action_index = args[4]
-
-        delta = reward + self.discount * self.q_value_function[next_state_index][next_action_index] - self.q_value_function[current_state_index][current_action_index]
+        target = args[3]
+    
+        delta = reward + self.discount * target - self.q_value_function[current_state_index][current_action_index]
         self.q_value_function[current_state_index][current_action_index] += self.step_size * delta
 
     def get_value_function(self):
@@ -96,7 +95,7 @@ class SARSA:
         self.episodes = episodes
         self.policy = table_policy
         self.critic = Critic(q_value_function,discount)
-        self.actor = Actor(q_value_function, table_policy, epsilon,env, statistics, episodes, step_size, discount)
+        self.actor  = Actor(q_value_function, table_policy, epsilon,env, statistics, episodes, step_size, discount)
 
     def improve(self):
         for episode in tqdm(range(0, self.episodes)):
@@ -121,7 +120,9 @@ class SARSA:
                 # A'
                 next_action_index = self.policy.get_action(next_state_index)
 
-                self.critic.evaluate(current_state_index,current_action_index,reward,next_state_index,next_action_index)
+                target = self.q_value_function[next_state_index][next_action_index]
+
+                self.critic.evaluate(current_state_index,current_action_index,reward,target)
                 self.actor.improve(current_state_index)
 
                 if done:
