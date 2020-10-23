@@ -46,7 +46,6 @@ class Critic(CriticBase):
         self.q_value_function=q_value_function
         self.state_count=self._init_state_count()
         
-
     def evaluate(self,*args):
         state_index= args[0]
         action_index = args[1]

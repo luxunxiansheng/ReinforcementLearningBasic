@@ -33,13 +33,28 @@
 #
 # /
 
-from common import ActorBase
+from common import ActorBase, CriticBase
 from lib.utility import (create_distribution_epsilon_greedily, create_distribution_greedily)
 from policy.policy import DiscreteStateValueBasedPolicy
 from tqdm import tqdm
 
+class Critic(CriticBase):
+    def __init__(self,q_value_function,discount):
+        self.q_value_function = q_value_function
+        self.discount = discount
 
+    def evaluate(self, *args):
+        current_state_index = args[0]
+        current_action_index = args[1]
+        reward = args[2]
+        next_state_index = args[3]
+        next_action_index = args[4]
 
+        delta = reward + self.discount * self.q_value_function[next_state_index][next_action_index] - self.q_value_function[current_state_index][current_action_index]
+        self.q_value_function[current_state_index][current_action_index] += self.step_size * delta
+
+    def get_value_function(self):
+        return self.q_value_function
 
 class Actor(ActorBase):
     """
@@ -48,22 +63,45 @@ class Actor(ActorBase):
     policy continues to be followed.
     """
     
-    def __init__(self, q_value_function, policy, epsilon, env, statistics, episodes, step_size=0.1, discount=1.0):
-        self.q_value_function = q_value_function
-        self.policy = policy
-        self.discount = discount
-        self.step_size = step_size
-        self.env = env
-        self.episodes = episodes
-        self.statistics = statistics
+    def __init__(self, policy, critic,epsilon):
+        self.policy_table = policy
+        self.critic = critic
         self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(epsilon)
         self.create_distribution_greedily = create_distribution_greedily()
 
     def improve(self, *args):
+        current_state_index = args[0]
+        q_values = self.q_value_function[current_state_index]
+        soft_greedy_distibution = self.create_distribution_epsilon_greedily(q_values)
+        self.policy.policy_table[current_state_index] = soft_greedy_distibution
+
+    def get_optimal_policy(self):
+        policy_table = {}
+        q_value_function = self.critic.get_value_function()
+        for state_index, _ in q_value_function.items():
+            q_values = q_value_function[state_index]
+            greedy_distibution = self.create_distribution_greedily(q_values)
+            policy_table[state_index] = greedy_distibution
+        table_policy = DiscreteStateValueBasedPolicy(policy_table)
+        return table_policy
+
+
+class SARSA:
+    """
+    SARSA algorithm: On-policy TD control. Finds the optimal epsilon-greedy policy.
+    """
+
+    def __init__(self, q_value_function, table_policy, epsilon, env, statistics, episodes, step_size=0.1, discount=1.0):
+        self.env = env
+        self.episodes = episodes
+        self.policy = table_policy
+        self.critic = Critic(q_value_function,discount)
+        self.actor = Actor(q_value_function, table_policy, epsilon,env, statistics, episodes, step_size, discount)
+
+    def improve(self):
         for episode in tqdm(range(0, self.episodes)):
             # S
             current_state_index = self.env.reset()
-
             # A
             current_action_index = self.policy.get_action(current_state_index)
 
@@ -83,33 +121,11 @@ class Actor(ActorBase):
                 # A'
                 next_action_index = self.policy.get_action(next_state_index)
 
-                delta = reward + self.discount * self.q_value_function[next_state_index][next_action_index] - self.q_value_function[current_state_index][current_action_index]
-                self.q_value_function[current_state_index][current_action_index] += self.step_size * delta
-
-                q_values = self.q_value_function[current_state_index]
-                soft_greedy_distibution = self.create_distribution_epsilon_greedily(q_values)
-                self.policy.policy_table[current_state_index] = soft_greedy_distibution
+                self.critic.evaluate(current_state_index,current_action_index,reward,next_state_index,next_action_index)
+                self.actor.improve(current_state_index)
 
                 if done:
                     break
 
                 current_state_index = next_state_index
                 current_action_index = next_action_index
-
-
-    def get_optimal_policy(self):
-        return self.policy
-
-
-class SARSA:
-    """
-    SARSA algorithm: On-policy TD control. Finds the optimal epsilon-greedy policy.
-    """
-
-    def __init__(self, q_value_function, table_policy, epsilon, env, statistics, episodes, step_size=0.1, discount=1.0):
-
-        self.actor = Actor(q_value_function, table_policy, epsilon,env, statistics, episodes, step_size, discount)
-
-    def improve(self):
-        self.actor.improve()
-        return self.actor.get_optimal_policy()
