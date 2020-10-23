@@ -34,48 +34,76 @@
 # /
 
 from collections import defaultdict
-from common import CriticBase
+
+import numpy as np
+from common import ActorBase, CriticBase
+from lib.utility import create_distribution_greedily
+from tqdm import tqdm
 
 class Critic(CriticBase):
-    def __init__(self,q_table,behavior_policy,target_policy,env,episodes,discount):
-        self.q_table = q_table
+    def __init__(self, q_value_function):
+        self.q_value_function = q_value_function
+    
+        # it is necessary to keep the weight total for every state_action pair
+        self.C = self._init_weight_total()
+
+    def evaluate(self, *args):
+        state_index  = args[0]
+        action_index = args[1]
+        G = args[2]
+        W = args[3]
+        
+        # weight total for current state_action pair
+        self.C[state_index][action_index] += W
+
+        # q_value calculated incrementally with off policy
+        self.q_value_function[state_index][action_index] += W / self.C[state_index][action_index] * (G-self.q_value_function[state_index][action_index])
+        
+
+    def _init_weight_total(self):
+        weight_total = defaultdict(lambda: {})
+        for state_index, action_values in self.q_value_function.items():
+            for action_index, _ in action_values.items():
+                weight_total[state_index][action_index] = 0.0
+        return weight_total
+
+    def get_value_function(self):
+        return self.q_value_function
+    
+
+class MonteCarloOffPolicyEvaluation:
+    def __init__(self, q_value_function, behavior_policy, target_policy,env, episodes=500000, discount=1.0,epsilon=0.5):
         self.behavior_policy = behavior_policy
-        self.target_policy   = target_policy
         self.env = env
         self.episodes = episodes
         self.discount = discount
+        self.epsilon  = epsilon
+        self.target_policy = target_policy
+        
+        self.critic= Critic(q_value_function)
     
-
-    def evaluate(self,*args):
-        # it is necessary to keep the weight total for every state_action pair
-        C = self._init_weight_total()
-        for _ in range(0, self.episodes):
+    def evaluate(self):
+        for _ in tqdm(range(0, self.episodes)):
             trajectory = self._run_one_episode()
             G = 0.0
             W = 1
             for state_index, action_index, reward in trajectory[::-1]:
                 # The return for current state_action pair
                 G = reward + self.discount*G
-
-                # weight total for current state_action pair
-                C[state_index][action_index]  += W
-
-                # q_value calculated incrementally with off policy
-                self.q_table[state_index][action_index] += W/C[state_index][action_index]*(G-self.q_table[state_index][action_index])
+                # The return for current state_action pair
+                self.critic.evaluate(state_index, action_index, G, W)
 
                 # probability product
                 W = W * self.target_policy.policy_table[state_index][action_index] / self.behavior_policy.policy_table[state_index][action_index]
 
                 if W == 0:
                     break
-
-
-    def get_value_function(self):
-        return self.q_table
-
+        
+        return self.critic.get_value_function()
+        
     def _init_weight_total(self):
         weight_total = defaultdict(lambda: {})
-        for state_index, action_values in self.q_table.items():
+        for state_index, action_values in self.q_value_function.items():
             for action_index, _ in action_values.items():
                 weight_total[state_index][action_index] = 0.0
         return weight_total
@@ -87,26 +115,32 @@ class Critic(CriticBase):
             action_index = self.behavior_policy.get_action(current_state_index)
             observation = self.env.step(action_index)
             reward = observation[1]
-            trajectory.append((current_state_index, action_index,reward))
+            trajectory.append((current_state_index, action_index, reward))
             done = observation[2]
             if done:
                 break
             current_state_index = observation[0]
-
         return trajectory
-        
-class MonteCarloOffPolicyEvaluation:
-    """
-    As described in 5.6 section of Sutton' book 
 
-    1) Weighted importance sampling.
-    2) Incremental implementation
-    """
 
-    def __init__(self, q_table, behavior_policy, target_policy, env, episodes=10000, discount=1.0):
-        self.critic = Critic(q_table,behavior_policy,target_policy,env,episodes,discount)
-    
-    def evaluate(self):
-        self.critic.evaluate()
-        return self.critic.get_value_function()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
