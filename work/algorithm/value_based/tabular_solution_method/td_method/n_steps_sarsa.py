@@ -93,9 +93,9 @@ class NStepsSARSA:
                 if updated_timestamp + self.steps < final_timestamp:
                     G += np.power(self.discount, self.steps) *  self.critic.get_value_function()[trajectory[current_timestamp][0]][trajectory[current_timestamp][1]]
 
-                self.critic.evaluate(current_state_index,current_action_index,G)
+                self.critic.evaluate(trajectory[updated_timestamp][0],trajectory[updated_timestamp][1],G)
 
-                self.actor.improve(current_state_index)
+                self.actor.improve(trajectory[updated_timestamp][0])
 
                 if updated_timestamp == final_timestamp - 1:
                     break

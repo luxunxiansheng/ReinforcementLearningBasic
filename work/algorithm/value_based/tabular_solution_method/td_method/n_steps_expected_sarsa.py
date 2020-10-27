@@ -100,9 +100,9 @@ class NStepsExpectedSARSA:
                         expected_next_q += action_prob * self.critic.get_value_function()[trajectory[current_timestamp][0]][action]
                     G += np.power(self.discount, self.steps) * expected_next_q
 
-                self.critic.evaluate(current_state_index,current_action_index,G)
+                self.critic.evaluate(trajectory[updated_timestamp][0],trajectory[updated_timestamp][1],G)
 
-                self.actor.improve(current_state_index)
+                self.actor.improve(trajectory[updated_timestamp][0])
 
 
                 if updated_timestamp == final_timestamp - 1:
