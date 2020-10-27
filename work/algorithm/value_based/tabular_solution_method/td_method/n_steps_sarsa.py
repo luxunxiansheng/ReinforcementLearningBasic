@@ -41,10 +41,10 @@ from tqdm import tqdm
 
 
 class Critic(CriticBase):
-    def __init__(self,q_value_function,step_size,discount):
+    def __init__(self,q_value_function,step_size):
         self.q_value_function = q_value_function
         self.step_size = step_size
-        self.discount = discount
+       
 
     def evaluate(self, *args):
         current_state_index = args[0]
@@ -86,12 +86,13 @@ class Actor(ActorBase):
 
 
 class NStepsSARSA(ActorBase):
-    def __init__(self, q_table, table_policy, epsilon, env, steps, statistics, episodes, step_size, discount):
+    def __init__(self, q_table, table_policy, epsilon, env, steps, statistics, episodes, step_size=0.1, discount=1.0):
         self.env = env
         self.steps = steps
         self.statistics = statistics
         self.episodes = episodes
-        self.critic = Critic(q_table,step_size,discount)
+        self.discount = discount
+        self.critic = Critic(q_table,step_size)
         self.actor  = Actor(table_policy,self.critic,epsilon)
 
     def improve(self):
@@ -137,7 +138,7 @@ class NStepsSARSA(ActorBase):
                 for i in range(updated_timestamp, min(updated_timestamp + self.steps, final_timestamp)):
                     G += np.power(self.discount, i - updated_timestamp) * trajectory[i][2]
                 if updated_timestamp + self.steps < final_timestamp:
-                    G += np.power(self.discount, self.steps) *  self.get_value_function()[trajectory[current_timestamp][0]][trajectory[current_timestamp][1]]
+                    G += np.power(self.discount, self.steps) *  self.critic.get_value_function()[trajectory[current_timestamp][0]][trajectory[current_timestamp][1]]
 
                 self.critic.evaluate(current_state_index,current_action_index,G)
 

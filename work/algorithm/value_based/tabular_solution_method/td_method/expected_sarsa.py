@@ -40,10 +40,10 @@ from policy.policy import DiscreteStateValueBasedPolicy
 from tqdm import tqdm
 
 class Critic(CriticBase):
-    def __init__(self,q_value_function,step_size,discount):
+    def __init__(self,q_value_function,step_size):
         self.q_value_function = q_value_function
         self.step_size = step_size
-        self.discount = discount
+        
 
     def evaluate(self, *args):
         current_state_index = args[0]
@@ -89,7 +89,8 @@ class ExpectedSARSA:
         self.env = env
         self.episodes = episodes
         self.statistics=statistics
-        self.critic = Critic(q_value_function,step_size,discount)
+        self.discount = discount
+        self.critic = Critic(q_value_function,step_size)
         self.actor  = Actor(table_policy,self.critic,epsilon)
 
     def improve(self):
@@ -118,7 +119,7 @@ class ExpectedSARSA:
                 expected_q_value = 0
                 next_actions = self.actor.get_current_policy().policy_table[next_state_index]
                 for action, action_prob in next_actions.items():
-                    expected_q_value += action_prob * self.get_value_function()[next_state_index][action]
+                    expected_q_value += action_prob * self.critic.get_value_function()[next_state_index][action]
 
                 target = expected_q_value+reward
 

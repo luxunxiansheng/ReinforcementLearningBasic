@@ -164,7 +164,6 @@ def test_expected_sarsa_method(env):
 
 
 def test_n_steps_sarsa_method(env):
-
     q_table = env.build_Q_table()
     b_policy_table = env.build_policy_table()
     b_policy = DiscreteStateValueBasedPolicy(b_policy_table)
@@ -293,8 +292,7 @@ def test_dynaQ_method_priority(env):
     dyna_q_statistics = EpisodeStats("Dyna_Q_PRIORITY", episode_lengths=np.zeros(
         num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
 
-    dyna_q_method = DynaQ(q_table, b_policy, 0.1, env,
-                          dyna_q_statistics, num_episodes, mode=PRIORITY)
+    dyna_q_method = DynaQ(q_table, b_policy, 0.1, env,dyna_q_statistics, num_episodes, mode=PRIORITY)
     dyna_q_method.improve()
 
     return dyna_q_statistics
