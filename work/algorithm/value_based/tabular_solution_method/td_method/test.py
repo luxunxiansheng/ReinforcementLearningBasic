@@ -191,8 +191,7 @@ def test_n_setps_expected_sarsa(env):
     n_steps_expectedsarsa_statistics = EpisodeStats("N_Steps_Expected_Sarsa", episode_lengths=np.zeros(
         num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
 
-    n_steps_expectedsarsa_method = NStepsExpectedSARSA(
-        q_table, b_policy, 0.1, env,  n_steps, n_steps_expectedsarsa_statistics, num_episodes)
+    n_steps_expectedsarsa_method = NStepsExpectedSARSA(q_table, b_policy, 0.1, env,  n_steps, n_steps_expectedsarsa_statistics, num_episodes)
     n_steps_expectedsarsa_method.improve()
 
     return n_steps_expectedsarsa_statistics
