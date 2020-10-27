@@ -35,26 +35,67 @@
 
 from matplotlib.pyplot import disconnect
 import numpy as np
-from common import ActorBase
+from common import ActorBase,CriticBase
 from lib.utility import (create_distribution_epsilon_greedily,create_distribution_greedily)
 from policy.policy import DiscreteStateValueBasedPolicy
 from tqdm import tqdm
 
-class Actor(ActorBase):
-    def __init__(self, q_table, table_policy, epsilon, env, steps, statistics, episodes, step_size, discount):
-        self.q_value_function = q_table
-        self.policy = table_policy
-        self.epsilon= epsilon
-        self.env = env
-        self.steps = steps
-        self.statistics = statistics
-        self.episodes = episodes
+
+class Critic(CriticBase):
+    def __init__(self,q_value_function,step_size):
+        self.q_value_function = q_value_function
         self.step_size = step_size
-        self.discount = discount
+    
+
+    def evaluate(self, *args):
+        current_state_index = args[0]
+        current_action_index = args[1]
+        target = args[2]
+    
+        delta = target - self.q_value_function[current_state_index][current_action_index]
+        self.q_value_function[current_state_index][current_action_index] += self.step_size * delta
+
+    def get_value_function(self):
+        return self.q_value_function
+
+class Actor(ActorBase):
+    def __init__(self, policy, critic,epsilon):
+        self.policy = policy
+        self.critic = critic
         self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(epsilon)
         self.create_distribution_greedily = create_distribution_greedily()
 
     def improve(self, *args):
+        current_state_index = args[0]
+        q_value_function = self.critic.get_value_function()
+        q_values = q_value_function[current_state_index]
+        soft_greedy_distibution = self.create_distribution_epsilon_greedily(q_values)
+        self.policy.policy_table[current_state_index] = soft_greedy_distibution
+
+    def get_current_policy(self):
+        return self.policy
+
+    def get_optimal_policy(self):
+        policy_table = {}
+        q_value_function = self.critic.get_value_function()
+        for state_index, _ in q_value_function.items():
+            q_values = q_value_function[state_index]
+            greedy_distibution = self.create_distribution_greedily(q_values)
+            policy_table[state_index] = greedy_distibution
+        table_policy = DiscreteStateValueBasedPolicy(policy_table)
+        return table_policy
+
+class NStepsExpectedSARSA:
+    def __init__(self, q_table, table_policy, epsilon, env, steps, statistics, episodes, step_size=0.1, discount=1):
+        self.env = env
+        self.steps = steps
+        self.statistics = statistics
+        self.episodes = episodes
+        self.discount = discount
+        self.critic = Critic(q_table,step_size)
+        self.actor  = Actor(table_policy,self.critic,epsilon)
+
+    def improve(self):
         for episode in tqdm(range(0, self.episodes)):
             self._run_one_episode(episode)
 
@@ -68,7 +109,7 @@ class Actor(ActorBase):
         # S
         current_state_index = self.env.reset()
         # A
-        current_action_index = self.policy.get_action(current_state_index)
+        current_action_index = self.actor.get_current_policy().get_action(current_state_index)
 
         while True:
             if current_timestamp < final_timestamp:
@@ -84,7 +125,7 @@ class Actor(ActorBase):
                 next_state_index = observation[0]
 
                 # A'
-                next_action_index = self.policy.get_action(next_state_index)
+                next_action_index = self.actor.get_current_policy().get_action(next_state_index)
 
                 trajectory.append((current_state_index,current_action_index,reward))
 
@@ -100,17 +141,14 @@ class Actor(ActorBase):
                 if updated_timestamp + self.steps < final_timestamp:
                     # expected Q value, actullay the v(s)
                     expected_next_q = 0
-                    next_actions = self.policy.policy_table[trajectory[current_timestamp][0]]
+                    next_actions = self.actor.get_current_policy().policy_table[trajectory[current_timestamp][0]]
                     for action, action_prob in next_actions.items():
-                        expected_next_q += action_prob * self.q_value_function[trajectory[current_timestamp][0]][action]
+                        expected_next_q += action_prob * self.critic.get_value_function()[trajectory[current_timestamp][0]][action]
                     G += np.power(self.discount, self.steps) * expected_next_q
 
-                delta = G - self.q_value_function[trajectory[updated_timestamp][0]][trajectory[updated_timestamp][1]]
-                self.q_value_function[trajectory[updated_timestamp][0]][trajectory[updated_timestamp][1]] += self.step_size*delta
+                self.critic.evaluate(current_state_index,current_action_index,G)
 
-                q_values = self.q_value_function[current_state_index]
-                soft_greedy_distibution = self.create_distribution_epsilon_greedily(q_values)
-                self.policy.policy_table[current_state_index] = soft_greedy_distibution
+                self.actor.improve(current_state_index)
 
 
                 if updated_timestamp == final_timestamp - 1:
@@ -120,20 +158,8 @@ class Actor(ActorBase):
             current_state_index = next_state_index
             current_action_index = next_action_index
     
-    def get_optimal_policy(self):
-        return self.policy    
 
-class NStepsExpectedSARSA:
-    """
-    N steps SARSA algorithm: On-policy TD control. Finds the optimal epsilon-greedy policy.
-    """
 
-    def __init__(self, q_table, table_policy, epsilon, env, steps, statistics, episodes, step_size=0.1, discount=1.0):
-        self.actor = Actor(q_table, table_policy, epsilon, env, steps, statistics, episodes, step_size ,discount) 
-
-    def improve(self):
-        self.actor.improve()
-        return self.actor.get_optimal_policy()
     
 
 

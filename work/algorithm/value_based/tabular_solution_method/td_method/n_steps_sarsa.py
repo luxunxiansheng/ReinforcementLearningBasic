@@ -44,7 +44,7 @@ class Critic(CriticBase):
     def __init__(self,q_value_function,step_size):
         self.q_value_function = q_value_function
         self.step_size = step_size
-       
+    
 
     def evaluate(self, *args):
         current_state_index = args[0]
@@ -84,8 +84,7 @@ class Actor(ActorBase):
         table_policy = DiscreteStateValueBasedPolicy(policy_table)
         return table_policy
 
-
-class NStepsSARSA(ActorBase):
+class NStepsSARSA:
     def __init__(self, q_table, table_policy, epsilon, env, steps, statistics, episodes, step_size=0.1, discount=1.0):
         self.env = env
         self.steps = steps
