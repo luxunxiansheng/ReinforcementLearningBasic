@@ -33,46 +33,45 @@
 #
 # /
 
+from tqdm.std import trange
 from common import ActorBase,CriticBase
 from lib.utility import (create_distribution_epsilon_greedily, create_distribution_greedily)
 from policy.policy import DiscreteStateValueBasedPolicy
 from tqdm import tqdm
 
 class Critic(CriticBase):
-    def __init__(self,q_value_function,discount):
+    def __init__(self,q_value_function,step_size,discount):
         self.q_value_function = q_value_function
+        self.step_size = step_size
         self.discount = discount
 
     def evaluate(self, *args):
         current_state_index = args[0]
         current_action_index = args[1]
-        reward = args[2]
-        target = args[3]
+        target = args[2]
     
-        delta = reward + self.discount * target - self.q_value_function[current_state_index][current_action_index]
+        delta = target - self.q_value_function[current_state_index][current_action_index]
         self.q_value_function[current_state_index][current_action_index] += self.step_size * delta
 
     def get_value_function(self):
         return self.q_value_function
 
 class Actor(ActorBase):
-    """
-    The reason that sarsa is on-policy is that it updates its Q-Values using the Q-value of the next state S' 
-    and the current policy's action A'. It estimates the return for state-action pairs assuming the current 
-    policy continues to be followed.
-    """
-    
     def __init__(self, policy, critic,epsilon):
-        self.policy_table = policy
+        self.policy = policy
         self.critic = critic
         self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(epsilon)
         self.create_distribution_greedily = create_distribution_greedily()
 
     def improve(self, *args):
         current_state_index = args[0]
-        q_values = self.q_value_function[current_state_index]
+        q_value_function = self.critic.get_value_function()
+        q_values = q_value_function[current_state_index]
         soft_greedy_distibution = self.create_distribution_epsilon_greedily(q_values)
         self.policy.policy_table[current_state_index] = soft_greedy_distibution
+
+    def get_current_policy(self):
+        return self.policy
 
     def get_optimal_policy(self):
         policy_table = {}
@@ -85,78 +84,20 @@ class Actor(ActorBase):
         return table_policy
 
 
-class Actor(ActorBase):
-    def __init__(self, q_value_function, policy, epsilon, env, statistics, episodes, step_size=0.1, discount=1.0):
-        self.q_value_function = q_value_function
-        self.policy = policy
-        self.discount = discount
-        self.step_size = step_size
-        self.env = env
-        self.episodes = episodes
-        self.statistics = statistics
-        self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(epsilon)
-        self.create_distribution_greedily = create_distribution_greedily()
-
-    def improve(self, *args):
-        for episode in tqdm(range(0, self.episodes)):
-            # S
-            current_state_index = self.env.reset()
-
-            # A
-            current_action_index = self.policy.get_action(current_state_index)
-
-            while True:
-                observation = self.env.step(current_action_index)
-
-                # R
-                reward = observation[1]
-
-                # S'
-                next_state_index = observation[0]
-                done = observation[2]
-
-                self.statistics.episode_rewards[episode] += reward
-                self.statistics.episode_lengths[episode] += 1
-
-                # A'
-                next_action_index = self.policy.get_action(next_state_index)
-
-                target = 0
-                next_actions = self.policy.policy_table[next_state_index]
-                for action, action_prob in next_actions.items():
-                    target += action_prob * self.q_value_function[next_state_index][action]
-            
-                delta = reward + self.discount * expected_next_q - self.q_value_function[current_state_index][current_action_index]
-                self.q_value_function[current_state_index][current_action_index] += self.step_size * delta
-        
-                q_values = self.q_value_function[current_state_index]
-                soft_greedy_distibution = self.create_distribution_epsilon_greedily(
-                    q_values)
-                self.policy.policy_table[current_state_index] = soft_greedy_distibution
-
-                if done:
-                    break
-
-                current_state_index = next_state_index
-                current_action_index = next_action_index
-
-    def get_optimal_policy(self):
-        return self.policy
-
 class ExpectedSARSA:
     def __init__(self, q_value_function, table_policy, epsilon, env, statistics, episodes, step_size=0.1, discount=1.0):
         self.env = env
         self.episodes = episodes
-        self.policy = table_policy
-        self.critic = Critic(q_value_function,discount)
-        self.actor = Actor(q_value_function, table_policy, epsilon,env, statistics, episodes, step_size, discount)
+        self.statistics=statistics
+        self.critic = Critic(q_value_function,step_size,discount)
+        self.actor  = Actor(table_policy,self.critic,epsilon)
 
     def improve(self):
         for episode in tqdm(range(0, self.episodes)):
             # S
             current_state_index = self.env.reset()
             # A
-            current_action_index = self.policy.get_action(current_state_index)
+            current_action_index = self.actor.get_current_policy().get_action(current_state_index)
 
             while True:
                 observation = self.env.step(current_action_index)
@@ -172,14 +113,16 @@ class ExpectedSARSA:
                 self.statistics.episode_lengths[episode] += 1
 
                 # A'
-                next_action_index = self.policy.get_action(next_state_index)
+                next_action_index = self.actor.get_current_policy().get_action(next_state_index)
 
-                target = 0
-                next_actions = self.policy.policy_table[next_state_index]
+                expected_q_value = 0
+                next_actions = self.actor.get_current_policy().policy_table[next_state_index]
                 for action, action_prob in next_actions.items():
-                    target += action_prob * self.q_value_function[next_state_index][action]
+                    expected_q_value += action_prob * self.get_value_function()[next_state_index][action]
 
-                self.critic.evaluate(current_state_index,current_action_index,reward,target)
+                target = expected_q_value+reward
+
+                self.critic.evaluate(current_state_index,current_action_index,target)
                 self.actor.improve(current_state_index)
 
                 if done:
