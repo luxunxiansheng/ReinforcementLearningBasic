@@ -44,11 +44,9 @@ from lib.utility import create_distribution_greedily
 
 class Critic(CriticBase):
     """
-    In the context of dynamic programming, the tabular model of the environment will be available. 
-    It is possible to calculate the state or q value function for a given policy with Bellman equation 
-    iteratively. 
+    Given a policy, calculate the value of state with Jacobi-like itration method. The calculated value of state may not be 
+    very accurate, but it doesn't mattter since our goal is to find the optimal policy after all. 
     """
-    
     def __init__(self,policy,value_function,transition_table,delta,discount):
         self.policy = policy
         self.value_function = value_function
@@ -94,9 +92,9 @@ class Actor(ActorBase):
     It is trival for the actor to improve the policy by sweeping the state space. 
     
     """
-    def __init__(self,policy,value_function,transition_table,delta,discount):
+    def __init__(self,policy,critic,transition_table,delta,discount):
         self.policy = policy
-        self.value_function = value_function
+        self.critic = critic
         self.model   = transition_table
         self.delta = delta
         self.discount = discount
@@ -114,7 +112,7 @@ class Actor(ActorBase):
             q_values={}
             for action_index, _ in action_distribution.items():
                 transition = self.model[state_index][action_index]
-                q_values[action_index] = self._get_value_of_action(transition,self.value_function)
+                q_values[action_index] = self._get_value_of_action(transition,self.critic.get_value_function())
             greedy_distibution = create_distribution_greedily()(q_values)
             self.policy.policy_table[state_index] = greedy_distibution
             new_old_policy_diff = {action_index: abs(old_policy[action_index]-greedy_distibution[action_index]) for action_index in greedy_distibution}
@@ -135,8 +133,9 @@ class Actor(ActorBase):
 
 class PolicyIteration:
     """
-    Once a ploicy has been improved to get a new sequence of value of states, we can
-    then compute the value of the states to improve the pollicy, monotonically. 
+    1. Policy iteration is a policy-based method.
+    2. Because the previous values will be discarded once policy is improved, pollicy itration is
+        on-policy 
     """
 
     def __init__(self, v_table, policy, transition_table, delta=1e-5, discount=1.0):
@@ -146,7 +145,7 @@ class PolicyIteration:
         self.delta = delta
         self.discount = discount
         self.critic = Critic(policy,v_table,transition_table,delta,discount)
-        self.actor  = Actor(policy,v_table,transition_table,delta,discount) 
+        self.actor  = Actor(policy,self.critic,transition_table,delta,discount) 
         
     
     def improve(self):

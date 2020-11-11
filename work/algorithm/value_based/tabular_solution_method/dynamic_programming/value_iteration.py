@@ -38,8 +38,6 @@ from policy.policy import DiscreteStateValueBasedPolicy
 from lib.utility import create_distribution_greedily
 
 
-
-
 class Critic(CriticBase):
     def __init__(self, value_function, policy,transition_table, delta=1e-8, discount=1.0):
         self.value_function = value_function
@@ -117,7 +115,9 @@ class ValueIteration:
     is when policy evaluation is stopped after just one sweep(one update of each state). This
     alrgorithm is so called Value Iteration. 
 
-    Refer to the equation 4.2 in Sutton's book 
+    In value iteration, there is no explict policy. What the process does is to get closer and 
+    closer to the optimal value. For a given MDP, the optimal values and optimal policy are 
+    considered to be there, objectively. Therefore, the value iteration is a value based method.  
     """
 
     def __init__(self, v_table, transition_table, policy, delta=1e-8, discount=1.0):
