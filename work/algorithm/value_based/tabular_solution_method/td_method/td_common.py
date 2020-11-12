@@ -6,28 +6,28 @@ from policy.policy import DiscreteStateValueBasedPolicy
 
 
 class Critic(CriticBase):
-    def __init__(self,value_function,step_size):
+    def __init__(self,value_function,step_size=0.1):
         self.value_function = value_function
         self.step_size = step_size
     
     def evaluate(self, *args):
         # V 
-        if len(args)==2:
+        if self._is_v_function(args):
             current_state_index = args[0]
             target = args[1]
             delta = target - self.value_function[current_state_index]
             self.value_function[current_state_index] += self.step_size * delta
         # Q 
         else:
-            assert len(args) == 3
             current_state_index = args[0]
             current_action_index = args[1]
             target = args[2]
 
             delta = target - self.value_function[current_state_index][current_action_index]
             self.value_function[current_state_index][current_action_index] += self.step_size * delta
-        
-        
+
+    def _is_v_function(self, args):
+        return len(args)==2
 
     def get_value_function(self):
         return self.value_function
@@ -86,7 +86,7 @@ class LambdaCritic(CriticBase):
 
 
 class ESoftActor(ActorBase):
-    def __init__(self, policy,critic,epsilon):
+    def __init__(self, policy,critic,epsilon=0.1):
         self.policy = policy
         self.critic = critic
         self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(epsilon)

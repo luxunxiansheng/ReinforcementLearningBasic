@@ -34,22 +34,20 @@
 # /
 
 from tqdm import tqdm
-from td_common import Critic
-from td_common import ESoftActor
-from td_common import BoltzmannActor
+
 
 class SARSA:
     """
     SARSA algorithm: On-policy TD control. Finds the optimal epsilon-greedy policy.
     """
 
-    def __init__(self, q_value_function, table_policy, epsilon, env, statistics, episodes, step_size= 0.1, discount=1.0):
+    def __init__(self, critic, actor, env, statistics, episodes,discount=1.0):
         self.env = env
         self.episodes = episodes
         self.statistics=statistics
         self.discount = discount
-        self.critic = Critic(q_value_function,step_size)
-        self.actor  = Actor(table_policy,self.critic,epsilon)
+        self.critic = critic
+        self.actor  = actor
 
     def improve(self):
         for episode in tqdm(range(0, self.episodes)):

@@ -4,6 +4,9 @@ sys.path.append("/home/ornot/workspace/ReinforcementLearningBasic/work")
 from lib.plotting import plot_episode_error, plot_episode_stats
 from tqdm import tqdm
 from test_setup import get_env
+from td_common import Critic
+from td_common import ESoftActor
+from td_common import BoltzmannActor
 from policy.policy import DiscreteStateValueBasedPolicy
 from lib.plotting import EpisodeStats
 from env.blackjack import BlackjackEnv
@@ -23,7 +26,7 @@ from algorithm.value_based.tabular_solution_method.td_method.double_q_learning i
 import numpy as np
 
 
-num_episodes = 200
+num_episodes = 1000
 n_steps = 1
 
 
@@ -130,19 +133,35 @@ def test_td_lambda_evalution_method_for_blackjack():
     plot_episode_error(error)
 
 
-test_td_lambda_evalution_method_for_blackjack()
+# test_td_lambda_evalution_method_for_blackjack()
 
 def test_sarsa_method(env):
     q_table = env.build_Q_table()
     b_policy_table = env.build_policy_table()
     b_policy = DiscreteStateValueBasedPolicy(b_policy_table)
 
+
     sarsa_statistics = EpisodeStats("sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
-    sarsa_method = SARSA(q_table, b_policy, 0.1, env,sarsa_statistics, num_episodes)
+    critic = Critic(q_table)
+    actor  = ESoftActor(b_policy,critic)
+    sarsa_method = SARSA(critic, actor, env,sarsa_statistics, num_episodes)
     sarsa_method.improve()
 
     return sarsa_statistics
 
+def test_b_sarsa_method(env):
+    q_table = env.build_Q_table()
+    b_policy_table = env.build_policy_table()
+    b_policy = DiscreteStateValueBasedPolicy(b_policy_table)
+
+
+    sarsa_statistics = EpisodeStats("b_sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
+    critic = Critic(q_table)
+    actor  = BoltzmannActor(b_policy,critic)
+    sarsa_method = SARSA(critic, actor, env,sarsa_statistics, num_episodes)
+    sarsa_method.improve()
+
+    return sarsa_statistics
 
 def test_expected_sarsa_method(env):
 
@@ -288,10 +307,10 @@ def test_dynaQ_method_priority(env):
 
 
 def test_td_control_method(env):
-    plot_episode_stats([test_sarsa_method(env), test_expected_sarsa_method(env), test_n_steps_sarsa_method(env), test_n_setps_expected_sarsa(env), test_sarsa_lambda_method(env), test_off_policy_n_steps_sarsa(env), test_qlearning_method(env), test_q_lambda_method(env), test_double_q_learning_method(env), test_dynaQ_method_trival(env), test_dynaQ_method_priority(env)])
+    # plot_episode_stats([test_sarsa_method(env), test_expected_sarsa_method(env), test_n_steps_sarsa_method(env), test_n_setps_expected_sarsa(env), test_sarsa_lambda_method(env), test_off_policy_n_steps_sarsa(env), test_qlearning_method(env), test_q_lambda_method(env), test_double_q_learning_method(env), test_dynaQ_method_trival(env), test_dynaQ_method_priority(env)])
     
 
-    #plot_episode_stats([test_q_lambda_method(env)])
+    plot_episode_stats([test_sarsa_method(env), test_b_sarsa_method(env)])
 
 
 

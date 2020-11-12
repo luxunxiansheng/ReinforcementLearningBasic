@@ -44,7 +44,7 @@ class ExpectedSARSA:
         self.statistics=statistics
         self.discount = discount
         self.critic = Critic(q_value_function,step_size)
-        self.actor  = Actor(table_policy,self.critic,epsilon)
+        self.actor  = ESoftActor(table_policy,self.critic,epsilon)
 
     def improve(self):
         for episode in tqdm(range(0, self.episodes)):
