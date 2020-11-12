@@ -51,7 +51,13 @@ This project is built With [Python](www.python.org) and several libraries:
 * [tqdm](http://github/tqdm/tqdm)
 
 
-## Background
+##  Background
+
+### 0. Optimal control and Reinfocement learning
+
+   When we talk about optimal control, it implictly means we have the knowledge on the enviroment (states,rewards and transitions) and then find the optimal policy. Because we are the miracle and we know how the world is runing, we don't have to bother to understand the world by data exploration and expoitation.
+
+   RL more focuses on understand the world by data. For model based, we'd like to mimic the model of the world by data and then find the optimal policy and for model free, we'd like to calulate the value of q(state, action) and then find the optimal policy or optimize the policy directly by policy gradient method.
 
 ### 1. The differences between RL and supervised learning, unsupervised learning
 

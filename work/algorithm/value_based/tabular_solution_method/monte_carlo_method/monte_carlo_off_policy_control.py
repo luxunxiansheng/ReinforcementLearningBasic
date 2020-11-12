@@ -94,8 +94,11 @@ class MonteCarloOffPolicyControl:
     As described in 5.7 section of Sutton' book 
     1) Weighted importance sampling.
     2) Incremental implementation
-    """
 
+    
+
+
+    """
     def __init__(self, q_value_function, behavior_policy, target_policy,env, episodes=500000, discount=1.0,epsilon=0.5):
         self.behavior_policy = behavior_policy
         self.env = env
@@ -114,6 +117,7 @@ class MonteCarloOffPolicyControl:
             for state_index, action_index, reward in trajectory[::-1]:
                 # The return for current state_action pair
                 G = reward + self.discount*G
+                
                 # The return for current state_action pair
                 self.critic.evaluate(state_index, action_index, G, W)
                 self.actor.improve(state_index)

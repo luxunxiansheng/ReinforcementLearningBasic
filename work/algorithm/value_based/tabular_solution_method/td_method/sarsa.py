@@ -37,7 +37,6 @@ from tqdm import tqdm
 from td_common import Critic
 from td_common import Actor
 
-
 class SARSA:
     """
     SARSA algorithm: On-policy TD control. Finds the optimal epsilon-greedy policy.
