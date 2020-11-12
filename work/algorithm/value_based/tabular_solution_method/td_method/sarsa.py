@@ -35,7 +35,8 @@
 
 from tqdm import tqdm
 from td_common import Critic
-from td_common import Actor
+from td_common import ESoftActor
+from td_common import BoltzmannActor
 
 class SARSA:
     """

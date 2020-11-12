@@ -34,22 +34,24 @@
 # /
 
 from tqdm import tqdm
-from common import CriticBase
+from td_common import Critic
+            
 
-class Critic(CriticBase):
-    def __init__(self, value_function, policy,env,episodes=1000, discount=1.0, step_size=0.01):
-        self.value_function = value_function
+class TD0Evalutaion:
+    def __init__(self, value_function, policy, env, episodes=1000, discount=1.0, step_size=0.01):
         self.policy = policy
         self.env = env
         self.episodes = episodes
         self.discount = discount
-        self.step_size = step_size
-
-
+        self.critic= Critic(value_function,step_size)
+        
+    
     def evaluate(self,*args):
         for _ in range(0, self.episodes):
             self._run_one_episode()
         
+        return self.critic.get_value_function()
+
     def _run_one_episode(self):
         """
         Tabular TD(0) for estimating V(pi)
@@ -59,26 +61,17 @@ class Critic(CriticBase):
         current_state_index = self.env.reset()
 
         while True:
-            action_index = self.policy.get_action(current_state_index)
-            observation = self.env.step(action_index)
+            current_action_index = self.policy.get_action(current_state_index)
+            observation = self.env.step(current_action_index)
 
             next_state_index = observation[0]
             reward = observation[1]
             done = observation[2]
-        
-            delta = reward + self.discount*self.value_function[next_state_index]-self.value_function[current_state_index]
-            self.value_function[current_state_index] += self.step_size*delta
+                    
+            target = reward + self.discount*self.critic.get_value_function()[next_state_index]
+            self.critic.evaluate(current_state_index,target)
+            
             if done:
                 break   
             current_state_index = next_state_index
-    
-    def get_value_function(self):
-        return self.value_function
-            
-class TD0Evalutaion:
-    def __init__(self, value_function, policy, env, episodes=1000, discount=1.0, step_size=0.01):
-        self.critic= Critic(value_function,policy,env,episodes,discount,step_size)
-    
-    def evaluate(self,*args):
-        self.critic.evaluate()
-        return self.critic.get_value_function()
+        

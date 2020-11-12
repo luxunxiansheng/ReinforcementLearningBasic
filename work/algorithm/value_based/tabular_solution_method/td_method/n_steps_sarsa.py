@@ -36,7 +36,7 @@
 import numpy as np
 from tqdm import tqdm
 from td_common import Critic
-from td_common import Actor
+from td_common import ESoftActor
 
 class NStepsSARSA:
     def __init__(self, q_table, table_policy, epsilon, env, steps, statistics, episodes, step_size=0.1, discount=1.0):
@@ -46,7 +46,7 @@ class NStepsSARSA:
         self.episodes = episodes
         self.discount = discount
         self.critic = Critic(q_table,step_size)
-        self.actor  = Actor(table_policy,self.critic,epsilon)
+        self.actor  = ESoftActor(table_policy,self.critic,epsilon)
 
     def improve(self):
         for episode in tqdm(range(0, self.episodes)):

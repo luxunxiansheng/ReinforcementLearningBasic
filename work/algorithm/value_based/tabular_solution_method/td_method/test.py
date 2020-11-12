@@ -58,7 +58,7 @@ def test_td0_evaluation_method_for_blackjack():
         error.append(error_square/rounds)
     plot_episode_error(error)
 
-
+# test_td0_evaluation_method_for_blackjack()
 
 def test_tdn_evaluation_method_for_blackjack():
     env = BlackjackEnv(False)
@@ -93,7 +93,7 @@ def test_tdn_evaluation_method_for_blackjack():
 
     plot_episode_error(error)
 
-
+test_tdn_evaluation_method_for_blackjack()
 
 def test_td_lambda_evalution_method_for_blackjack():
 
@@ -128,10 +128,6 @@ def test_td_lambda_evalution_method_for_blackjack():
         error.append(error_square/rounds)
 
     plot_episode_error(error)
-
-
-
-
 
 def test_sarsa_method(env):
     q_table = env.build_Q_table()
@@ -295,8 +291,8 @@ def test_td_control_method(env):
     #plot_episode_stats([test_q_lambda_method(env)])
 
 
-#test_td0_evaluation_method_for_blackjack()
-#test_tdn_evaluation_method_for_blackjack()
+
+
 #test_td_lambda_evalution_method_for_blackjack()
 
 real_env = get_env("cliffwalking")

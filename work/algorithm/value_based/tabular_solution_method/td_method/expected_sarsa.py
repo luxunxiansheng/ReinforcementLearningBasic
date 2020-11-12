@@ -35,7 +35,7 @@
 
 from tqdm import tqdm
 from td_common import Critic
-from td_common import Actor
+from td_common import ESoftActor
 
 class ExpectedSARSA:
     def __init__(self, q_value_function, table_policy, epsilon, env, statistics, episodes, step_size=0.1, discount=1.0):

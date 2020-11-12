@@ -35,7 +35,7 @@
 
 from tqdm import tqdm
 from td_common import LambdaCritic
-from td_common import Actor
+from td_common import ESoftActor
 
 class SARSALambda:
     """
@@ -51,7 +51,7 @@ class SARSALambda:
         self.statistics = statistics
 
         self.critic = LambdaCritic(q_table,step_size,discount,lamb)
-        self.actor  = Actor(table_policy,self.critic,epsilon)
+        self.actor  = SoftActor(table_policy,self.critic,epsilon)
 
 
     def improve(self):

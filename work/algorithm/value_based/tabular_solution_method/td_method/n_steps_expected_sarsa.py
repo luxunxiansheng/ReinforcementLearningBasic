@@ -36,7 +36,7 @@
 import numpy as np 
 from tqdm import tqdm
 from td_common import Critic
-from td_common import Actor
+from td_common import ESoftActor
 
 
 class NStepsExpectedSARSA:
