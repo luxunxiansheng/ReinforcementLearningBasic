@@ -36,33 +36,26 @@
 import numpy as np
 from numpy.core.numeric import cross
 from tqdm import tqdm
-from common import CriticBase
-
-from copy import deepcopy
+from td_common import LambdaCritic
 
 
-class Critic(CriticBase):
+
+class TDLambdaEvalutaion:
     def __init__(self,  v_table, policy,env,episodes=1000, n_steps=3,discount=1.0, step_size=0.01,lamb=0):
-        self.value_function = v_table
         self.policy = policy
         self.env = env
         self.episodes = episodes
         self.discount = discount
         self.steps = n_steps
-        self.step_size = step_size
-        self.lamb= lamb
-        self.eligibility=self._build_eligibility_from_value_function(v_table)
     
-    def _build_eligibility_from_value_function(self,v_table):
-        return deepcopy(v_table)
+        self.critic = LambdaCritic(v_table,step_size,discount,lamb)
 
+    
     def evaluate(self,*args):
         for _ in range(self.episodes):
             self._run_one_episode()
-    
-    def get_value_function(self):
-        return self.value_function
         
+        return self.critic.get_value_function()
     def _run_one_episode(self):
         """
         Tabular TD(lambda) for estimating V(pi) 
@@ -76,24 +69,11 @@ class Critic(CriticBase):
             reward = observation[1]
             done = observation[2]
             
-            delta = reward + self.discount*self.value_function[next_state_index]-self.value_function[current_state_index]
-            self.eligibility[current_state_index] += 1.0
-
-            for state_index in self.value_function:
-                self.value_function[state_index] = self.value_function[state_index] + self.step_size * delta * self.eligibility[state_index]
-                self.eligibility[state_index] = self.lamb * self.discount * self.eligibility[state_index]
+            target = reward + self.discount*self.critic.get_value_function()[next_state_index]
+            self.critic.evaluate(current_state_index,target)
 
             if done:
                 break               
 
             current_state_index = next_state_index
-
-
-class TDLambdaEvalutaion:
-    def __init__(self,v_table, policy, env, episodes=1000, n_steps=1 ,discount=1.0, step_size=0.01,lamb =0):
-        self.critic= Critic(v_table,policy,env,episodes,n_steps,discount,step_size,lamb)
-    
-    def evaluate(self):
-        self.critic.evaluate()
-        return self.critic.get_value_function()
 

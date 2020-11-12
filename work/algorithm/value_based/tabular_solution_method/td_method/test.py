@@ -93,7 +93,7 @@ def test_tdn_evaluation_method_for_blackjack():
 
     plot_episode_error(error)
 
-test_tdn_evaluation_method_for_blackjack()
+# test_tdn_evaluation_method_for_blackjack()
 
 def test_td_lambda_evalution_method_for_blackjack():
 
@@ -128,6 +128,9 @@ def test_td_lambda_evalution_method_for_blackjack():
         error.append(error_square/rounds)
 
     plot_episode_error(error)
+
+
+test_td_lambda_evalution_method_for_blackjack()
 
 def test_sarsa_method(env):
     q_table = env.build_Q_table()
@@ -293,7 +296,6 @@ def test_td_control_method(env):
 
 
 
-#test_td_lambda_evalution_method_for_blackjack()
 
 real_env = get_env("cliffwalking")
 test_td_control_method(real_env)

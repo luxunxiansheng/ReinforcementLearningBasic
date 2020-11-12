@@ -1,4 +1,5 @@
 from copy import deepcopy
+from numpy import array
 from common import ActorBase,CriticBase
 from lib.utility import (create_distribution_epsilon_greedily,create_distribution_greedily,create_distribution_boltzmann)
 from policy.policy import DiscreteStateValueBasedPolicy
@@ -10,15 +11,15 @@ class Critic(CriticBase):
         self.step_size = step_size
     
     def evaluate(self, *args):
+        # V 
         if len(args)==2:
             current_state_index = args[0]
             target = args[1]
             delta = target - self.value_function[current_state_index]
             self.value_function[current_state_index] += self.step_size * delta
-
+        # Q 
         else:
             assert len(args) == 3
-            
             current_state_index = args[0]
             current_action_index = args[1]
             target = args[2]
@@ -33,34 +34,55 @@ class Critic(CriticBase):
 
 
 class LambdaCritic(CriticBase):
-    def __init__(self,q_value_function,step_size,discount,lamb):
-        self.q_value_function = q_value_function
+    def __init__(self,value_function,step_size,discount,lamb):
+        self.value_function = value_function
         self.step_size = step_size
         self.discount = discount
         self.lamb =lamb
 
-        self.eligibility = deepcopy(q_value_function)
-        for state_index in q_value_function:
-            for action_index in q_value_function[state_index]:
-                self.eligibility[state_index][action_index] = 0.0
+        self.eligibility = deepcopy(value_function)
+
+        if self._is_q_function(value_function):
+            for state_index in value_function:
+                for action_index in value_function[state_index]:
+                    self.eligibility[state_index][action_index] = 0.0
+        else:
+            for state_index in value_function:
+                self.eligibility[state_index] = 0.0
+
+    def _is_q_function(self, value_function):
+        return len(array(value_function).shape)==3
         
 
     def evaluate(self, *args):
-        current_state_index = args[0]
-        current_action_index = args[1]
-        target = args[2]
-    
-        delta = target - self.q_value_function[current_state_index][current_action_index]
-        self.eligibility[current_state_index][current_action_index] += 1.0
-            
-        # backforward view proprogate 
-        for state_index in self.q_value_function:
-            for action_index in self.q_value_function[state_index]:
-                self.q_value_function[state_index][action_index] = self.q_value_function[state_index][action_index]+self.step_size*delta* self.eligibility[state_index][action_index]
-                self.eligibility[state_index][action_index] = self.eligibility[state_index][action_index]*self.discount* self.lamb
+        
+        if self._is_q_function(self.eligibility):
+            current_state_index = args[0]
+            current_action_index = args[1]
+            target = args[2]
+        
+            delta = target - self.value_function[current_state_index][current_action_index]
+            self.eligibility[current_state_index][current_action_index] += 1.0
+                
+            # backforward view proprogate 
+            for state_index in self.value_function:
+                for action_index in self.value_function[state_index]:
+                    self.value_function[state_index][action_index] = self.value_function[state_index][action_index]+self.step_size*delta* self.eligibility[state_index][action_index]
+                    self.eligibility[state_index][action_index] = self.eligibility[state_index][action_index]*self.discount* self.lamb
+        else:
+            current_state_index = args[0]
+            target = args[1]
+        
+            delta = target - self.value_function[current_state_index]
+            self.eligibility[current_state_index]+= 1.0
+                
+            # backforward view proprogate 
+            for state_index in self.value_function:
+                self.value_function[state_index] = self.value_function[state_index]+self.step_size*delta* self.eligibility[state_index]
+                self.eligibility[state_index]= self.eligibility[state_index]*self.discount* self.lamb
 
     def get_value_function(self):
-        return self.q_value_function
+        return self.value_function
 
 
 class ESoftActor(ActorBase):

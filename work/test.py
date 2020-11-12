@@ -1,15 +1,10 @@
-import math
+from numpy import array
 
-def fn(dict_values):
-    probs = {}
-    z = sum([math.exp(x) for x in dict_values.values()])
-    for index, _ in dict_values.items():
-        probs[index] = math.exp(dict_values[index])/z 
-    return probs
+b= [1,2,3]
+c = [[2,2],[2,2]]
 
-dv = {'a':0,'b':1}
-
-print(fn(dv))
+print(len(array(b).shape)) 
+print(len(array(c).shape))
 
 
 
