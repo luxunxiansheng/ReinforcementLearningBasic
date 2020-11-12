@@ -26,7 +26,7 @@ from algorithm.value_based.tabular_solution_method.td_method.double_q_learning i
 import numpy as np
 
 
-num_episodes = 1000
+num_episodes = 500
 n_steps = 1
 
 
@@ -171,8 +171,10 @@ def test_expected_sarsa_method(env):
 
     expectedsarsa_statistics = EpisodeStats("Expected_Sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
 
-    expectedsarsa_method = ExpectedSARSA(
-        q_table, b_policy, 0.1, env, expectedsarsa_statistics, num_episodes)
+    critic = Critic(q_table)
+    actor  = BoltzmannActor(b_policy,critic)
+
+    expectedsarsa_method = ExpectedSARSA(critic,actor, env, expectedsarsa_statistics, num_episodes)
     expectedsarsa_method.improve()
 
     return expectedsarsa_statistics
@@ -310,10 +312,7 @@ def test_td_control_method(env):
     # plot_episode_stats([test_sarsa_method(env), test_expected_sarsa_method(env), test_n_steps_sarsa_method(env), test_n_setps_expected_sarsa(env), test_sarsa_lambda_method(env), test_off_policy_n_steps_sarsa(env), test_qlearning_method(env), test_q_lambda_method(env), test_double_q_learning_method(env), test_dynaQ_method_trival(env), test_dynaQ_method_priority(env)])
     
 
-    plot_episode_stats([test_sarsa_method(env), test_b_sarsa_method(env)])
-
-
-
+    plot_episode_stats([test_sarsa_method(env), test_b_sarsa_method(env),test_expected_sarsa_method(env)])
 
 
 real_env = get_env("cliffwalking")
