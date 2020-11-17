@@ -98,7 +98,7 @@ def test_tdn_evaluation_method_for_blackjack():
 
 test_tdn_evaluation_method_for_blackjack()
 
-""" def test_td_lambda_evalution_method_for_blackjack():
+def test_td_lambda_evalution_method_for_blackjack():
 
     env = BlackjackEnv(False)
 
@@ -133,8 +133,9 @@ test_tdn_evaluation_method_for_blackjack()
     plot_episode_error(error)
 
 
-# test_td_lambda_evalution_method_for_blackjack()
+test_td_lambda_evalution_method_for_blackjack()
 
+"""
 def test_sarsa_method(env):
     q_table = env.build_Q_table()
     b_policy_table = env.build_policy_table()
