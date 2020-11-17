@@ -35,6 +35,23 @@
 
 from tqdm import tqdm
 
+from td_common import TDCritic
+
+
+class SARSACritic(TDCritic):
+    def __init__(self,value_function,step_size=0.1):
+        super().__init__(value_function,step_size)
+
+    def evaluate(self,*args):
+        current_state_index = args[0]
+        current_action_index =args[1]
+        reward = args[2]
+        next_state_index = args[3]
+        next_action_index = args[4]
+
+        # To calculate the target, it is necessary to know what is the next action for the next state according to current policy (On Policy)
+        target = reward + self.discount * self.critic.get_value_function()[next_state_index][next_action_index]
+        self.update(current_state_index,current_action_index,target)
 
 class SARSA:
     """
@@ -73,9 +90,8 @@ class SARSA:
                 # A'
                 next_action_index = self.actor.get_current_policy().get_action(next_state_index)
 
-                target = reward + self.discount * self.critic.get_value_function()[next_state_index][next_action_index]
+                self.crtiic.evaluate(current_state_index,current_action_index,reward,next_state_index,next_action_index)
 
-                self.critic.evaluate(current_state_index,current_action_index,target)
                 self.actor.improve(current_state_index)
 
                 if done:

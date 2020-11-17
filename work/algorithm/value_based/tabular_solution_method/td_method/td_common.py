@@ -5,12 +5,12 @@ from lib.utility import (create_distribution_epsilon_greedily,create_distributio
 from policy.policy import DiscreteStateValueBasedPolicy
 
 
-class Critic(CriticBase):
-    def __init__(self,value_function,step_size=0.1):
+class TDCritic(CriticBase):
+    def __init__(self,value_function,step_size):
         self.value_function = value_function
         self.step_size = step_size
     
-    def evaluate(self, *args):
+    def update(self, *args):
         # V 
         if self._is_v_function(args):
             current_state_index = args[0]
@@ -54,7 +54,7 @@ class LambdaCritic(CriticBase):
         return len(array(value_function).shape)==3
         
 
-    def evaluate(self, *args):
+    def update(self, *args):
         
         if self._is_q_function(self.eligibility):
             current_state_index = args[0]

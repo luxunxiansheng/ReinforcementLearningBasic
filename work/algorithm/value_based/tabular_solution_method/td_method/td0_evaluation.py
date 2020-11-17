@@ -34,16 +34,29 @@
 # /
 
 from tqdm import tqdm
-from td_common import Critic
+from td_common import TDCritic
             
+class TD0Critic(TDCritic):
+    def __init__(self,value_function,step_size,discount):
+        super().__init__(value_function,step_size)
+        self.discount = discount
+    
+    def evaluate(self,*args):
+        current_state_index = args[0]
+        reward = args[1]
+        next_state_index = args[2]
+
+        target = reward + self.discount*self.get_value_function()[next_state_index]
+        self.update(current_state_index,target)
+        
 
 class TD0Evalutaion:
     def __init__(self, value_function, policy, env, episodes=1000, discount=1.0, step_size=0.01):
         self.policy = policy
         self.env = env
         self.episodes = episodes
-        self.discount = discount
-        self.critic= Critic(value_function,step_size)
+        
+        self.critic= TD0Critic(value_function,step_size,discount)
         
     
     def evaluate(self,*args):
@@ -67,9 +80,9 @@ class TD0Evalutaion:
             next_state_index = observation[0]
             reward = observation[1]
             done = observation[2]
-                    
-            target = reward + self.discount*self.critic.get_value_function()[next_state_index]
-            self.critic.evaluate(current_state_index,target)
+            
+            
+            self.critic.evaluate(current_state_index,reward,next_state_index)
             
             if done:
                 break   

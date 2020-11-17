@@ -35,7 +35,7 @@
 
 import numpy as np 
 from tqdm import tqdm
-from td_common import Critic
+from td_common import TDCritic
 from td_common import ESoftActor
 
 
