@@ -34,6 +34,30 @@
 # /
 
 from tqdm import tqdm
+from td_common import TDCritic
+
+class ExpectedSARSACritic(TDCritic):
+    def __init__(self,policy,value_table,step_size=0.01):
+        super().__init__(value_table,step_size)
+        self.policy = policy
+
+        
+    def evaluate(self,*args):
+        current_state_index  = args[0]
+        current_action_index = args[1]
+        reward = args[2]
+        next_state_index =  args[3]
+    
+            
+        expected_q_value = 0
+        next_actions = self.policy.policy_table[next_state_index]
+        for action, action_prob in next_actions.items():
+            expected_q_value += action_prob * self.get_value_function()[next_state_index][action]
+
+        target = expected_q_value+reward
+
+        self.update(current_state_index,current_action_index,target)
+
 
 class ExpectedSARSA:
     def __init__(self, critic, actor, env, statistics, episodes,discount=1.0):
@@ -67,14 +91,7 @@ class ExpectedSARSA:
                 # A'
                 next_action_index = self.actor.get_current_policy().get_action(next_state_index)
 
-                expected_q_value = 0
-                next_actions = self.actor.get_current_policy().policy_table[next_state_index]
-                for action, action_prob in next_actions.items():
-                    expected_q_value += action_prob * self.critic.get_value_function()[next_state_index][action]
-
-                target = expected_q_value+reward
-
-                self.critic.evaluate(current_state_index,current_action_index,target)
+                self.critic.evaluate(current_state_index,current_action_index,reward,next_state_index)
                 self.actor.improve(current_state_index)
 
                 if done:

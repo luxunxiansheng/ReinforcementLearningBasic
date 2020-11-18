@@ -7,6 +7,7 @@ from test_setup import get_env
 from td_common import ESoftActor
 from td_common import BoltzmannActor
 from sarsa import SARSACritic
+from expected_sarsa import ExpectedSARSACritic
 from policy.policy import DiscreteStateValueBasedPolicy
 from lib.plotting import EpisodeStats
 from env.blackjack import BlackjackEnv
@@ -61,7 +62,7 @@ def test_td0_evaluation_method_for_blackjack():
         error.append(error_square/rounds)
     plot_episode_error(error)
 
-test_td0_evaluation_method_for_blackjack()
+# test_td0_evaluation_method_for_blackjack()
 
 def test_tdn_evaluation_method_for_blackjack():
     env = BlackjackEnv(False)
@@ -96,7 +97,7 @@ def test_tdn_evaluation_method_for_blackjack():
 
     plot_episode_error(error)
 
-test_tdn_evaluation_method_for_blackjack()
+# test_tdn_evaluation_method_for_blackjack()
 
 def test_td_lambda_evalution_method_for_blackjack():
 
@@ -133,9 +134,9 @@ def test_td_lambda_evalution_method_for_blackjack():
     plot_episode_error(error)
 
 
-test_td_lambda_evalution_method_for_blackjack()
+# test_td_lambda_evalution_method_for_blackjack()
 
-"""
+
 def test_sarsa_method(env):
     q_table = env.build_Q_table()
     b_policy_table = env.build_policy_table()
@@ -157,12 +158,13 @@ def test_b_sarsa_method(env):
 
 
     sarsa_statistics = EpisodeStats("b_sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
-    critic = Critic(q_table)
+    critic = SARSACritic(q_table)
     actor  = BoltzmannActor(b_policy,critic)
     sarsa_method = SARSA(critic, actor, env,sarsa_statistics, num_episodes)
     sarsa_method.improve()
 
     return sarsa_statistics
+
 
 def test_expected_sarsa_method(env):
 
@@ -170,9 +172,9 @@ def test_expected_sarsa_method(env):
     b_policy_table = env.build_policy_table()
     b_policy = DiscreteStateValueBasedPolicy(b_policy_table)
 
-    expectedsarsa_statistics = EpisodeStats("Expected_Sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
+    expectedsarsa_statistics = EpisodeStats("b_Expected_Sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
 
-    critic = Critic(q_table)
+    critic = ExpectedSARSACritic(b_policy,q_table)
     actor  = BoltzmannActor(b_policy,critic)
 
     expectedsarsa_method = ExpectedSARSA(critic,actor, env, expectedsarsa_statistics, num_episodes)
@@ -180,6 +182,8 @@ def test_expected_sarsa_method(env):
 
     return expectedsarsa_statistics
 
+
+"""
 
 def test_n_steps_sarsa_method(env):
     q_table = env.build_Q_table()
@@ -308,6 +312,7 @@ def test_dynaQ_method_priority(env):
 
     return dyna_q_statistics
 
+"""
 
 def test_td_control_method(env):
     # plot_episode_stats([test_sarsa_method(env), test_expected_sarsa_method(env), test_n_steps_sarsa_method(env), test_n_setps_expected_sarsa(env), test_sarsa_lambda_method(env), test_off_policy_n_steps_sarsa(env), test_qlearning_method(env), test_q_lambda_method(env), test_double_q_learning_method(env), test_dynaQ_method_trival(env), test_dynaQ_method_priority(env)])
@@ -318,4 +323,3 @@ def test_td_control_method(env):
 
 real_env = get_env("cliffwalking")
 test_td_control_method(real_env)
- """
