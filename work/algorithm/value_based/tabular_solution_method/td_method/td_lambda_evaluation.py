@@ -80,8 +80,7 @@ class TDLambdaEvalutaion:
             next_state_index = observation[0]
             reward = observation[1]
             done = observation[2]
-            
-            
+
             self.critic.evaluate(current_state_index,reward,next_state_index)
 
             if done:

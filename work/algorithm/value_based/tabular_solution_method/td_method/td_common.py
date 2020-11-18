@@ -1,8 +1,10 @@
 from copy import deepcopy
+import numpy as np 
 from numpy import array
 from common import ActorBase,CriticBase
 from lib.utility import (create_distribution_epsilon_greedily,create_distribution_greedily,create_distribution_boltzmann)
 from policy.policy import DiscreteStateValueBasedPolicy
+
 
 
 class TDCritic(CriticBase):
@@ -31,6 +33,7 @@ class TDCritic(CriticBase):
 
     def get_value_function(self):
         return self.value_function
+
 
 
 class LambdaCritic(CriticBase):

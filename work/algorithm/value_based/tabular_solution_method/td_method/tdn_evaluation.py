@@ -38,10 +38,12 @@ from numpy.core.numeric import cross
 from tqdm import tqdm
 from td_common import TDCritic
 
+
 class TDNCritic(TDCritic):
     def __init__(self,value_function,steps,step_size,discount):
-        super().__init__(value_function,step_size)
+        self.value_function=value_function
         self.steps = steps
+        self.step_size =step_size
         self.discount = discount
     
     def evaluate(self,*args):
@@ -50,13 +52,22 @@ class TDNCritic(TDCritic):
         updated_timestamp = args[2]
         final_timestamp   = args[3]
         
-        G = 0
-        for i in range(updated_timestamp , min(updated_timestamp + self.steps , final_timestamp)):
-            G += np.power(self.discount, i - updated_timestamp ) * trajectory[i][1]
-            if updated_timestamp + self.steps < final_timestamp:
-                G += np.power(self.discount, self.steps) * self.get_value_function()[trajectory[current_timestamp][0]]
+        # V function
+        if len(trajectory[0])==2:
+            G = 0
+            for i in range(updated_timestamp , min(updated_timestamp + self.steps , final_timestamp)):
+                G += np.power(self.discount, i - updated_timestamp ) * trajectory[i][1]
+                if updated_timestamp + self.steps < final_timestamp:
+                    G += np.power(self.discount, self.steps) * self.get_value_function()[trajectory[current_timestamp][0]]
 
-        self.update(trajectory[updated_timestamp][0],G)
+            self.update(trajectory[updated_timestamp][0],G)
+        else:
+            G = 0
+            for i in range(updated_timestamp, min(updated_timestamp + self.steps, final_timestamp)):
+                G += np.power(self.discount, i - updated_timestamp) * trajectory[i][2]
+            if updated_timestamp + self.steps < final_timestamp:
+                G += np.power(self.discount, self.steps) *  self.get_value_function()[trajectory[current_timestamp][0]][trajectory[current_timestamp][1]]
+            self.update(trajectory[updated_timestamp][0],trajectory[updated_timestamp][1],G)
 
 class TDNEvalutaion:
     def __init__(self,  v_table, policy, env,  n_steps=1, episodes=1000, discount=1.0, step_size=0.01):

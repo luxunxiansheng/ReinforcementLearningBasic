@@ -13,7 +13,6 @@ from lib.plotting import EpisodeStats
 from env.blackjack import BlackjackEnv
 from algorithm.value_based.tabular_solution_method.td_method.tdn_evaluation import TDNEvalutaion
 from algorithm.value_based.tabular_solution_method.td_method.td_lambda_evaluation import TDLambdaEvalutaion
-from algorithm.value_based.tabular_solution_method.td_method.td0_evaluation import TD0Evalutaion
 from algorithm.value_based.tabular_solution_method.td_method.sarsa_lambda import SARSALambda
 from algorithm.value_based.tabular_solution_method.td_method.sarsa import SARSA
 from algorithm.value_based.tabular_solution_method.td_method.q_learning import QLearning
@@ -28,7 +27,7 @@ import numpy as np
 
 
 num_episodes = 500
-n_steps = 1
+n_steps = 3
 
 
 def test_td0_evaluation_method_for_blackjack():
@@ -54,7 +53,7 @@ def test_td0_evaluation_method_for_blackjack():
         error_square = 0.0
         rounds = 1
         for _ in range(rounds):
-            rl_method = TD0Evalutaion(v_table, t_policy, env, episodes)
+            rl_method = TDNEvalutaion(v_table, t_policy, env, 1,num_episodes)
             current_value = rl_method.evaluate()
             error_square = error_square + \
                 (current_value[init_state] + 0.27726) * \
@@ -62,7 +61,7 @@ def test_td0_evaluation_method_for_blackjack():
         error.append(error_square/rounds)
     plot_episode_error(error)
 
-# test_td0_evaluation_method_for_blackjack()
+test_td0_evaluation_method_for_blackjack()
 
 def test_tdn_evaluation_method_for_blackjack():
     env = BlackjackEnv(False)
@@ -87,7 +86,7 @@ def test_tdn_evaluation_method_for_blackjack():
         error_square = 0.0
         rounds = 1
         for _ in range(rounds):
-            rl_method = TDNEvalutaion(v_table, t_policy, env, n_steps, episode)
+            rl_method = TDNEvalutaion(v_table, t_policy, env, n_steps, num_episodes)
             current_value = rl_method.evaluate()
             error_square = error_square + \
                 (current_value[init_state] + 0.27726) * \
@@ -97,7 +96,7 @@ def test_tdn_evaluation_method_for_blackjack():
 
     plot_episode_error(error)
 
-# test_tdn_evaluation_method_for_blackjack()
+test_tdn_evaluation_method_for_blackjack()
 
 def test_td_lambda_evalution_method_for_blackjack():
 
