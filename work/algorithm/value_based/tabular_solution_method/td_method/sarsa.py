@@ -37,9 +37,11 @@ from tqdm import tqdm
 
 from td_common import TDCritic
 
-
+"""
+It is certainly ok to implement SRASA with N_Step_SARSA as long as to set the Setps to 1.  We keep sarsa just for tutorial 
+"""
 class SARSACritic(TDCritic):
-    def __init__(self,value_function,step_size=0.01,discount=1.0):
+    def __init__(self,value_function,step_size=0.1,discount=1.0):
         super().__init__(value_function,step_size)
         self.discount = discount 
 

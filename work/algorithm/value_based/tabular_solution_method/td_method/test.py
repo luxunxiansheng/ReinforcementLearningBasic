@@ -61,7 +61,7 @@ def test_td0_evaluation_method_for_blackjack():
         error.append(error_square/rounds)
     plot_episode_error(error)
 
-test_td0_evaluation_method_for_blackjack()
+# test_td0_evaluation_method_for_blackjack()
 
 def test_tdn_evaluation_method_for_blackjack():
     env = BlackjackEnv(False)
@@ -96,7 +96,7 @@ def test_tdn_evaluation_method_for_blackjack():
 
     plot_episode_error(error)
 
-test_tdn_evaluation_method_for_blackjack()
+# test_tdn_evaluation_method_for_blackjack()
 
 def test_td_lambda_evalution_method_for_blackjack():
 
@@ -181,18 +181,16 @@ def test_expected_sarsa_method(env):
 
     return expectedsarsa_statistics
 
-
-"""
-
 def test_n_steps_sarsa_method(env):
     q_table = env.build_Q_table()
     b_policy_table = env.build_policy_table()
     b_policy = DiscreteStateValueBasedPolicy(b_policy_table)
     n_sarsa_statistics = EpisodeStats("N_Steps_Sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
-    n_sarsa_method = NStepsSARSA(q_table, b_policy, 0.1, env,  n_steps, n_sarsa_statistics, num_episodes)
+    n_sarsa_method = NStepsSARSA(q_table, b_policy, 0.1, env,  1, n_sarsa_statistics, num_episodes)
     n_sarsa_method.improve()
     return n_sarsa_statistics
 
+"""
 
 def test_sarsa_lambda_method(env):
     q_table = env.build_Q_table()
@@ -315,9 +313,7 @@ def test_dynaQ_method_priority(env):
 
 def test_td_control_method(env):
     # plot_episode_stats([test_sarsa_method(env), test_expected_sarsa_method(env), test_n_steps_sarsa_method(env), test_n_setps_expected_sarsa(env), test_sarsa_lambda_method(env), test_off_policy_n_steps_sarsa(env), test_qlearning_method(env), test_q_lambda_method(env), test_double_q_learning_method(env), test_dynaQ_method_trival(env), test_dynaQ_method_priority(env)])
-    
-
-    plot_episode_stats([test_sarsa_method(env), test_b_sarsa_method(env),test_expected_sarsa_method(env)])
+    plot_episode_stats([test_sarsa_method(env), test_n_steps_sarsa_method(env)])
 
 
 real_env = get_env("cliffwalking")

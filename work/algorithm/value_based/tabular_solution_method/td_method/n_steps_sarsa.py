@@ -35,7 +35,7 @@
 
 import numpy as np
 from tqdm import tqdm
-from td_common import TDCritic
+from td_common import TDNCritic
 from td_common import ESoftActor
 
 class NStepsSARSA:
@@ -45,7 +45,7 @@ class NStepsSARSA:
         self.statistics = statistics
         self.episodes = episodes
         self.discount = discount
-        self.critic = Critic(q_table,step_size)
+        self.critic = TDNCritic(q_table,steps,step_size,discount)
         self.actor  = ESoftActor(table_policy,self.critic,epsilon)
 
     def improve(self):
@@ -87,13 +87,7 @@ class NStepsSARSA:
             updated_timestamp = current_timestamp - self.steps
 
             if updated_timestamp >= 0:
-                G = 0
-                for i in range(updated_timestamp, min(updated_timestamp + self.steps, final_timestamp)):
-                    G += np.power(self.discount, i - updated_timestamp) * trajectory[i][2]
-                if updated_timestamp + self.steps < final_timestamp:
-                    G += np.power(self.discount, self.steps) *  self.critic.get_value_function()[trajectory[current_timestamp][0]][trajectory[current_timestamp][1]]
-
-                self.critic.evaluate(trajectory[updated_timestamp][0],trajectory[updated_timestamp][1],G)
+                self.critic.evaluate(trajectory,current_timestamp,updated_timestamp,final_timestamp)
 
                 self.actor.improve(trajectory[updated_timestamp][0])
 
@@ -108,5 +102,3 @@ class NStepsSARSA:
     def get_optimal_policy(self):
         return self.policy
 
-
-    

@@ -5,8 +5,6 @@ from common import ActorBase,CriticBase
 from lib.utility import (create_distribution_epsilon_greedily,create_distribution_greedily,create_distribution_boltzmann)
 from policy.policy import DiscreteStateValueBasedPolicy
 
-
-
 class TDCritic(CriticBase):
     def __init__(self,value_function,step_size):
         self.value_function = value_function
@@ -35,6 +33,36 @@ class TDCritic(CriticBase):
         return self.value_function
 
 
+class TDNCritic(TDCritic):
+    def __init__(self,value_function,steps,step_size,discount):
+        self.value_function=value_function
+        self.steps = steps
+        self.step_size =step_size
+        self.discount = discount
+    
+    def evaluate(self,*args):
+        trajectory = args[0]
+        current_timestamp = args[1]
+        updated_timestamp = args[2]
+        final_timestamp   = args[3]
+        
+        # V function
+        if len(trajectory[0])==2:
+            G = 0
+            for i in range(updated_timestamp , min(updated_timestamp + self.steps , final_timestamp)):
+                G += np.power(self.discount, i - updated_timestamp ) * trajectory[i][1]
+                if updated_timestamp + self.steps < final_timestamp:
+                    G += np.power(self.discount, self.steps) * self.get_value_function()[trajectory[current_timestamp][0]]
+
+            self.update(trajectory[updated_timestamp][0],G)
+        else:
+            G = 0
+            for i in range(updated_timestamp, min(updated_timestamp + self.steps, final_timestamp)):
+                G += np.power(self.discount, i - updated_timestamp) * trajectory[i][2]
+            if updated_timestamp + self.steps < final_timestamp:
+                G += np.power(self.discount, self.steps) *  self.get_value_function()[trajectory[current_timestamp][0]][trajectory[current_timestamp][1]]
+            self.update(trajectory[updated_timestamp][0],trajectory[updated_timestamp][1],G)
+
 
 class LambdaCritic(CriticBase):
     def __init__(self,value_function,step_size,discount,lamb):
@@ -58,7 +86,6 @@ class LambdaCritic(CriticBase):
         
 
     def update(self, *args):
-        
         if self._is_q_function(self.eligibility):
             current_state_index = args[0]
             current_action_index = args[1]

@@ -48,7 +48,6 @@ class ExpectedSARSACritic(TDCritic):
         reward = args[2]
         next_state_index =  args[3]
     
-            
         expected_q_value = 0
         next_actions = self.policy.policy_table[next_state_index]
         for action, action_prob in next_actions.items():
