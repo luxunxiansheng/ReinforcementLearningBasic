@@ -35,8 +35,7 @@
 
 import numpy as np 
 from tqdm import tqdm
-from td_common import TDCritic
-from td_common import ESoftActor
+
 
 
 class NStepsExpectedSARSA:
@@ -46,8 +45,7 @@ class NStepsExpectedSARSA:
         self.statistics = statistics
         self.episodes = episodes
         self.discount = discount
-        self.critic = Critic(q_table,step_size)
-        self.actor  = Actor(table_policy,self.critic,epsilon)
+      
 
     def improve(self):
         for episode in tqdm(range(0, self.episodes)):
@@ -89,16 +87,6 @@ class NStepsExpectedSARSA:
             updated_timestamp = current_timestamp - self.steps
 
             if updated_timestamp >= 0:
-                G = 0
-                for i in range(updated_timestamp, min(updated_timestamp + self.steps, final_timestamp)):
-                    G += np.power(self.discount, i - updated_timestamp) * trajectory[i][2]
-                if updated_timestamp + self.steps < final_timestamp:
-                    # expected Q value, actullay the v(s)
-                    expected_next_q = 0
-                    next_actions = self.actor.get_current_policy().policy_table[trajectory[current_timestamp][0]]
-                    for action, action_prob in next_actions.items():
-                        expected_next_q += action_prob * self.critic.get_value_function()[trajectory[current_timestamp][0]][action]
-                    G += np.power(self.discount, self.steps) * expected_next_q
 
                 self.critic.evaluate(trajectory[updated_timestamp][0],trajectory[updated_timestamp][1],G)
 

@@ -6,7 +6,7 @@ from lib.utility import (create_distribution_epsilon_greedily,create_distributio
 from policy.policy import DiscreteStateValueBasedPolicy
 
 class TDCritic(CriticBase):
-    def __init__(self,value_function,step_size):
+    def __init__(self,value_function,step_size=0.1):
         self.value_function = value_function
         self.step_size = step_size
     
@@ -34,7 +34,7 @@ class TDCritic(CriticBase):
 
 
 class TDNCritic(TDCritic):
-    def __init__(self,value_function,steps,step_size,discount):
+    def __init__(self,value_function,steps,step_size=0.1,discount=1.0):
         self.value_function=value_function
         self.steps = steps
         self.step_size =step_size
@@ -63,9 +63,35 @@ class TDNCritic(TDCritic):
                 G += np.power(self.discount, self.steps) *  self.get_value_function()[trajectory[current_timestamp][0]][trajectory[current_timestamp][1]]
             self.update(trajectory[updated_timestamp][0],trajectory[updated_timestamp][1],G)
 
+class TDNExpectedSARSACritic(TDCritic):
+    def __init__(self,value_function,policy,steps=1,step_size=0.1,discount=1.0):
+        self.value_function=value_function
+        self.steps = steps
+        self.step_size = step_size
+        self.discount = discount
+        self.policy = policy 
+    
+    def evaluate(self,*args):
+        trajectory = args[0]
+        current_timestamp = args[1]
+        updated_timestamp = args[2]
+        final_timestamp   = args[3]
+        
+        G = 0
+        for i in range(updated_timestamp, min(updated_timestamp + self.steps, final_timestamp)):
+            G += np.power(self.discount, i - updated_timestamp) * trajectory[i][2]
+        if updated_timestamp + self.steps < final_timestamp:
+            # expected Q value, actullay the v(s)
+            expected_next_q = 0
+            next_actions = self.policy.policy_table[trajectory[current_timestamp][0]]
+            for action, action_prob in next_actions.items():
+                expected_next_q += action_prob * self.get_value_function()[trajectory[current_timestamp][0]][action]
+            G += np.power(self.discount, self.steps) * expected_next_q
+        self.update(trajectory[updated_timestamp][0],trajectory[updated_timestamp][1],G)      
+
 
 class LambdaCritic(CriticBase):
-    def __init__(self,value_function,step_size,discount,lamb):
+    def __init__(self,value_function,step_size=0.1,discount=1.0,lamb=0.01):
         self.value_function = value_function
         self.step_size = step_size
         self.discount = discount

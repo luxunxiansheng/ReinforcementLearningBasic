@@ -39,14 +39,13 @@ from td_common import TDNCritic
 from td_common import ESoftActor
 
 class NStepsSARSA:
-    def __init__(self, q_table, table_policy, epsilon, env, steps, statistics, episodes, step_size=0.1, discount=1.0):
+    def __init__(self, critic,actor,env,steps, statistics, episodes):
         self.env = env
         self.steps = steps
         self.statistics = statistics
         self.episodes = episodes
-        self.discount = discount
-        self.critic = TDNCritic(q_table,steps,step_size,discount)
-        self.actor  = ESoftActor(table_policy,self.critic,epsilon)
+        self.critic = critic
+        self.actor  = actor
 
     def improve(self):
         for episode in tqdm(range(0, self.episodes)):
