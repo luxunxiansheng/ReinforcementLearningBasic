@@ -4,7 +4,7 @@ sys.path.append("/home/ornot/workspace/ReinforcementLearningBasic/work")
 from lib.plotting import plot_episode_error, plot_episode_stats
 from tqdm import tqdm
 from test_setup import get_env
-from td_common import ESoftActor,TDNCritic
+from td_common import ESoftActor,TDNCritic, TDNExpectedSARSACritic
 from td_common import BoltzmannActor
 from sarsa import SARSACritic
 from expected_sarsa import ExpectedSARSACritic
@@ -171,7 +171,6 @@ def test_n_steps_sarsa_method(env):
     return n_sarsa_statistics
 
 def test_expected_sarsa_method(env):
-
     q_table = env.build_Q_table()
     b_policy_table = env.build_policy_table()
     b_policy = DiscreteStateValueBasedPolicy(b_policy_table)
@@ -195,10 +194,10 @@ def test_n_setps_expected_sarsa(env):
     n_steps_expectedsarsa_statistics = EpisodeStats("N_Steps_Expected_Sarsa", episode_lengths=np.zeros(
         num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
 
-    critic = TDNExpectedSARSACritic(b_policy,q_table)
-    actor  = BoltzmannActor(b_policy,critic) 
+    critic = TDNExpectedSARSACritic(q_table,b_policy,n_steps)
+    actor  = ESoftActor(b_policy,critic) 
 
-    n_steps_expectedsarsa_method = NStepsExpectedSARSA(q_table, b_policy, 0.1, env,  n_steps, n_steps_expectedsarsa_statistics, num_episodes)
+    n_steps_expectedsarsa_method = NStepsExpectedSARSA(critic,actor, env, n_steps, n_steps_expectedsarsa_statistics, num_episodes)
     n_steps_expectedsarsa_method.improve()
 
     return n_steps_expectedsarsa_statistics
@@ -277,8 +276,7 @@ def test_double_q_learning_method(env):
     double_q_learning_statistics = EpisodeStats("Double_Q_Learning", episode_lengths=np.zeros(
         num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
 
-    double_qlearning_method = DoubleQLearning(
-        q_table, b_policy, 0.1, env, double_q_learning_statistics, num_episodes)
+    double_qlearning_method = DoubleQLearning(q_table, b_policy, 0.1, env, double_q_learning_statistics, num_episodes)
     double_qlearning_method.improve()
 
     return double_q_learning_statistics
@@ -315,7 +313,7 @@ def test_dynaQ_method_priority(env):
 
 def test_td_control_method(env):
     # plot_episode_stats([test_sarsa_method(env), test_expected_sarsa_method(env), test_n_steps_sarsa_method(env), test_n_setps_expected_sarsa(env), test_sarsa_lambda_method(env), test_off_policy_n_steps_sarsa(env), test_qlearning_method(env), test_q_lambda_method(env), test_double_q_learning_method(env), test_dynaQ_method_trival(env), test_dynaQ_method_priority(env)])
-    plot_episode_stats([test_sarsa_method(env), test_n_steps_sarsa_method(env)])
+    plot_episode_stats([test_sarsa_method(env),test_expected_sarsa_method(env),test_n_steps_sarsa_method(env),test_n_setps_expected_sarsa(env)])
 
 
 real_env = get_env("cliffwalking")

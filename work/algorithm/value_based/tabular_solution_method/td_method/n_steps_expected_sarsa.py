@@ -36,22 +36,19 @@
 import numpy as np 
 from tqdm import tqdm
 
-
-
 class NStepsExpectedSARSA:
-    def __init__(self, q_table, table_policy, epsilon, env, steps, statistics, episodes, step_size=0.1, discount=1):
+    def __init__(self, critic, actor, env,steps, statistics, episodes):
         self.env = env
         self.steps = steps
         self.statistics = statistics
         self.episodes = episodes
-        self.discount = discount
-      
+        self.critic = critic
+        self.actor =  actor
 
     def improve(self):
         for episode in tqdm(range(0, self.episodes)):
             self._run_one_episode(episode)
 
-    
     def _run_one_episode(self, episode):
 
         current_timestamp = 0
@@ -88,7 +85,7 @@ class NStepsExpectedSARSA:
 
             if updated_timestamp >= 0:
 
-                self.critic.evaluate(trajectory[updated_timestamp][0],trajectory[updated_timestamp][1],G)
+                self.critic.evaluate(trajectory,current_timestamp,updated_timestamp,final_timestamp)
 
                 self.actor.improve(trajectory[updated_timestamp][0])
 
