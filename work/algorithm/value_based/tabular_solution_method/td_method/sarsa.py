@@ -35,8 +35,7 @@
 
 from tqdm import tqdm
 
-from td_common import TDCritic
-
+from algorithm.value_based.tabular_solution_method.td_method.td_common import TDCritic
 """
 It is certainly ok to implement SRASA with N_Step_SARSA as long as to set the Setps to 1.  We keep sarsa just for tutorial 
 """

@@ -8,6 +8,7 @@ from td_common import ESoftActor,TDNCritic, TDNExpectedSARSACritic
 from td_common import BoltzmannActor
 from sarsa import SARSACritic
 from expected_sarsa import ExpectedSARSACritic
+from q_learning import QLearningCritic
 from policy.policy import DiscreteStateValueBasedPolicy
 from lib.plotting import EpisodeStats
 from env.blackjack import BlackjackEnv
@@ -170,22 +171,37 @@ def test_n_steps_sarsa_method(env):
     n_sarsa_method.improve()
     return n_sarsa_statistics
 
+
+
+def test_b_n_steps_sarsa_method(env):
+    q_table = env.build_Q_table()
+    b_policy_table = env.build_policy_table()
+    b_policy = DiscreteStateValueBasedPolicy(b_policy_table)
+    n_sarsa_statistics = EpisodeStats("b_N_Steps_Sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
+
+    critic = TDNCritic(q_table,n_steps)
+    actor  = BoltzmannActor(b_policy,critic)
+    n_sarsa_method = NStepsSARSA(critic,actor,env,n_steps,n_sarsa_statistics, num_episodes)
+    n_sarsa_method.improve()
+    return n_sarsa_statistics
+
+
 def test_expected_sarsa_method(env):
     q_table = env.build_Q_table()
     b_policy_table = env.build_policy_table()
     b_policy = DiscreteStateValueBasedPolicy(b_policy_table)
 
-    expectedsarsa_statistics = EpisodeStats("b_Expected_Sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
+    expectedsarsa_statistics = EpisodeStats("Expected_Sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
 
     critic = ExpectedSARSACritic(b_policy,q_table)
-    actor  = BoltzmannActor(b_policy,critic)
+    actor  = ESoftActor(b_policy,critic)
 
     expectedsarsa_method = ExpectedSARSA(critic,actor, env, expectedsarsa_statistics, num_episodes)
     expectedsarsa_method.improve()
 
     return expectedsarsa_statistics
 
-def test_n_setps_expected_sarsa(env):
+def test_n_setps_expected_sarsa_method(env):
 
     q_table = env.build_Q_table()
     b_policy_table = env.build_policy_table()
@@ -202,6 +218,23 @@ def test_n_setps_expected_sarsa(env):
 
     return n_steps_expectedsarsa_statistics
 
+def test_qlearning_method(env):
+    q_table = env.build_Q_table()
+    b_policy_table = env.build_policy_table()
+    b_policy = DiscreteStateValueBasedPolicy(b_policy_table)
+
+    q_learning_statistics = EpisodeStats("Q_Learning", episode_lengths=np.zeros(
+        num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
+
+    critic = QLearningCritic(q_table)
+    actor  = ESoftActor(b_policy,critic)
+
+    qlearning_method = QLearning(critic,actor, env, q_learning_statistics, num_episodes)
+    qlearning_method.improve()
+
+    return q_learning_statistics
+
+
 
 """
 
@@ -215,10 +248,6 @@ def test_sarsa_lambda_method(env):
     sarsa_method.improve()
 
     return sarsa_statistics
-
-
-
-
 
 def test_off_policy_n_steps_sarsa(env):
     q_table = env.build_Q_table()
@@ -240,19 +269,7 @@ def test_off_policy_n_steps_sarsa(env):
     return n_steps_off_policy_sarsa_statistics
 
 
-def test_qlearning_method(env):
-    q_table = env.build_Q_table()
-    b_policy_table = env.build_policy_table()
-    b_policy = DiscreteStateValueBasedPolicy(b_policy_table)
 
-    q_learning_statistics = EpisodeStats("Q_Learning", episode_lengths=np.zeros(
-        num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
-
-    qlearning_method = QLearning(
-        q_table, b_policy, 0.1, env, q_learning_statistics, num_episodes)
-    qlearning_method.improve()
-
-    return q_learning_statistics
 
 
 def test_q_lambda_method(env):
@@ -313,7 +330,7 @@ def test_dynaQ_method_priority(env):
 
 def test_td_control_method(env):
     # plot_episode_stats([test_sarsa_method(env), test_expected_sarsa_method(env), test_n_steps_sarsa_method(env), test_n_setps_expected_sarsa(env), test_sarsa_lambda_method(env), test_off_policy_n_steps_sarsa(env), test_qlearning_method(env), test_q_lambda_method(env), test_double_q_learning_method(env), test_dynaQ_method_trival(env), test_dynaQ_method_priority(env)])
-    plot_episode_stats([test_sarsa_method(env),test_expected_sarsa_method(env),test_n_steps_sarsa_method(env),test_n_setps_expected_sarsa(env)])
+    plot_episode_stats([test_sarsa_method(env),test_b_sarsa_method(env),test_expected_sarsa_method(env),test_b_n_steps_sarsa_method(env),test_n_steps_sarsa_method(env),test_n_setps_expected_sarsa_method(env),test_qlearning_method(env)])
 
 
 real_env = get_env("cliffwalking")
