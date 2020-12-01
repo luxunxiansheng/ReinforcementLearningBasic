@@ -33,12 +33,11 @@
 #
 # /
 from algorithm.value_based.tabular_solution_method.dynamic_programming.policy_iteration import Critic
-from common import ActorBase,CriticBase
-from policy.policy import DiscreteStateValueBasedPolicy
+from common import ActorBase
 from lib.utility import create_distribution_greedily
 
 
-class Critic(CriticBase):
+class Actor(ActorBase):
     def __init__(self, value_function, policy,transition_table, delta=1e-8, discount=1.0):
         self.value_function = value_function
         self.policy = policy
@@ -46,8 +45,7 @@ class Critic(CriticBase):
         self.delta = delta
         self.discount = discount
     
-
-    def evaluate(self, *args):
+    def improve(self, *args):
         while True:
             delta = 1e-10
             for state_index, old_value_of_state in self.value_function.items():
@@ -57,6 +55,9 @@ class Critic(CriticBase):
 
             if delta < self.delta:
                 return 
+
+    def get_behavior_policy(self):
+        return self.policy
     
     def _get_value_of_optimal_action(self, state_index):
         return max(self._get_q_values_of_state(state_index).values())
@@ -92,27 +93,18 @@ class Critic(CriticBase):
         return self.policy    
 
 
-class Actor(ActorBase):
-    def __init__(self,critic):
-        self.critic = critic
-    
-    
-    def improve(self,*args): 
-        self.critic.evaluate()
-        
-    def get_optimal_policy(self):
-        return self.critic.get_optimal_policy()
+
 
 class ValueIteration:
     """
-    One drawback to policy iteration method is that each of its iterations involves policy 
+    One drawback of policy iteration method is each of its iterations involves policy 
     evalution, which may itself be a protracted iterative computation requiring multiple 
     sweeps through the state set. If policy evaluation is done iteratively, then convergence 
     exactly occurs in the limit.   
 
     In fact,the plilcy evaluation step of policy iteration can be truncated in serveral ways
     without losing the convergence guarantees of policy iteration. One important special case
-    is when policy evaluation is stopped after just one sweep(one update of each state). This
+    is policy evaluation is stopped after just one sweep(one update of each state). This
     alrgorithm is so called Value Iteration. 
 
     In value iteration, there is no explict policy. What the process does is to get closer and 
@@ -121,13 +113,8 @@ class ValueIteration:
     """
 
     def __init__(self, v_table, transition_table, policy, delta=1e-8, discount=1.0):
-        self.value_function = v_table
-        self.transition_table = transition_table
-        self.policy = policy
-        self.delta = delta
-        self.discount = discount
-        self.critic = Critic(v_table, policy,transition_table, delta, discount)
-        self.actor  = Actor(self.critic)
+        self.actor = Actor(v_table, policy,transition_table, delta, discount)
+    
 
     def improve(self):
         self.actor.improve()

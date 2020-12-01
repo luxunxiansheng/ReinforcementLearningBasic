@@ -1,33 +1,35 @@
 import sys
 sys.path.append("/home/ornot/workspace/ReinforcementLearningBasic/work")
 
-from lib.plotting import plot_episode_error, plot_episode_stats
-from tqdm import tqdm
-from test_setup import get_env
-from td_common import ESoftActor,TDNCritic, TDNExpectedSARSACritic
-from td_common import BoltzmannActor
-from sarsa import SARSACritic
-from expected_sarsa import ExpectedSARSACritic
-from q_learning import QLearningCritic
-from policy.policy import DiscreteStateValueBasedPolicy
-from lib.plotting import EpisodeStats
-from env.blackjack import BlackjackEnv
-from algorithm.value_based.tabular_solution_method.td_method.tdn_evaluation import TDNEvalutaion
-from algorithm.value_based.tabular_solution_method.td_method.td_lambda_evaluation import TDLambdaEvalutaion
-from algorithm.value_based.tabular_solution_method.td_method.sarsa_lambda import SARSALambda
-from algorithm.value_based.tabular_solution_method.td_method.sarsa import SARSA
-from algorithm.value_based.tabular_solution_method.td_method.q_learning import QLearning
-from algorithm.value_based.tabular_solution_method.td_method.q_lambda import QLambda
-from algorithm.value_based.tabular_solution_method.td_method.off_policy_n_steps_sarsa import OffPolicyNStepsSARSA
-from algorithm.value_based.tabular_solution_method.td_method.n_steps_sarsa import NStepsSARSA
-from algorithm.value_based.tabular_solution_method.td_method.n_steps_expected_sarsa import NStepsExpectedSARSA
-from algorithm.value_based.tabular_solution_method.td_method.expected_sarsa import ExpectedSARSA
-from algorithm.value_based.tabular_solution_method.td_method.dyna_q import (PRIORITY, TRIVAL, DynaQ)
-from algorithm.value_based.tabular_solution_method.td_method.double_q_learning import DoubleQLearning
+from algorithm.value_based.tabular_solution_method.td_method.td_common import GreedyActor
+
 import numpy as np
+from algorithm.value_based.tabular_solution_method.td_method.double_q_learning import DoubleQLearning
+from algorithm.value_based.tabular_solution_method.td_method.dyna_q import (PRIORITY, TRIVAL, DynaQ)
+from algorithm.value_based.tabular_solution_method.td_method.expected_sarsa import ExpectedSARSA
+from algorithm.value_based.tabular_solution_method.td_method.n_steps_expected_sarsa import NStepsExpectedSARSA
+from algorithm.value_based.tabular_solution_method.td_method.n_steps_sarsa import NStepsSARSA
+from algorithm.value_based.tabular_solution_method.td_method.off_policy_n_steps_sarsa import OffPolicyNStepsSARSA
+from algorithm.value_based.tabular_solution_method.td_method.q_lambda import QLambda
+from algorithm.value_based.tabular_solution_method.td_method.q_learning import QLearning
+from algorithm.value_based.tabular_solution_method.td_method.sarsa import SARSA
+from algorithm.value_based.tabular_solution_method.td_method.sarsa_lambda import SARSALambda
+from algorithm.value_based.tabular_solution_method.td_method.td_lambda_evaluation import TDLambdaEvalutaion
+from algorithm.value_based.tabular_solution_method.td_method.tdn_evaluation import TDNEvalutaion
+from env.blackjack import BlackjackEnv
+from lib.plotting import EpisodeStats, plot_episode_error, plot_episode_stats
+from policy.policy import DiscreteStateValueBasedPolicy
+from test_setup import get_env
+from tqdm import tqdm
+
+from expected_sarsa import ExpectedSARSACritic
+from off_policy_n_steps_sarsa import TDNOffPolicySARSACritic
+from q_learning import QLearningCritic
+from sarsa import SARSACritic
+from td_common import (BoltzmannActor, ESoftActor, TDNCritic,TDNExpectedSARSACritic)
 
 num_episodes = 500
-n_steps = 2
+n_steps = 1
 
 def test_td0_evaluation_method_for_blackjack():
     env = BlackjackEnv(False)
@@ -53,9 +55,7 @@ def test_td0_evaluation_method_for_blackjack():
         for _ in range(rounds):
             rl_method = TDNEvalutaion(v_table, t_policy, env, 1,num_episodes)
             current_value = rl_method.evaluate()
-            error_square = error_square + \
-                (current_value[init_state] + 0.27726) * \
-                (current_value[init_state] + 0.27726)
+            error_square = error_square + (current_value[init_state] + 0.27726) * (current_value[init_state] + 0.27726)
         error.append(error_square/rounds)
     plot_episode_error(error)
 
@@ -234,6 +234,23 @@ def test_qlearning_method(env):
 
     return q_learning_statistics
 
+def test_off_policy_n_steps_sarsa(env):
+    q_table = env.build_Q_table()
+    b_policy_table = env.build_policy_table()
+    b_policy = DiscreteStateValueBasedPolicy(b_policy_table)
+    t_policy_table = env.build_policy_table()
+    t_policy = DiscreteStateValueBasedPolicy(t_policy_table)
+    n_steps_off_policy_sarsa_statistics = EpisodeStats("N_Steps_Offpolicy_Sarsa", episode_lengths=np.zeros(
+        num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
+
+    critic = TDNOffPolicySARSACritic(q_table,b_policy,t_policy,n_steps)
+    actor  = GreedyActor(t_policy,critic)
+    
+
+    n_steps_offpolicy_sarsa_method = OffPolicyNStepsSARSA(critic,actor,env, n_steps, n_steps_off_policy_sarsa_statistics, num_episodes)
+    n_steps_offpolicy_sarsa_method.improve()
+
+    return n_steps_off_policy_sarsa_statistics
 
 
 """
@@ -249,24 +266,6 @@ def test_sarsa_lambda_method(env):
 
     return sarsa_statistics
 
-def test_off_policy_n_steps_sarsa(env):
-    q_table = env.build_Q_table()
-
-    b_policy_table = env.build_policy_table()
-    b_policy = DiscreteStateValueBasedPolicy(b_policy_table)
-
-    t_policy_table = env.build_policy_table()
-    t_policy = DiscreteStateValueBasedPolicy(t_policy_table)
-
-    n_steps_off_policy_sarsa_statistics = EpisodeStats("N_Steps_Offpolicy_Sarsa", episode_lengths=np.zeros(
-        num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
-
-    n_steps_offpolicy_sarsa_method = OffPolicyNStepsSARSA(
-        q_table, b_policy, t_policy, env, n_steps, n_steps_off_policy_sarsa_statistics, num_episodes)
-
-    n_steps_offpolicy_sarsa_method.improve()
-
-    return n_steps_off_policy_sarsa_statistics
 
 
 
@@ -330,7 +329,11 @@ def test_dynaQ_method_priority(env):
 
 def test_td_control_method(env):
     # plot_episode_stats([test_sarsa_method(env), test_expected_sarsa_method(env), test_n_steps_sarsa_method(env), test_n_setps_expected_sarsa(env), test_sarsa_lambda_method(env), test_off_policy_n_steps_sarsa(env), test_qlearning_method(env), test_q_lambda_method(env), test_double_q_learning_method(env), test_dynaQ_method_trival(env), test_dynaQ_method_priority(env)])
-    plot_episode_stats([test_sarsa_method(env),test_b_sarsa_method(env),test_expected_sarsa_method(env),test_b_n_steps_sarsa_method(env),test_n_steps_sarsa_method(env),test_n_setps_expected_sarsa_method(env),test_qlearning_method(env)])
+    plot_episode_stats([test_sarsa_method(env),test_b_sarsa_method(env),
+                        test_expected_sarsa_method(env),test_b_n_steps_sarsa_method(env),
+                        test_n_steps_sarsa_method(env),test_n_setps_expected_sarsa_method(env),
+                        test_qlearning_method(env),
+                        test_off_policy_n_steps_sarsa(env)])
 
 
 real_env = get_env("cliffwalking")

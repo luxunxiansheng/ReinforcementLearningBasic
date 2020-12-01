@@ -1,3 +1,4 @@
+from algorithm.value_based.tabular_solution_method.td_method.double_q_learning import Actor
 from copy import deepcopy
 import numpy as np 
 from numpy import array
@@ -90,6 +91,7 @@ class TDNExpectedSARSACritic(TDCritic):
         self.update(trajectory[updated_timestamp][0],trajectory[updated_timestamp][1],G)      
 
 
+
 class LambdaCritic(CriticBase):
     def __init__(self,value_function,step_size=0.1,discount=1.0,lamb=0.01):
         self.value_function = value_function
@@ -140,6 +142,30 @@ class LambdaCritic(CriticBase):
     def get_value_function(self):
         return self.value_function
 
+class OffPolicyActor(ActorBase):
+    
+
+
+class GreedyActor(ActorBase):
+    def __init__(self, policy,critic):
+        self.policy = policy
+        self.critic = critic
+        self.create_distribution_greedily = create_distribution_greedily()
+
+    def improve(self, *args):
+        current_state_index = args[0]
+        q_value_function = self.critic.get_value_function()
+        for state_index, _ in q_value_function.items():
+            q_values = q_value_function[state_index]
+            greedy_distibution = self.create_distribution_greedily(q_values)
+            self.policy.policy_table[current_state_index] = greedy_distibution
+
+
+    def get_behavior_policy(self):
+        return self.policy
+
+    def get_optimal_policy(self):
+        return self.policy
 
 class ESoftActor(ActorBase):
     def __init__(self, policy,critic,epsilon=0.1):
@@ -155,7 +181,7 @@ class ESoftActor(ActorBase):
         soft_greedy_distibution = self.create_distribution_epsilon_greedily(q_values)
         self.policy.policy_table[current_state_index] = soft_greedy_distibution
 
-    def get_current_policy(self):
+    def get_behavior_policy(self):
         return self.policy
 
     def get_optimal_policy(self):
@@ -181,9 +207,9 @@ class BoltzmannActor(ActorBase):
         q_value_function = self.critic.get_value_function()
         q_values = q_value_function[current_state_index]
         boltzmann_distibution = self.create_distribution_boltzmann(q_values)
-        self.policy.policy_table[current_state_index] = boltzmann_distibution
+        self.get_behavior_policy().policy_table[current_state_index] = boltzmann_distibution
 
-    def get_current_policy(self):
+    def get_behavior_policy(self):
         return self.policy
 
     def get_optimal_policy(self):

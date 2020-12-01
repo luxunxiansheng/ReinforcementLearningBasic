@@ -100,12 +100,15 @@ class MonteCarloESControl:
                 self.actor.improve(state_index)
                 
         return self.actor.get_optimal_policy()
+    
+    def get_behavior_policy(self):
+        return self.policy
 
     def _run_one_episode(self):
         trajectory = []
         current_state_index = self.env.reset()
         while True:
-            action_index = self.policy.get_action(current_state_index)
+            action_index = self.get_behavior_policy().get_action(current_state_index)
             observation = self.env.step(action_index)
             reward = observation[1]
             trajectory.append((current_state_index, action_index, reward))
