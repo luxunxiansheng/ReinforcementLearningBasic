@@ -115,7 +115,7 @@ class MonteCarloOnPolicyControl:
         trajectory = []
         current_state_index = self.env.reset()
         while True:
-            action_index = self.get_behavior_policy().get_action(current_state_index)
+            action_index = self.actor.get_behavior_policy().get_action(current_state_index)
             observation = self.env.step(action_index)
             reward = observation[1]
             trajectory.append((current_state_index, action_index, reward))

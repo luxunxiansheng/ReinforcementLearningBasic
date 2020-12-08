@@ -40,7 +40,7 @@ from td_common import LambdaCritic
 
 
 class TDLambdaCritic(LambdaCritic):
-    def __init__(self,value_function,step_size,discount,lamb):
+    def __init__(self,value_function,step_size=0.01,discount=1.0,lamb=0):
         super().__init__(value_function,step_size,discount,lamb)
         self.discount = discount
     
@@ -53,16 +53,12 @@ class TDLambdaCritic(LambdaCritic):
         self.update(current_state_index,target)        
 
 class TDLambdaEvalutaion:
-    def __init__(self,  v_table, policy,env,episodes=1000, n_steps=3,discount=1.0, step_size=0.01,lamb=0):
+    def __init__(self,  critic, policy,env,episodes=1000):
         self.policy = policy
         self.env = env
         self.episodes = episodes
-        self.discount = discount
-        self.steps = n_steps
-    
-        self.critic = TDLambdaCritic(v_table,step_size,discount,lamb)
+        self.critic = critic
 
-    
     def evaluate(self,*args):
         for _ in range(self.episodes):
             self._run_one_episode()

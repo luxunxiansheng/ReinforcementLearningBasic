@@ -37,12 +37,12 @@ import numpy as np
 from td_common import TDNCritic
 
 class TDNEvalutaion:
-    def __init__(self,  v_table, policy, env,  n_steps=1, episodes=1000, discount=1.0, step_size=0.01):
+    def __init__(self, critic, policy, env,  n_steps=1, episodes=1000):
         self.policy = policy
         self.env = env
         self.episodes = episodes
         self.steps = n_steps
-        self.critic = TDNCritic(v_table,n_steps,step_size,discount)
+        self.critic = critic
         
     def evaluate(self,*args):
         for _ in range(0, self.episodes):

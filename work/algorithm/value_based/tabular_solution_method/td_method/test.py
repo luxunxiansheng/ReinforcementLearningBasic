@@ -14,7 +14,7 @@ from algorithm.value_based.tabular_solution_method.td_method.q_lambda import QLa
 from algorithm.value_based.tabular_solution_method.td_method.q_learning import QLearning
 from algorithm.value_based.tabular_solution_method.td_method.sarsa import SARSA
 from algorithm.value_based.tabular_solution_method.td_method.sarsa_lambda import SARSALambda
-from algorithm.value_based.tabular_solution_method.td_method.td_lambda_evaluation import TDLambdaEvalutaion
+from algorithm.value_based.tabular_solution_method.td_method.td_lambda_evaluation import TDLambdaCritic, TDLambdaEvalutaion
 from algorithm.value_based.tabular_solution_method.td_method.tdn_evaluation import TDNEvalutaion
 from env.blackjack import BlackjackEnv
 from lib.plotting import EpisodeStats, plot_episode_error, plot_episode_stats
@@ -28,7 +28,7 @@ from q_learning import QLearningCritic
 from sarsa import SARSACritic
 from td_common import (BoltzmannActor, ESoftActor, TDNCritic,TDNExpectedSARSACritic)
 
-num_episodes = 500
+num_episodes = 200
 n_steps = 1
 
 def test_td0_evaluation_method_for_blackjack():
@@ -53,13 +53,14 @@ def test_td0_evaluation_method_for_blackjack():
         error_square = 0.0
         rounds = 1
         for _ in range(rounds):
-            rl_method = TDNEvalutaion(v_table, t_policy, env, 1,num_episodes)
+            critic = TDNCritic(v_table,1)
+            rl_method = TDNEvalutaion(critic, t_policy, env, 1,num_episodes)
             current_value = rl_method.evaluate()
             error_square = error_square + (current_value[init_state] + 0.27726) * (current_value[init_state] + 0.27726)
         error.append(error_square/rounds)
     plot_episode_error(error)
 
-# test_td0_evaluation_method_for_blackjack()
+test_td0_evaluation_method_for_blackjack()
 
 def test_tdn_evaluation_method_for_blackjack():
     env = BlackjackEnv(False)
@@ -84,7 +85,8 @@ def test_tdn_evaluation_method_for_blackjack():
         error_square = 0.0
         rounds = 1
         for _ in range(rounds):
-            rl_method = TDNEvalutaion(v_table, t_policy, env, n_steps, num_episodes)
+            critic = TDNCritic(v_table,n_steps)
+            rl_method = TDNEvalutaion(critic, t_policy, env,n_steps,num_episodes)
             current_value = rl_method.evaluate()
             error_square = error_square + \
                 (current_value[init_state] + 0.27726) * \
@@ -118,7 +120,8 @@ def test_td_lambda_evalution_method_for_blackjack():
         error_square = 0.0
         rounds = 1
         for _ in range(rounds):
-            rl_method = TDLambdaEvalutaion(v_table, t_policy, env, episodes)
+            critic = TDLambdaCritic(v_table,0.1)
+            rl_method = TDLambdaEvalutaion(critic, t_policy, env, episodes)
             current_value = rl_method.evaluate()
             error_square = error_square + \
                 (current_value[init_state] + 0.27726) * \
@@ -129,7 +132,7 @@ def test_td_lambda_evalution_method_for_blackjack():
     plot_episode_error(error)
 
 
-# test_td_lambda_evalution_method_for_blackjack()
+test_td_lambda_evalution_method_for_blackjack()
 
 
 def test_sarsa_method(env):

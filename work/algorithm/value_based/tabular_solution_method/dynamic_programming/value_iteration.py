@@ -32,7 +32,6 @@
 # #### END LICENSE BLOCK #####
 #
 # /
-from algorithm.value_based.tabular_solution_method.dynamic_programming.policy_iteration import Critic
 from common import ActorBase
 from lib.utility import create_distribution_greedily
 

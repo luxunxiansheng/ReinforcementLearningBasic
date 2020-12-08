@@ -142,9 +142,6 @@ class LambdaCritic(CriticBase):
     def get_value_function(self):
         return self.value_function
 
-class OffPolicyActor(ActorBase):
-    
-
 
 class GreedyActor(ActorBase):
     def __init__(self, policy,critic):

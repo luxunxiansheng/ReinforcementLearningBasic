@@ -36,16 +36,14 @@
 
 from collections import defaultdict
 from tqdm import tqdm
-from lib.utility import create_distribution_greedily,create_distribution_epsilon_greedily
+from lib.utility import create_distribution_greedily
 from common import ActorBase,CriticBase
-from policy.policy import DiscreteStateValueBasedPolicy
 
 class Critic(CriticBase):
     def __init__(self, q_value_function):
         self.q_value_function= q_value_function
         self.state_count=self._init_state_count()
         
-
     def evaluate(self,*args):
         state_index= args[0]
         action_index = args[1]
@@ -73,11 +71,15 @@ class Actor(ActorBase):
     
     def improve(self,*args): 
         state_index = args[0]
+        
         q_value_function = self.critic.get_value_function()
         soft_greedy_distibution = self.create_distribution_greedily(q_value_function[state_index])
         self.policy.policy_table[state_index] = soft_greedy_distibution       
     
     def get_optimal_policy(self):
+        return self.policy
+    
+    def get_behavior_policy(self):
         return self.policy
 
 
@@ -98,17 +100,13 @@ class MonteCarloESControl:
                 R = reward+self.discount*R
                 self.critic.evaluate(state_index,action_index,R)
                 self.actor.improve(state_index)
-                
         return self.actor.get_optimal_policy()
     
-    def get_behavior_policy(self):
-        return self.policy
-
     def _run_one_episode(self):
         trajectory = []
         current_state_index = self.env.reset()
         while True:
-            action_index = self.get_behavior_policy().get_action(current_state_index)
+            action_index = self.actor.get_behavior_policy().get_action(current_state_index)
             observation = self.env.step(action_index)
             reward = observation[1]
             trajectory.append((current_state_index, action_index, reward))
