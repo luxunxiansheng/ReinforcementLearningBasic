@@ -60,7 +60,7 @@ class NStepsSARSA:
         # S
         current_state_index = self.env.reset()
         # A
-        current_action_index = self.actor.get_current_policy().get_action(current_state_index)
+        current_action_index = self.actor.get_behavior_policy().get_action(current_state_index)
 
         while True:
             if current_timestamp < final_timestamp:
@@ -76,7 +76,7 @@ class NStepsSARSA:
                 next_state_index = observation[0]
 
                 # A'
-                next_action_index = self.actor.get_current_policy().get_action(next_state_index)
+                next_action_index = self.actor.get_behavior_policy().get_action(next_state_index)
 
                 trajectory.append((current_state_index,current_action_index,reward))
 

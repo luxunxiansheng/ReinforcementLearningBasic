@@ -4,5 +4,7 @@
 			"path": "work"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"python.pythonPath": "/home/ornot/anaconda3/bin/python"
+	}
 }

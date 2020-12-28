@@ -88,6 +88,7 @@ class TDNExpectedSARSACritic(TDCritic):
             for action, action_prob in next_actions.items():
                 expected_next_q += action_prob * self.get_value_function()[trajectory[current_timestamp][0]][action]
             G += np.power(self.discount, self.steps) * expected_next_q
+            
         self.update(trajectory[updated_timestamp][0],trajectory[updated_timestamp][1],G)      
 
 
@@ -142,6 +143,27 @@ class LambdaCritic(CriticBase):
     def get_value_function(self):
         return self.value_function
 
+
+class OffPolicyGreedyActor(ActorBase):
+    def __init__(self,behavior_policy,target_policy,critic):
+        self.behavior_policy = behavior_policy
+        self.target_policy =   target_policy
+        self.critic = critic
+        self.create_distribution_greedily = create_distribution_greedily()
+
+    def improve(self, *args):
+        current_state_index = args[0]
+        q_value_function = self.critic.get_value_function()
+        for state_index, _ in q_value_function.items():
+            q_values = q_value_function[state_index]
+            greedy_distibution = self.create_distribution_greedily(q_values)
+            self.target_policy.policy_table[current_state_index] = greedy_distibution
+
+    def get_behavior_policy(self):
+        return self.behavior_policy
+
+    def get_optimal_policy(self):
+        self.target_policy    
 
 class GreedyActor(ActorBase):
     def __init__(self, policy,critic):

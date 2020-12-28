@@ -56,9 +56,9 @@ class TDNOffPolicySARSACritic(TDCritic):
         for i in range(updated_timestamp, min(updated_timestamp + self.steps, final_timestamp)):
             state_index =  trajectory[i][0]
             action_index = trajectory[i][1]
-
-            if  self.behavior_policy.policy_table[state_index][action_index] != 0:
-                prob *= self.target_policy.policy_table[state_index][action_index]/self.behavior_policy.policy_table[state_index][action_index]
+            
+            assert self.behavior_policy.policy_table[state_index][action_index] != 0
+            prob *= self.target_policy.policy_table[state_index][action_index]/self.behavior_policy.policy_table[state_index][action_index]
 
         G = 0
         for i in range(updated_timestamp, min(updated_timestamp + self.steps, final_timestamp)):
@@ -68,9 +68,8 @@ class TDNOffPolicySARSACritic(TDCritic):
         if updated_timestamp + self.steps < final_timestamp:
             G += np.power(self.discount, self.steps) * self.value_function[trajectory[current_timestamp][0]][trajectory[current_timestamp][1]]
 
-        delta = G - self.q_table[trajectory[updated_timestamp][0]][trajectory[updated_timestamp][1]]
+        delta = G - self.value_function[trajectory[updated_timestamp][0]][trajectory[updated_timestamp][1]]
         self.value_function[trajectory[updated_timestamp][0]][trajectory[updated_timestamp][1]] += self.step_size*delta*prob
-
 
 
 class OffPolicyNStepsSARSA:
@@ -100,8 +99,8 @@ class OffPolicyNStepsSARSA:
         # S
         current_state_index = self.env.reset()
         # A
-        current_action_index = self.actor.get_action(current_state_index)
-
+        current_action_index = self.actor.get_behavior_policy().get_action(current_state_index)
+        
         while True:
             if current_timestamp < final_timestamp:
                 observation = self.env.step(current_action_index)
@@ -116,7 +115,7 @@ class OffPolicyNStepsSARSA:
                 # S'
                 next_state_index = observation[0]
                 # A'
-                next_action_index = self.behavior_policy.get_action(next_state_index)
+                next_action_index = self.actor.get_behavior_policy().get_action(next_state_index)
 
                 if done:
                     final_timestamp = current_timestamp + 1

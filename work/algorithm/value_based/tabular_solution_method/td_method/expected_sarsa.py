@@ -37,7 +37,7 @@ from tqdm import tqdm
 from td_common import TDCritic
 
 class ExpectedSARSACritic(TDCritic):
-    def __init__(self,policy,value_table,step_size=0.01):
+    def __init__(self,policy,value_table,step_size=0.1):
         super().__init__(value_table,step_size)
         self.policy = policy
 
@@ -72,7 +72,7 @@ class ExpectedSARSA:
             # S
             current_state_index = self.env.reset()
             # A
-            current_action_index = self.actor.get_current_policy().get_action(current_state_index)
+            current_action_index = self.actor.get_behavior_policy().get_action(current_state_index)
 
             while True:
                 observation = self.env.step(current_action_index)
@@ -88,7 +88,7 @@ class ExpectedSARSA:
                 self.statistics.episode_lengths[episode] += 1
 
                 # A'
-                next_action_index = self.actor.get_current_policy().get_action(next_state_index)
+                next_action_index = self.actor.get_behavior_policy().get_action(next_state_index)
 
                 self.critic.evaluate(current_state_index,current_action_index,reward,next_state_index)
                 self.actor.improve(current_state_index)
