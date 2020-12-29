@@ -4,7 +4,7 @@ sys.path.append("/home/ornot/workspace/ReinforcementLearningBasic/work")
 
 import numpy as np
 
-from algorithm.value_based.tabular_solution_method.td_method.td_common import (GreedyActor,BoltzmannActor, ESoftActor, OffPolicyGreedyActor, TDNCritic,TDNExpectedSARSACritic)
+from algorithm.value_based.tabular_solution_method.td_method.td_common import (GreedyActor,BoltzmannActor, ESoftActor, OffPolicyGreedyActor, TDNSARSACritic,TDNExpectedSARSACritic)
 from algorithm.value_based.tabular_solution_method.td_method.double_q_learning import DoubleQLearning
 from algorithm.value_based.tabular_solution_method.td_method.dyna_q import (PRIORITY, TRIVAL, DynaQ)
 from algorithm.value_based.tabular_solution_method.td_method.expected_sarsa import ExpectedSARSA,ExpectedSARSACritic
@@ -48,7 +48,7 @@ def test_td0_evaluation_method_for_blackjack():
         error_square = 0.0
         rounds = 1
         for _ in range(rounds):
-            critic = TDNCritic(v_table,1)
+            critic = TDNSARSACritic(v_table,1)
             rl_method = TDNEvalutaion(critic, t_policy, env, 1,num_episodes)
             current_value = rl_method.evaluate()
             error_square = error_square + (current_value[init_state] + 0.27726) * (current_value[init_state] + 0.27726)
@@ -80,7 +80,7 @@ def test_tdn_evaluation_method_for_blackjack():
         error_square = 0.0
         rounds = 1
         for _ in range(rounds):
-            critic = TDNCritic(v_table,n_steps)
+            critic = TDNSARSACritic(v_table,n_steps)
             rl_method = TDNEvalutaion(critic, t_policy, env,n_steps,num_episodes)
             current_value = rl_method.evaluate()
             error_square = error_square + \
@@ -165,7 +165,7 @@ def test_n_steps_sarsa_method(env):
     b_policy = DiscreteStateValueBasedPolicy(b_policy_table)
     n_sarsa_statistics = EpisodeStats("N_Steps_Sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
 
-    critic = TDNCritic(q_table,n_steps)
+    critic = TDNSARSACritic(q_table,n_steps)
     actor  = ESoftActor(b_policy,critic)
     n_sarsa_method = NStepsSARSA(critic,actor,env,n_steps,n_sarsa_statistics, num_episodes)
     n_sarsa_method.improve()
@@ -179,7 +179,7 @@ def test_b_n_steps_sarsa_method(env):
     b_policy = DiscreteStateValueBasedPolicy(b_policy_table)
     n_sarsa_statistics = EpisodeStats("b_N_Steps_Sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
 
-    critic = TDNCritic(q_table,n_steps)
+    critic = TDNSARSACritic(q_table,n_steps)
     actor  = BoltzmannActor(b_policy,critic)
     n_sarsa_method = NStepsSARSA(critic,actor,env,n_steps,n_sarsa_statistics, num_episodes)
     n_sarsa_method.improve()
@@ -321,12 +321,11 @@ def test_dynaQ_method_priority(env):
 """
 
 def test_td_control_method(env):
-    plot_episode_stats([test_expected_sarsa_method(env),test_n_setps_expected_sarsa_method(env),test_off_policy_n_steps_sarsa(env)])
-    """ plot_episode_stats([test_sarsa_method(env),test_b_sarsa_method(env),
-                        test_expected_sarsa_method(env),test_b_n_steps_sarsa_method(env),
-                        test_n_steps_sarsa_method(env),test_n_setps_expected_sarsa_method(env),
-                        test_qlearning_method(env),
-                        test_off_policy_n_steps_sarsa(env)]) """
+    plot_episode_stats([test_expected_sarsa_method(env),test_n_setps_expected_sarsa_method(env),test_off_policy_n_steps_sarsa(env),
+                        test_n_steps_sarsa_method(env)])
+    """ plot_episode_stats([test_b_sarsa_method(env),test_b_n_steps_sarsa_method(env),
+                           test_qlearning_method(env),
+                        ]) """
 
 
 real_env = get_env("cliffwalking")

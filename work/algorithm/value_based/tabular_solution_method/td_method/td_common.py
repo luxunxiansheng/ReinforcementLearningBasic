@@ -34,7 +34,7 @@ class TDCritic(CriticBase):
         return self.value_function
 
 
-class TDNCritic(TDCritic):
+class TDNSARSACritic(TDCritic):
     def __init__(self,value_function,steps,step_size=0.1,discount=1.0):
         self.value_function=value_function
         self.steps = steps
