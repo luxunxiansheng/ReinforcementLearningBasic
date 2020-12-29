@@ -35,8 +35,7 @@
 
 import numpy as np
 from tqdm import tqdm
-from td_common import TDNCritic
-from td_common import ESoftActor
+
 
 class NStepsSARSA:
     def __init__(self, critic,actor,env,steps, statistics, episodes):

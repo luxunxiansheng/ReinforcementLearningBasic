@@ -34,7 +34,7 @@
 # /
 
 import numpy as np
-from td_common import TDNCritic
+
 
 class TDNEvalutaion:
     def __init__(self, critic, policy, env,  n_steps=1, episodes=1000):

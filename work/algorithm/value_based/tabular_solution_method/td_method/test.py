@@ -1,5 +1,7 @@
-import sys
-sys.path.append("/home/ornot/workspace/ReinforcementLearningBasic/work")
+import sys,os
+current_dir= os.path.dirname(os.path.realpath(__file__))
+work_folder=current_dir[:current_dir.find('algorithm')]
+sys.path.append(work_folder)
 
 
 import numpy as np
@@ -12,7 +14,7 @@ from algorithm.value_based.tabular_solution_method.td_method.n_steps_expected_sa
 from algorithm.value_based.tabular_solution_method.td_method.n_steps_sarsa import NStepsSARSA
 from algorithm.value_based.tabular_solution_method.td_method.off_policy_n_steps_sarsa import OffPolicyNStepsSARSA, TDNOffPolicySARSACritic
 from algorithm.value_based.tabular_solution_method.td_method.q_lambda import QLambda
-from algorithm.value_based.tabular_solution_method.td_method.q_learning import QLearning
+from algorithm.value_based.tabular_solution_method.td_method.q_learning import QLearning, QLearningCritic
 from algorithm.value_based.tabular_solution_method.td_method.sarsa import SARSA,SARSACritic
 from algorithm.value_based.tabular_solution_method.td_method.sarsa_lambda import SARSALambda
 from algorithm.value_based.tabular_solution_method.td_method.td_lambda_evaluation import TDLambdaCritic, TDLambdaEvalutaion
@@ -321,8 +323,7 @@ def test_dynaQ_method_priority(env):
 """
 
 def test_td_control_method(env):
-    plot_episode_stats([test_expected_sarsa_method(env),test_n_setps_expected_sarsa_method(env),test_off_policy_n_steps_sarsa(env),
-                        test_n_steps_sarsa_method(env)])
+    plot_episode_stats([test_expected_sarsa_method(env),test_n_setps_expected_sarsa_method(env),test_off_policy_n_steps_sarsa(env),test_n_steps_sarsa_method(env),test_qlearning_method(env)])
     """ plot_episode_stats([test_b_sarsa_method(env),test_b_n_steps_sarsa_method(env),
                            test_qlearning_method(env),
                         ]) """

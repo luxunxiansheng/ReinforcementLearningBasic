@@ -74,7 +74,7 @@ class QLearning:
         while True:
 
             # A
-            current_action_index = self.actor.get_current_policy().get_action(current_state_index)
+            current_action_index = self.actor.get_behavior_policy().get_action(current_state_index)
             observation = self.env.step(current_action_index)
 
             # R
