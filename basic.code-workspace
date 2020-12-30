@@ -4,5 +4,7 @@
 			"path": "work"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"python.pythonPath": "/opt/anaconda3/bin/python"
+	}
 }
