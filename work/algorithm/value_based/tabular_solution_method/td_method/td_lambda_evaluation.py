@@ -34,23 +34,8 @@
 # /
 
 import numpy as np
-from numpy.core.numeric import cross
 from tqdm import tqdm
-from td_common import LambdaCritic
 
-
-class TDLambdaCritic(LambdaCritic):
-    def __init__(self,value_function,step_size=0.01,discount=1.0,lamb=0):
-        super().__init__(value_function,step_size,discount,lamb)
-        self.discount = discount
-    
-    def evaluate(self,*args):
-        current_state_index = args[0]
-        reward = args[1]
-        next_state_index = args[2]
-
-        target = reward + self.discount*self.get_value_function()[next_state_index]
-        self.update(current_state_index,target)        
 
 class TDLambdaEvalutaion:
     def __init__(self,  critic, policy,env,episodes=1000):
@@ -62,8 +47,8 @@ class TDLambdaEvalutaion:
     def evaluate(self,*args):
         for _ in range(self.episodes):
             self._run_one_episode()
-        
         return self.critic.get_value_function()
+    
     def _run_one_episode(self):
         """
         Tabular TD(lambda) for estimating V(pi) 

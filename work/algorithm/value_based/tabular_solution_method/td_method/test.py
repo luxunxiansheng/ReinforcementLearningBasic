@@ -6,7 +6,7 @@ sys.path.append(work_folder)
 
 import numpy as np
 
-from algorithm.value_based.tabular_solution_method.td_method.td_common import (GreedyActor,BoltzmannActor, ESoftActor, OffPolicyGreedyActor, TDNSARSACritic,TDNExpectedSARSACritic)
+from algorithm.value_based.tabular_solution_method.td_method.td_common import (GreedyActor,BoltzmannActor, ESoftActor, LambdaCritic, OffPolicyGreedyActor, TDLambdaCritic, TDNSARSACritic,TDNExpectedSARSACritic)
 from algorithm.value_based.tabular_solution_method.td_method.double_q_learning import DoubleQLearning
 from algorithm.value_based.tabular_solution_method.td_method.dyna_q import (PRIORITY, TRIVAL, DynaQ)
 from algorithm.value_based.tabular_solution_method.td_method.expected_sarsa import ExpectedSARSA,ExpectedSARSACritic
@@ -17,7 +17,7 @@ from algorithm.value_based.tabular_solution_method.td_method.q_lambda import QLa
 from algorithm.value_based.tabular_solution_method.td_method.q_learning import QLearning, QLearningCritic
 from algorithm.value_based.tabular_solution_method.td_method.sarsa import SARSA,SARSACritic
 from algorithm.value_based.tabular_solution_method.td_method.sarsa_lambda import SARSALambda
-from algorithm.value_based.tabular_solution_method.td_method.td_lambda_evaluation import TDLambdaCritic, TDLambdaEvalutaion
+from algorithm.value_based.tabular_solution_method.td_method.td_lambda_evaluation import  TDLambdaEvalutaion
 from algorithm.value_based.tabular_solution_method.td_method.tdn_evaluation import TDNEvalutaion
 from env.blackjack import BlackjackEnv
 from lib.plotting import EpisodeStats, plot_episode_error, plot_episode_stats
@@ -253,18 +253,22 @@ def test_off_policy_n_steps_sarsa(env):
     return n_steps_off_policy_sarsa_statistics
 
 
-"""
-
 def test_sarsa_lambda_method(env):
     q_table = env.build_Q_table()
     b_policy_table = env.build_policy_table()
     b_policy = DiscreteStateValueBasedPolicy(b_policy_table)
 
     sarsa_statistics = EpisodeStats("sarsa_labmda", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
-    sarsa_method = SARSALambda(q_table, b_policy, 0.1, env, sarsa_statistics, num_episodes)
+    
+    critic = TDLambdaCritic(q_table)
+    actor  = ESoftActor(b_policy,critic)
+
+    sarsa_method = SARSALambda(critic,actor,env,sarsa_statistics, num_episodes)
     sarsa_method.improve()
 
     return sarsa_statistics
+
+"""
 
 def test_q_lambda_method(env):
     q_table = env.build_Q_table()
@@ -323,7 +327,8 @@ def test_dynaQ_method_priority(env):
 """
 
 def test_td_control_method(env):
-    plot_episode_stats([test_expected_sarsa_method(env),test_n_setps_expected_sarsa_method(env),test_off_policy_n_steps_sarsa(env),test_n_steps_sarsa_method(env),test_qlearning_method(env)])
+    plot_episode_stats([test_expected_sarsa_method(env),test_n_setps_expected_sarsa_method(env),test_off_policy_n_steps_sarsa(env),
+                        test_n_steps_sarsa_method(env),test_qlearning_method(env),test_sarsa_lambda_method(env)])
     """ plot_episode_stats([test_b_sarsa_method(env),test_b_n_steps_sarsa_method(env),
                            test_qlearning_method(env),
                         ]) """

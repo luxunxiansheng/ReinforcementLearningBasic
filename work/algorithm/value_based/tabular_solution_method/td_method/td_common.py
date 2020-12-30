@@ -111,7 +111,7 @@ class LambdaCritic(CriticBase):
                 self.eligibility[state_index] = 0.0
 
     def _is_q_function(self, value_function):
-        return len(array(value_function).shape)==3
+        return isinstance(value_function,dict)
         
 
     def update(self, *args):
@@ -143,6 +143,30 @@ class LambdaCritic(CriticBase):
     def get_value_function(self):
         return self.value_function
 
+
+
+class TDLambdaCritic(LambdaCritic):
+    def __init__(self,value_function,step_size=0.1,discount=1.0,lamb=0):
+        super().__init__(value_function,step_size,discount,lamb)
+    
+    
+    def evaluate(self,*args):
+        if self._is_q_function(self.value_function):
+            current_state_index = args[0]
+            current_action_index = args[1]
+            reward = args[2]
+            next_state_index = args[3]    
+            next_action_index = args[4]
+
+            target = reward + self.discount*self.get_value_function()[next_state_index][next_action_index]
+            self.update(current_state_index,current_action_index,target)   
+        else:
+            current_state_index = args[0]
+            reward = args[1]
+            next_state_index = args[2]    
+
+            target = reward + self.discount*self.get_value_function()[next_state_index]
+            self.update(current_state_index,target)   
 
 class OffPolicyGreedyActor(ActorBase):
     def __init__(self,behavior_policy,target_policy,critic):
