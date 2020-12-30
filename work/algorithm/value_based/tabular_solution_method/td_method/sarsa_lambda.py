@@ -34,24 +34,24 @@
 # /
 
 from tqdm import tqdm
-from td_common import LambdaCritic
-from td_common import ESoftActor
+
+from td_common import LambdaCritic,ESoftActor
+
 
 class SARSALambda:
     """
     SARSA algorithm with backward view: On-policy TD control. Finds the optimal epsilon-greedy policy
     """
-    def __init__(self, q_table, table_policy, epsilon,env, statistics,episodes,step_size=0.1,discount=1.0, lamb= 0.0):
+    def __init__(self, critic,actor, env, statistics,episodes,discount=1.0):
         self.env = env
         
         self.episodes = episodes
-        self.step_size = step_size
         self.discount = discount
     
         self.statistics = statistics
 
-        self.critic = LambdaCritic(q_table,step_size,discount,lamb)
-        self.actor  = SoftActor(table_policy,self.critic,epsilon)
+        self.critic = critic
+        self.actor  = actor 
 
 
     def improve(self):
@@ -63,7 +63,7 @@ class SARSALambda:
         current_state_index = self.env.reset()
 
         # A
-        current_action_index = self.actor.get_current_policy().get_action(current_state_index)
+        current_action_index = self.actor.get_behavior_policy().get_action(current_state_index)
 
         while True:
             observation = self.env.step(current_action_index)
@@ -78,12 +78,10 @@ class SARSALambda:
             next_state_index = observation[0]
 
             # A'
-            next_action_index = self.actor.get_current_policy().get_action(next_state_index)
+            next_action_index = self.actor.get_behavior_policy().get_action(next_state_index)
 
-            target = reward + self.discount * self.critic.get_value_function()[next_state_index][next_action_index]
-
-            self.critic.evaluate(current_state_index,current_action_index,target)
-            self.actor.improve(current_state_index)
+            self.critic.evaluate(current_state_index,current_action_index,reward,next_state_index,next_action_index)
+            self.actor.improve(current_state_index,current_action_index)
         
 
             if done:

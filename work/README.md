@@ -79,7 +79,9 @@ This project is built With [Python](www.python.org) and several libraries:
 
    1. Value based RL is following a dynamic programming methodology. That is, to seperate a big problem into many small ones;Policy based RL  only concerns a global policy. 
 
-   2. Value based RL could essentially be regarded as solve the Bellman Equation; Policy based RL is more like an optimation process to get the maximum utility or minmum losses.
+   2. Value based RL could essentially be regarded as solve the Bellman Equation (iteratively); Policy based RL is more like an optimation process to get the maximum utility or minmum losses(iteratively).
+
+   
 
 ### 5.On-Policy and Off-policy
 

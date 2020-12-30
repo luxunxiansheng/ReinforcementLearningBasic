@@ -34,8 +34,7 @@
 from copy import deepcopy
 
 from common import ActorBase
-from lib.utility import (create_distribution_epsilon_greedily,
-                         create_distribution_greedily)
+from lib.utility import (create_distribution_epsilon_greedily,create_distribution_greedily)
 from policy.policy import DiscreteStateValueBasedPolicy
 from tqdm import tqdm
 
@@ -65,10 +64,13 @@ class Actor(ActorBase):
         for episode in tqdm(range(0, self.episodes)):
             self._run_one_episode(episode)
 
+    def get_behavior_policy(self):
+        return self.policy
+
     def _run_one_episode(self, episode):
         # S
         current_state_index = self.env.reset()
-        current_action_index = self.policy.get_action(current_state_index)
+        current_action_index = self.get_behavior_policy().get_action(current_state_index)
 
         while True:
 
@@ -87,7 +89,7 @@ class Actor(ActorBase):
             next_state_index = observation[0]
 
             # A'
-            next_action_index = self.policy.get_action(next_state_index) 
+            next_action_index = self.get_behavior_policy().get_action(next_state_index) 
         
             # A*
             q_values_next_state = self.q_table[next_state_index]
@@ -112,7 +114,7 @@ class Actor(ActorBase):
             # update policy softly
             q_values = self.q_table[current_state_index]
             distribution = self.create_distribution_epsilon_greedily(q_values)
-            self.policy.policy_table[current_state_index] = distribution
+            self.get_behavior_policy().policy_table[current_state_index] = distribution
 
             if done:
                 break

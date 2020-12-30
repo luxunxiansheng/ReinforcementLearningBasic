@@ -104,7 +104,10 @@ class Actor(ActorBase):
             delta = self._improve_once()
             if delta < self.delta:
                 break
-        
+
+    def get_behavior_policy(self):
+        return self.policy
+
     def _improve_once(self):
         delta = 1e-10
         for state_index, action_distribution in self.policy.policy_table.items():
@@ -140,14 +143,12 @@ class PolicyIteration:
 
     def __init__(self, v_table, policy, transition_table, delta=1e-5, discount=1.0):
         self.v_table = v_table
-        self.policy = policy
         self.transition_table= transition_table
         self.delta = delta
         self.discount = discount
         self.critic = Critic(policy,v_table,transition_table,delta,discount)
         self.actor  = Actor(policy,self.critic,transition_table,delta,discount) 
         
-    
     def improve(self):
         self.critic.evaluate()
         self.actor.improve()

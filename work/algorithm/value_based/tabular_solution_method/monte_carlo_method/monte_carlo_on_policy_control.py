@@ -75,7 +75,10 @@ class Actor(ActorBase):
         state_index = args[0]
         q_value_function = self.critic.get_value_function()
         soft_greedy_distibution = self.create_distribution_epsilon_greedily(q_value_function[state_index])
-        self.policy.policy_table[state_index] = soft_greedy_distibution       
+        self.policy.policy_table[state_index] = soft_greedy_distibution    
+
+    def get_behavior_policy(self):
+        return self.policy   
     
     def get_optimal_policy(self):
         policy_table = {}
@@ -112,7 +115,7 @@ class MonteCarloOnPolicyControl:
         trajectory = []
         current_state_index = self.env.reset()
         while True:
-            action_index = self.policy.get_action(current_state_index)
+            action_index = self.actor.get_behavior_policy().get_action(current_state_index)
             observation = self.env.step(action_index)
             reward = observation[1]
             trajectory.append((current_state_index, action_index, reward))

@@ -52,9 +52,13 @@ class Actor(ActorBase):
         self.statistics = statistics
         self.episodes = episodes
 
+
     def improve(self):
         for episode in tqdm(range(0, self.episodes)):
             self._run_one_episode(episode)
+
+    def get_behavior_policy(self):
+        return self.policy
 
     def _run_one_episode(self, episode):
         # S
@@ -62,7 +66,7 @@ class Actor(ActorBase):
 
         while True:
             # A
-            current_action_index = self.policy.get_action(current_state)
+            current_action_index = self.get_behavior_policy().get_action(current_state)
             
             observation = self.env.step(current_action_index)
             # R

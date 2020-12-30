@@ -33,28 +33,57 @@
 #
 # /
 
-from common import ActorBase
 import numpy as np
-from lib.utility import create_distribution_greedily
 from tqdm import tqdm
-from policy.policy import DiscreteStateValueBasedPolicy
+from algorithm.value_based.tabular_solution_method.td_method.td_common import TDCritic
 
-class Actor(ActorBase):
+class TDNOffPolicySARSACritic(TDCritic):
+    def __init__(self,value_function,behavior_policy,target_policy,steps=1,step_size=0.1,discount=1.0):
+        self.value_function=value_function
+        self.steps = steps
+        self.step_size = step_size
+        self.discount = discount
+        self.behavior_policy = behavior_policy
+        self.target_policy =  target_policy
+
+    def evaluate(self,*args):
+        trajectory = args[0]
+        current_timestamp = args[1]
+        updated_timestamp = args[2]
+        final_timestamp   = args[3]
+        
+        prob = 1
+        for i in range(updated_timestamp, min(updated_timestamp + self.steps, final_timestamp)):
+            state_index =  trajectory[i][0]
+            action_index = trajectory[i][1]
+            
+            assert self.behavior_policy.policy_table[state_index][action_index] != 0
+            prob *= self.target_policy.policy_table[state_index][action_index]/self.behavior_policy.policy_table[state_index][action_index]
+
+        G = 0
+        for i in range(updated_timestamp, min(updated_timestamp + self.steps, final_timestamp)):
+            reward = trajectory[i][2]
+            G += np.power(self.discount, i - updated_timestamp) * reward
+
+        if updated_timestamp + self.steps < final_timestamp:
+            G += np.power(self.discount, self.steps) * self.value_function[trajectory[current_timestamp][0]][trajectory[current_timestamp][1]]
+
+        delta = G - self.value_function[trajectory[updated_timestamp][0]][trajectory[updated_timestamp][1]]
+        self.value_function[trajectory[updated_timestamp][0]][trajectory[updated_timestamp][1]] += self.step_size*delta*prob
+
+
+class OffPolicyNStepsSARSA:
     """
     Section 7.3 
     """
 
-    def __init__(self, q_table, behavior_table_policy, target_table_policy, env, steps, statistics, episodes, step_size=0.1, discount=1.0):
-        self.q_table = q_table
-        self.behavior_policy = behavior_table_policy
-        self.target_policy   = target_table_policy
+    def __init__(self, critic, actor, env, n_steps,statistics, episodes):
         self.env = env
         self.episodes = episodes
-        self.step_size = step_size
-        self.discount = discount
-        self.create_distribution_greedily = create_distribution_greedily()
-        self.steps = steps
+        self.steps = n_steps
         self.statistics = statistics
+        self.critic = critic
+        self.actor = actor
 
     def improve(self):
         for episode in tqdm(range(0, self.episodes)):
@@ -70,8 +99,8 @@ class Actor(ActorBase):
         # S
         current_state_index = self.env.reset()
         # A
-        current_action_index = self.behavior_policy.get_action(current_state_index)
-
+        current_action_index = self.actor.get_behavior_policy().get_action(current_state_index)
+        
         while True:
             if current_timestamp < final_timestamp:
                 observation = self.env.step(current_action_index)
@@ -86,7 +115,7 @@ class Actor(ActorBase):
                 # S'
                 next_state_index = observation[0]
                 # A'
-                next_action_index = self.behavior_policy.get_action(next_state_index)
+                next_action_index = self.actor.get_behavior_policy().get_action(next_state_index)
 
                 if done:
                     final_timestamp = current_timestamp + 1
@@ -94,29 +123,9 @@ class Actor(ActorBase):
             updated_timestamp = current_timestamp - self.steps
 
             if updated_timestamp >= 0:
-                p = 1
-                for i in range(updated_timestamp, min(updated_timestamp + self.steps, final_timestamp)):
-                    state_index =  trajectory[i][0]
-                    action_index = trajectory[i][1]
+                self.critic.evaluate(trajectory,current_timestamp,updated_timestamp,final_timestamp)
+                self.actor.improve(trajectory[updated_timestamp][0])
 
-                    if  self.behavior_policy.policy_table[state_index][action_index] != 0:
-                        p *= self.target_policy.policy_table[state_index][action_index]/self.behavior_policy.policy_table[state_index][action_index]
-
-                G = 0
-                for i in range(updated_timestamp, min(updated_timestamp + self.steps, final_timestamp)):
-                    reward = trajectory[i][2]
-                    G += np.power(self.discount, i - updated_timestamp) * reward
-
-                if updated_timestamp + self.steps < final_timestamp:
-                    G += np.power(self.discount, self.steps) * self.q_table[trajectory[current_timestamp][0]][trajectory[current_timestamp][1]]
-
-                delta = G - self.q_table[trajectory[updated_timestamp][0]][trajectory[updated_timestamp][1]]
-                self.q_table[trajectory[updated_timestamp][0]][trajectory[updated_timestamp][1]] += self.step_size*delta*p
-
-                # update policy greedily
-                q_values = self.q_table[trajectory[updated_timestamp][0]]
-                distribution = self.create_distribution_greedily(q_values)
-                self.target_policy.policy_table[trajectory[updated_timestamp][0]] = distribution
                 if updated_timestamp == final_timestamp - 1:
                     break
 
@@ -124,14 +133,3 @@ class Actor(ActorBase):
             current_state_index = next_state_index
             current_action_index = next_action_index
 
-
-    def get_optimal_policy(self):
-        return self.target_policy
-
-class OffPolicyNStepsSARSA:
-    def __init__(self, q_table, behavior_table_policy, target_table_policy, env, steps, statistics, episodes, step_size=0.1, discount=1.0):
-        self.actor = Actor(q_table, behavior_table_policy, target_table_policy, env, steps, statistics, episodes, step_size, discount) 
-
-    def improve(self):
-        self.actor.improve()
-        return self.actor.get_optimal_policy()

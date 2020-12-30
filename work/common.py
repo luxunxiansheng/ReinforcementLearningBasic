@@ -34,7 +34,6 @@
 # /
 
 from abc import ABC, abstractmethod
-from markdown.test_tools import Kwargs
 import numpy as np
 
 
@@ -87,4 +86,8 @@ class ActorBase(ABC):
     
     @abstractmethod
     def get_optimal_policy(self):
+        pass
+
+    @abstractmethod
+    def get_behavior_policy(self):
         pass

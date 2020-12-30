@@ -72,8 +72,9 @@ class Critic(CriticBase):
     
 
 class Actor(ActorBase):
-    def __init__(self,target_policy,critic):
+    def __init__(self,behavior_policy,target_policy,critic):
         self.target_policy = target_policy
+        self.behavior_policy = behavior_policy
         self.critic = critic
         self.create_distribution_greedily = create_distribution_greedily()
 
@@ -82,6 +83,9 @@ class Actor(ActorBase):
         q_value_function = self.critic.get_value_function()
         greedy_distibution = self.create_distribution_greedily(q_value_function[state_index])
         self.target_policy.policy_table[state_index] = greedy_distibution
+
+    def get_behavior_policy(self):
+        return self.behavior_policy
 
     def get_optimal_policy(self):
         return self.target_policy
@@ -94,20 +98,15 @@ class MonteCarloOffPolicyControl:
     As described in 5.7 section of Sutton' book 
     1) Weighted importance sampling.
     2) Incremental implementation
-
-    
-
-
     """
     def __init__(self, q_value_function, behavior_policy, target_policy,env, episodes=500000, discount=1.0,epsilon=0.5):
-        self.behavior_policy = behavior_policy
         self.env = env
         self.episodes = episodes
         self.discount = discount
         self.epsilon  = epsilon
         
         self.critic= Critic(q_value_function)
-        self.actor = Actor(target_policy,self.critic)
+        self.actor = Actor(behavior_policy,target_policy,self.critic)
 
     def improve(self):
         for _ in tqdm(range(0, self.episodes)):
@@ -127,7 +126,7 @@ class MonteCarloOffPolicyControl:
                     break
 
                 # probability product
-                W = W * 1. / self.behavior_policy.policy_table[state_index][action_index]
+                W = W * 1. / self.actor.get_behavior_policy().policy_table[state_index][action_index]
         
         return self.actor.get_optimal_policy()
 
@@ -143,7 +142,7 @@ class MonteCarloOffPolicyControl:
         trajectory = []
         current_state_index = self.env.reset()
         while True:
-            action_index = self.behavior_policy.get_action(current_state_index)
+            action_index = self.actor.get_behavior_policy().get_action(current_state_index)
             observation = self.env.step(action_index)
             reward = observation[1]
             trajectory.append((current_state_index, action_index, reward))

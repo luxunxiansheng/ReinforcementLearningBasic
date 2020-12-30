@@ -35,18 +35,16 @@
 
 import numpy as np
 from tqdm import tqdm
-from td_common import TDCritic
-from td_common import ESoftActor
+
 
 class NStepsSARSA:
-    def __init__(self, q_table, table_policy, epsilon, env, steps, statistics, episodes, step_size=0.1, discount=1.0):
+    def __init__(self, critic,actor,env,steps, statistics, episodes):
         self.env = env
         self.steps = steps
         self.statistics = statistics
         self.episodes = episodes
-        self.discount = discount
-        self.critic = Critic(q_table,step_size)
-        self.actor  = ESoftActor(table_policy,self.critic,epsilon)
+        self.critic = critic
+        self.actor  = actor
 
     def improve(self):
         for episode in tqdm(range(0, self.episodes)):
@@ -61,7 +59,7 @@ class NStepsSARSA:
         # S
         current_state_index = self.env.reset()
         # A
-        current_action_index = self.actor.get_current_policy().get_action(current_state_index)
+        current_action_index = self.actor.get_behavior_policy().get_action(current_state_index)
 
         while True:
             if current_timestamp < final_timestamp:
@@ -77,7 +75,7 @@ class NStepsSARSA:
                 next_state_index = observation[0]
 
                 # A'
-                next_action_index = self.actor.get_current_policy().get_action(next_state_index)
+                next_action_index = self.actor.get_behavior_policy().get_action(next_state_index)
 
                 trajectory.append((current_state_index,current_action_index,reward))
 
@@ -87,13 +85,7 @@ class NStepsSARSA:
             updated_timestamp = current_timestamp - self.steps
 
             if updated_timestamp >= 0:
-                G = 0
-                for i in range(updated_timestamp, min(updated_timestamp + self.steps, final_timestamp)):
-                    G += np.power(self.discount, i - updated_timestamp) * trajectory[i][2]
-                if updated_timestamp + self.steps < final_timestamp:
-                    G += np.power(self.discount, self.steps) *  self.critic.get_value_function()[trajectory[current_timestamp][0]][trajectory[current_timestamp][1]]
-
-                self.critic.evaluate(trajectory[updated_timestamp][0],trajectory[updated_timestamp][1],G)
+                self.critic.evaluate(trajectory,current_timestamp,updated_timestamp,final_timestamp)
 
                 self.actor.improve(trajectory[updated_timestamp][0])
 
@@ -108,5 +100,3 @@ class NStepsSARSA:
     def get_optimal_policy(self):
         return self.policy
 
-
-    

@@ -1,7 +1,9 @@
 
 import copy
-import sys
-sys.path.append("/home/ornot/workspace/ReinforcementLearningBasic/work")
+import sys,os
+current_dir= os.path.dirname(os.path.realpath(__file__))
+work_folder=current_dir[:current_dir.find('algorithm')]
+sys.path.append(work_folder)
 
 
 from tqdm import tqdm
