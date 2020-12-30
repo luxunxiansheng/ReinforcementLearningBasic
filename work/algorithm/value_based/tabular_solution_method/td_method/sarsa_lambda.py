@@ -35,9 +35,6 @@
 
 from tqdm import tqdm
 
-from td_common import LambdaCritic,ESoftActor
-
-
 class SARSALambda:
     """
     SARSA algorithm with backward view: On-policy TD control. Finds the optimal epsilon-greedy policy

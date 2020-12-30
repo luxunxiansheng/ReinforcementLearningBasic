@@ -6,7 +6,7 @@ sys.path.append(work_folder)
 
 import numpy as np
 
-from algorithm.value_based.tabular_solution_method.td_method.td_common import (GreedyActor,BoltzmannActor, ESoftActor, LambdaCritic, OffPolicyGreedyActor, TDLambdaCritic, TDNSARSACritic,TDNExpectedSARSACritic)
+from algorithm.value_based.tabular_solution_method.td_method.td_common import (GreedyActor,BoltzmannActor, ESoftActor, LambdaCritic, OffPolicyGreedyActor, QLearningLambdaCritic, TDLambdaCritic, TDNSARSACritic,TDNExpectedSARSACritic)
 from algorithm.value_based.tabular_solution_method.td_method.double_q_learning import DoubleQLearning
 from algorithm.value_based.tabular_solution_method.td_method.dyna_q import (PRIORITY, TRIVAL, DynaQ)
 from algorithm.value_based.tabular_solution_method.td_method.expected_sarsa import ExpectedSARSA,ExpectedSARSACritic
@@ -268,7 +268,7 @@ def test_sarsa_lambda_method(env):
 
     return sarsa_statistics
 
-"""
+
 
 def test_q_lambda_method(env):
     q_table = env.build_Q_table()
@@ -277,12 +277,15 @@ def test_q_lambda_method(env):
 
     q_lambda_statistics = EpisodeStats("Q_labmda", episode_lengths=np.zeros(
         num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
-    q_lambda_method = QLambda(q_table, b_policy, 0.1,env, q_lambda_statistics, num_episodes)
+
+    critic = QLearningLambdaCritic(q_table)
+    actor  = ESoftActor(b_policy,critic)    
+    q_lambda_method = QLambda(critic,actor,env,q_lambda_statistics, num_episodes)
     q_lambda_method.improve()
 
     return q_lambda_statistics
 
-
+"""
 def test_double_q_learning_method(env):
     q_table = env.build_Q_table()
     b_policy_table = env.build_policy_table()
@@ -327,11 +330,10 @@ def test_dynaQ_method_priority(env):
 """
 
 def test_td_control_method(env):
-    plot_episode_stats([test_expected_sarsa_method(env),test_n_setps_expected_sarsa_method(env),test_off_policy_n_steps_sarsa(env),
-                        test_n_steps_sarsa_method(env),test_qlearning_method(env),test_sarsa_lambda_method(env)])
-    """ plot_episode_stats([test_b_sarsa_method(env),test_b_n_steps_sarsa_method(env),
-                           test_qlearning_method(env),
-                        ]) """
+    """plot_episode_stats([test_expected_sarsa_method(env),test_n_setps_expected_sarsa_method(env),test_off_policy_n_steps_sarsa(env),
+                        test_n_steps_sarsa_method(env),test_qlearning_method(env),test_sarsa_lambda_method(env),test_q_lambda_method(env)])
+    """
+    plot_episode_stats([test_qlearning_method(env),test_q_lambda_method(env)])
 
 
 real_env = get_env("cliffwalking")

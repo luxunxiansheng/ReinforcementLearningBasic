@@ -167,6 +167,27 @@ class TDLambdaCritic(LambdaCritic):
 
             target = reward + self.discount*self.get_value_function()[next_state_index]
             self.update(current_state_index,target)   
+        
+class QLearningLambdaCritic(LambdaCritic):
+    def __init__(self,value_function,step_size=0.1,discount=1.0,lamb=0):
+        super().__init__(value_function,step_size,discount,lamb)
+    
+    
+    def evaluate(self,*args):
+        current_state_index = args[0]
+        current_action_index = args[1]
+        reward = args[2]
+        next_state_index = args[3]    
+        
+
+        q_values_next_state = self.get_value_function()[next_state_index]
+        best_action_next_state = max(q_values_next_state, key=q_values_next_state.get)
+    
+        # Q*(s',A*)
+        max_value = q_values_next_state[best_action_next_state]
+        target = reward + self.discount*max_value
+        self.update(current_state_index,current_action_index,target)   
+        
 
 class OffPolicyGreedyActor(ActorBase):
     def __init__(self,behavior_policy,target_policy,critic):
