@@ -1,4 +1,3 @@
-from algorithm.value_based.tabular_solution_method.td_method.double_q_learning import Actor
 from copy import deepcopy
 import numpy as np 
 from numpy import array
