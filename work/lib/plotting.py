@@ -39,9 +39,9 @@ def plot_episode_stats(stats, smoothing_window=100, noshow=False):
     plt.ylabel("Episode Reward (Smoothed)")
     plt.title("Episode Reward over Time (Smoothed over window size {})".format(smoothing_window))
     if noshow:
-        plt.close(fig2)
+        plt.close()
     else:
-        plt.show(fig2)
+        plt.show()
 
     # Plot time steps and episode number
     fig3 = plt.figure(figsize=(10, 5))
@@ -54,9 +54,9 @@ def plot_episode_stats(stats, smoothing_window=100, noshow=False):
     plt.ylabel("Episode")
     plt.title("Episode per time step")
     if noshow:
-        plt.close(fig3)
+        plt.close()
     else:
-        plt.show(fig3)
+        plt.show()
 
     return fig1, fig2, fig3
 
@@ -69,7 +69,7 @@ def plot_episode_error(errors):
     plt.xlabel("Episode")
     plt.ylabel("Error")
     plt.title("Evaluation Error")
-    plt.show(fig1) 
+    plt.show() 
 
 def  plot_state_value(env,value_function_stats,noshow=False):
     # Plot the episode length over time
@@ -87,9 +87,9 @@ def  plot_state_value(env,value_function_stats,noshow=False):
     plt.ylabel("Value")
     plt.title("Approximation of state value ")
     if noshow:
-        plt.close(fig1)
+        plt.close()
     else:
-        plt.show(fig1) 
+        plt.show() 
 
 
 def plot_3d_q_value(env, stats, noshow = False):
@@ -119,9 +119,9 @@ def plot_3d_q_value(env, stats, noshow = False):
     ax.set_zlabel('cost to go')
     
     if noshow:
-        plt.close(fig1)
+        plt.close()
     else:
-        plt.show(fig1) 
+        plt.show() 
 
 
 def cost_to_go(estimator,state,actions):
