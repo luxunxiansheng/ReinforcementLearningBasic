@@ -25,7 +25,7 @@ from policy.policy import DiscreteStateValueBasedPolicy
 from test_setup import get_env
 from tqdm import tqdm
 
-num_episodes = 200000
+num_episodes = 200
 n_steps = 2
 
 def test_td0_evaluation_method_for_blackjack():

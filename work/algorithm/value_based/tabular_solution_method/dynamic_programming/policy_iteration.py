@@ -42,7 +42,7 @@ from lib.utility import create_distribution_greedily
 
 
 
-class Critic(CriticBase):
+class PoplicyIterationCritic(CriticBase):
     """
     Given a policy, calculate the value of state with Jacobi-like itration method. The calculated value of state may not be 
     very accurate, but it doesn't mattter since our goal is to find the optimal policy after all. 
@@ -87,7 +87,7 @@ class Critic(CriticBase):
             value_of_action += transition_prob * (self.discount*value_of_next_state+reward)
         return value_of_action
 
-class Actor(ActorBase):
+class PolicyIterationActor(ActorBase):
     """
     It is trival for the actor to improve the policy by sweeping the state space. 
     
@@ -141,13 +141,10 @@ class PolicyIteration:
         on-policy 
     """
 
-    def __init__(self, v_table, policy, transition_table, delta=1e-5, discount=1.0):
-        self.v_table = v_table
-        self.transition_table= transition_table
-        self.delta = delta
-        self.discount = discount
-        self.critic = Critic(policy,v_table,transition_table,delta,discount)
-        self.actor  = Actor(policy,self.critic,transition_table,delta,discount) 
+    def __init__(self, critic,actor):
+
+        self.critic = critic
+        self.actor  = actor 
         
     def improve(self):
         self.critic.evaluate()

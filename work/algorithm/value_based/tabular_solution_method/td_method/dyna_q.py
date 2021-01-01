@@ -32,20 +32,21 @@
 # #### END LICENSE BLOCK #####
 #
 # /
-
-from common import ActorBase
+from ReinforcementLearningBasic.work.algorithm.value_based.tabular_solution_method.td_method.td_common import TDCritic
 import heapq
 from abc import abstractmethod
 
 import numpy as np
 from tqdm import tqdm
-
-from lib.utility import create_distribution_epsilon_greedily,create_distribution_greedily
-from policy.policy import DiscreteStateValueBasedPolicy
 from copy import deepcopy
 
 TRIVAL = 1
 PRIORITY = 2
+
+class DynaQCritic(TDCritic):
+    def __init__(self, value_function, step_size):
+        super().__init__(value_function, step_size=step_size)
+
 
 
 class Actor(ActorBase):

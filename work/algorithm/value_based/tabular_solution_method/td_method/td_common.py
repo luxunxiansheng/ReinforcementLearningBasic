@@ -35,9 +35,8 @@ class TDCritic(CriticBase):
 
 class TDNSARSACritic(TDCritic):
     def __init__(self,value_function,steps,step_size=0.1,discount=1.0):
-        self.value_function=value_function
+        super().__init__(value_function, step_size=step_size)
         self.steps = steps
-        self.step_size =step_size
         self.discount = discount
     
     def evaluate(self,*args):
@@ -65,9 +64,8 @@ class TDNSARSACritic(TDCritic):
 
 class TDNExpectedSARSACritic(TDCritic):
     def __init__(self,value_function,policy,steps=1,step_size=0.1,discount=1.0):
-        self.value_function=value_function
+        super().__init__(value_function, step_size=step_size)
         self.steps = steps
-        self.step_size = step_size
         self.discount = discount
         self.policy = policy 
     
@@ -94,8 +92,7 @@ class TDNExpectedSARSACritic(TDCritic):
 
 class LambdaCritic(CriticBase):
     def __init__(self,value_function,step_size=0.1,discount=1.0,lamb=0.01):
-        self.value_function = value_function
-        self.step_size = step_size
+        super().__init__(value_function, step_size=step_size)
         self.discount = discount
         self.lamb =lamb
 
@@ -146,7 +143,7 @@ class LambdaCritic(CriticBase):
 
 class TDLambdaCritic(LambdaCritic):
     def __init__(self,value_function,step_size=0.1,discount=1.0,lamb=0):
-        super().__init__(value_function,step_size,discount,lamb)
+        super().__init__(value_function,step_size=step_size,discount=discount,lamb=lamb)
     
     
     def evaluate(self,*args):
@@ -169,7 +166,7 @@ class TDLambdaCritic(LambdaCritic):
         
 class QLearningLambdaCritic(LambdaCritic):
     def __init__(self,value_function,step_size=0.1,discount=1.0,lamb=0):
-        super().__init__(value_function,step_size,discount,lamb)
+        super().__init__(value_function,step_size=step_size,discount=discount,lamb=lamb)
     
     
     def evaluate(self,*args):
