@@ -9,8 +9,8 @@ sys.path.append(work_folder)
 from tqdm import tqdm
 
 from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_es_control import MonteCarloESActor, MonteCarloESControl
-from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_common import MonteCarloOnPolicyCritic
-from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_off_policy_control import MonteCarloOffPolicyActor, MonteCarloOffPolicyControl, MonteCarloOffPolicyCritic
+from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_common import MonteCarloOffPolicyCritic, MonteCarloOnPolicyCritic
+from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_off_policy_control import MonteCarloOffPolicyActor, MonteCarloOffPolicyControl
 from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_off_policy_evaluation import MonteCarloOffPolicyEvaluation
 from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_on_policy_control import MonteCarloOnPolicyActor, MonteCarloOnPolicyControl
 from env.blackjack import BlackjackEnv
@@ -32,7 +32,7 @@ def test_q_mc_es_control_method(env):
     optimal_policy=rl_method.improve()
     env.show_policy(optimal_policy)
 
-test_q_mc_es_control_method(real_env)
+#test_q_mc_es_control_method(real_env)
 
 def test_mc_onpolicy_control_method(env):
     q_table = env.build_Q_table()
@@ -46,7 +46,7 @@ def test_mc_onpolicy_control_method(env):
     optimal_policy=rl_method.improve()
     env.show_policy(optimal_policy)
 
-test_mc_onpolicy_control_method(real_env)
+#test_mc_onpolicy_control_method(real_env)
 
 
 def test_mc_offpolicy_control_method(env):
@@ -62,7 +62,7 @@ def test_mc_offpolicy_control_method(env):
     optimal_policy=rl_method.improve()
     env.show_policy(optimal_policy)
 
-test_mc_offpolicy_control_method(real_env)
+#test_mc_offpolicy_control_method(real_env)
 
 
 def test_mc_offpolicy_evaluation_method_for_blackjack():
@@ -86,12 +86,15 @@ def test_mc_offpolicy_evaluation_method_for_blackjack():
             t_policy_table[state_index][BlackjackEnv.STICK] = 1.0
     t_policy = DiscreteStateValueBasedPolicy(t_policy_table)
 
+    
+
     error = []
     init_state = env.reset()
     for episode in tqdm(range(100)):
         error_square = 0.0
         for _ in range(100):
-            rl_method = MonteCarloOffPolicyEvaluation(q_table, b_policy, t_policy, env, episode)
+            critic = MonteCarloOffPolicyCritic(q_table)
+            rl_method = MonteCarloOffPolicyEvaluation(critic, b_policy, t_policy, env, episode)
             current_q_value= rl_method.evaluate()
             error_square = error_square+(current_q_value[init_state][BlackjackEnv.HIT] + 0.27726)*(current_q_value[init_state][BlackjackEnv.HIT] + 0.27726)
         

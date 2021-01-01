@@ -38,6 +38,38 @@
 from collections import defaultdict
 from common import CriticBase
 
+class MonteCarloOffPolicyCritic(CriticBase):
+    def __init__(self, q_value_function):
+        self.q_value_function = q_value_function
+    
+        # it is necessary to keep the weight total for every state_action pair
+        self.C = self._init_weight_total()
+
+    def evaluate(self, *args):
+        state_index  = args[0]
+        action_index = args[1]
+        G = args[2]
+        W = args[3]
+        
+        # weight total for current state_action pair
+        self.C[state_index][action_index] += W
+
+        # q_value calculated incrementally with off policy
+        self.q_value_function[state_index][action_index] += W / self.C[state_index][action_index] * (G-self.q_value_function[state_index][action_index])
+        
+
+    def _init_weight_total(self):
+        weight_total = defaultdict(lambda: {})
+        for state_index, action_values in self.q_value_function.items():
+            for action_index, _ in action_values.items():
+                weight_total[state_index][action_index] = 0.0
+        return weight_total
+
+    def get_value_function(self):
+        return self.q_value_function
+    
+
+
 
 class MonteCarloOnPolicyCritic(CriticBase):
     def __init__(self, q_value_function):
