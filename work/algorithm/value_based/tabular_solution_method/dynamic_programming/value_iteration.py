@@ -36,7 +36,7 @@ from common import ActorBase
 from lib.utility import create_distribution_greedily
 
 
-class Actor(ActorBase):
+class ValueIterationActor(ActorBase):
     def __init__(self, value_function, policy,transition_table, delta=1e-8, discount=1.0):
         self.value_function = value_function
         self.policy = policy
@@ -111,8 +111,8 @@ class ValueIteration:
     considered to be there, objectively. Therefore, the value iteration is a value based method.  
     """
 
-    def __init__(self, v_table, transition_table, policy, delta=1e-8, discount=1.0):
-        self.actor = Actor(v_table, policy,transition_table, delta, discount)
+    def __init__(self, actor):
+        self.actor = actor
     
 
     def improve(self):
