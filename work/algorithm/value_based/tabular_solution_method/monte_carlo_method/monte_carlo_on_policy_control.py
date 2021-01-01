@@ -36,36 +36,13 @@
 
 from collections import defaultdict
 
-from common import ActorBase, CriticBase
+from common import ActorBase
 from lib.utility import (create_distribution_epsilon_greedily,create_distribution_greedily)
 from policy.policy import DiscreteStateValueBasedPolicy
 from tqdm import tqdm
 
-class Critic(CriticBase):
-    def __init__(self, q_value_function):
-        self.q_value_function=q_value_function
-        self.state_count=self._init_state_count()
-        
-    def evaluate(self,*args):
-        state_index= args[0]
-        action_index = args[1]
-        R= args[2]
-
-        self.state_count[state_index][action_index] = (self.state_count[state_index][action_index][0] + 1, self.state_count[state_index][action_index][1] + R)
-        self.q_value_function[state_index][action_index] = self.state_count[state_index][action_index][1] / self.state_count[state_index][action_index][0]
-    
-    def get_value_function(self):
-        return self.q_value_function
-    
-    def _init_state_count(self):
-        state_count = defaultdict(lambda: {})
-        for state_index, action_values in self.q_value_function.items():
-            for action_index, _ in action_values.items():
-                state_count[state_index][action_index] = (0, 0.0)
-        return state_count
-
-class Actor(ActorBase):
-    def __init__(self,policy,critic,episilon):
+class MonteCarloOnPolicyActor(ActorBase):
+    def __init__(self,policy,critic,episilon=0.8):
         self.policy = policy
         self.critic = critic
         self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(episilon)
@@ -73,6 +50,7 @@ class Actor(ActorBase):
     
     def improve(self,*args): 
         state_index = args[0]
+        
         q_value_function = self.critic.get_value_function()
         soft_greedy_distibution = self.create_distribution_epsilon_greedily(q_value_function[state_index])
         self.policy.policy_table[state_index] = soft_greedy_distibution    
@@ -92,13 +70,12 @@ class Actor(ActorBase):
 
 
 class MonteCarloOnPolicyControl:
-    def __init__(self, q_value_function, policy, env, episilon= 0.1,episodes=10000, discount=1.0):
+    def __init__(self, critic, actor, env,episodes=10000, discount=1.0):
         self.env = env
-        self.policy = policy
         self.episodes = episodes
         self.discount = discount
-        self.critic = Critic(q_value_function) 
-        self.actor = Actor(policy,self.critic,episilon)
+        self.critic = critic 
+        self.actor = actor
 
     def improve(self, *args):
         for _ in tqdm(range(0, self.episodes)):

@@ -32,7 +32,7 @@
 # #### END LICENSE BLOCK #####
 #
 # /
-from ReinforcementLearningBasic.work.algorithm.value_based.tabular_solution_method.td_method.td_common import TDCritic
+from algorithm.value_based.tabular_solution_method.td_method.td_common import TDCritic
 import heapq
 from abc import abstractmethod
 

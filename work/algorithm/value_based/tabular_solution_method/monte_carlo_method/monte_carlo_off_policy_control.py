@@ -40,7 +40,7 @@ from common import ActorBase, CriticBase
 from lib.utility import create_distribution_greedily
 from tqdm import tqdm
 
-class Critic(CriticBase):
+class MonteCarloOffPolicyCritic(CriticBase):
     def __init__(self, q_value_function):
         self.q_value_function = q_value_function
     
@@ -71,7 +71,7 @@ class Critic(CriticBase):
         return self.q_value_function
     
 
-class Actor(ActorBase):
+class MonteCarloOffPolicyActor(ActorBase):
     def __init__(self,behavior_policy,target_policy,critic):
         self.target_policy = target_policy
         self.behavior_policy = behavior_policy
@@ -99,14 +99,13 @@ class MonteCarloOffPolicyControl:
     1) Weighted importance sampling.
     2) Incremental implementation
     """
-    def __init__(self, q_value_function, behavior_policy, target_policy,env, episodes=500000, discount=1.0,epsilon=0.5):
+    def __init__(self, critic, actor, env, episodes=500000, discount=1.0):
         self.env = env
         self.episodes = episodes
         self.discount = discount
-        self.epsilon  = epsilon
-        
-        self.critic= Critic(q_value_function)
-        self.actor = Actor(behavior_policy,target_policy,self.critic)
+
+        self.critic= critic
+        self.actor = actor
 
     def improve(self):
         for _ in tqdm(range(0, self.episodes)):

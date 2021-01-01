@@ -8,18 +8,15 @@ sys.path.append(work_folder)
 
 from tqdm import tqdm
 
-from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_es_control import MonteCarloESControl
-from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_off_policy_control import MonteCarloOffPolicyControl
+from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_es_control import MonteCarloESActor, MonteCarloESControl
+from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_common import MonteCarloOnPolicyCritic
+from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_off_policy_control import MonteCarloOffPolicyActor, MonteCarloOffPolicyControl, MonteCarloOffPolicyCritic
 from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_off_policy_evaluation import MonteCarloOffPolicyEvaluation
-from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_on_policy_control import MonteCarloOnPolicyControl
+from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_on_policy_control import MonteCarloOnPolicyActor, MonteCarloOnPolicyControl
 from env.blackjack import BlackjackEnv
 from lib.plotting import plot_episode_error
 from policy.policy import DiscreteStateValueBasedPolicy
 from test_setup import get_env
-
-sys.path.append("/home/ornot/workspace/ReinforcementLearningBasic/work")
-
-
 
 real_env = get_env("blackjack")
 
@@ -28,7 +25,10 @@ def test_q_mc_es_control_method(env):
     q_table = env.build_Q_table()
     policy_table = env.build_policy_table()
     behavior_policy = DiscreteStateValueBasedPolicy(policy_table)
-    rl_method = MonteCarloESControl(q_table, behavior_policy,env,8000)
+
+    critic = MonteCarloOnPolicyCritic(q_table) 
+    actor = MonteCarloESActor(behavior_policy,critic)
+    rl_method = MonteCarloESControl(critic,actor,env,8000)
     optimal_policy=rl_method.improve()
     env.show_policy(optimal_policy)
 
@@ -37,8 +37,12 @@ test_q_mc_es_control_method(real_env)
 def test_mc_onpolicy_control_method(env):
     q_table = env.build_Q_table()
     policy_table = env.build_policy_table()
-    target_policy = DiscreteStateValueBasedPolicy(policy_table)
-    rl_method = MonteCarloOnPolicyControl(q_table,target_policy,env,0.8,8000)
+    behavior_policy = DiscreteStateValueBasedPolicy(policy_table)
+
+    critic = MonteCarloOnPolicyCritic(q_table) 
+    actor = MonteCarloOnPolicyActor(behavior_policy,critic)
+
+    rl_method = MonteCarloOnPolicyControl(critic,actor,env,8000)
     optimal_policy=rl_method.improve()
     env.show_policy(optimal_policy)
 
@@ -50,7 +54,11 @@ def test_mc_offpolicy_control_method(env):
     policy_table = env.build_policy_table()
     behavior_policy = DiscreteStateValueBasedPolicy(policy_table)
     target_policy = copy.deepcopy(behavior_policy)
-    rl_method = MonteCarloOffPolicyControl(q_table, behavior_policy, target_policy, env,8000)
+
+    critic= MonteCarloOffPolicyCritic(q_table)
+    actor = MonteCarloOffPolicyActor(behavior_policy,target_policy,critic)
+
+    rl_method = MonteCarloOffPolicyControl(critic, actor , env,8000)
     optimal_policy=rl_method.improve()
     env.show_policy(optimal_policy)
 
