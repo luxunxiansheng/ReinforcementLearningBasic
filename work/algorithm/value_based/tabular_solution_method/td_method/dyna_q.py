@@ -43,11 +43,12 @@ from copy import deepcopy
 TRIVAL = 1
 PRIORITY = 2
 
-class DynaQCritic(TDCritic):
-    def __init__(self, value_function, model, step_size=0.1, iterations=5):
+class DynaQTrivalCritic(TDCritic):
+    def __init__(self, value_function, model, step_size=0.1, discount=1.0,iterations=5):
         super().__init__(value_function, step_size)
         self.model = model 
         self.iterations = iterations
+        self.discount = discount
 
     def evaluate(self, *args):
         current_state_index  = args[0]
@@ -59,17 +60,63 @@ class DynaQCritic(TDCritic):
         max_value = max(q_values_next_state.values())
         target = reward + max_value
         self.update(current_state_index,current_action_index,target)
-        
+
         self.model.feed(current_state_index, current_action_index, next_state_index, reward)
-        
         # Take Q learning several times. 
         for _ in tqdm(range(0, self.iterations)):
             sampled_current_state_index, sampled_current_action_index, sampled_next_state_index, sampled_reward = self.model.sample()
             sampled_q_values_next_state = self.value_function[sampled_next_state_index]
             max_value = max(sampled_q_values_next_state.values())
-            sampled_target = sampled_reward + max_value
+            sampled_target = sampled_reward + self.discount*max_value
             self.update(sampled_current_state_index,sampled_current_action_index,sampled_target)
 
+
+class DynaQPriorityCritic(TDCritic):
+    def __init__(self, value_function, model, step_size=0.1, discount = 1.0,iterations=5):
+        super().__init__(value_function, step_size)
+        self.model = model 
+        self.iterations = iterations
+        self.discount = discount
+
+    def evaluate(self, *args):
+        current_state_index  = args[0]
+        current_action_index = args[1]
+        reward = args[2]
+        next_state_index = args[3]
+        
+        q_values_next_state = self.value_function[next_state_index]
+        max_value = max(q_values_next_state.values())
+        target = reward + max_value
+        self.update(current_state_index,current_action_index,target)
+
+        self.model.feed(current_state_index, current_action_index, next_state_index, reward)
+        
+        #if the value updated a lot, we put it into the priority queue 
+        q_values_next_state = self.value_function[next_state_index]
+        max_value = max(q_values_next_state.values())
+        delta = reward + self.discount * max_value - self.value_function[current_state_index][current_action_index]
+        priority = np.abs(delta)
+        if priority > self.model.theta:
+            self.model.priority_queue.add_item((current_state_index, current_action_index), -priority)
+
+        # prioritized Sweeping 
+        for _ in tqdm(range(0, self.iterations)):
+            if self.model.priority_queue.empty():
+                return
+            _, sampled_current_state_index, sampled_current_action_index, sampled_next_state_index, sampled_reward = self.model.sample()
+            sampled_q_values_next_state = self.value_function[sampled_next_state_index]
+            max_value = max(sampled_q_values_next_state.values())
+            sampled_target = sampled_reward+self.discount*max_value
+            self.update(sampled_current_state_index,sampled_current_action_index,sampled_target)
+
+            # deal with all the predecessors of the sample state
+            for pre_state_index, pre_action_index, reward in self.model.get_predecessors(sampled_current_state_index):
+                q_values_current_state = self.value_function[sampled_current_state_index]
+                max_value = max(q_values_current_state.values())
+                delta = reward + self.discount * max_value - self.value_function[pre_state_index][pre_action_index]
+                priority = np.abs(delta)
+                if priority > self.model.theta:
+                    self.model.priority_queue.add_item((pre_state_index, pre_action_index), -priority)
 
 class DynaQ:
     def __init__(self, critic,actor, env, statistics, episodes):
@@ -148,16 +195,6 @@ class TrivialModel(Model):
         next_state_index, reward = self.model[state_index][action_index]
         return state_index, action_index, next_state_index, reward
 
-    def plan(self, q_table, discount, step_size, iterations, current_state_index, current_action_index, next_state_index, reward):
-        self.feed(current_state_index, current_action_index, next_state_index, reward)
-        
-        # Take Q learning several times. 
-        for _ in tqdm(range(0, iterations)):
-            sampled_current_state_index, sampled_current_action_index, sampled_next_state_index, sampled_reward = self.sample()
-            sampled_q_values_next_state = q_table[sampled_next_state_index]
-            max_value = max(sampled_q_values_next_state.values())
-            delta = sampled_reward + discount * max_value -  q_table[sampled_current_state_index][sampled_current_action_index]
-            q_table[sampled_current_state_index][sampled_current_action_index] += step_size * delta
 
 
 class PriorityQueue:
@@ -213,42 +250,11 @@ class PriorityModel(Model):
         self.predecessors[next_state_index].add((state_index, action_index))
 
     # get all seen predecessors of a state @state
-    def _get_predecessors(self, state_index):
+    def get_predecessors(self, state_index):
         if state_index not in self.predecessors.keys():
             return []
         predecessors = []
         for state_index_pre, action_index_pre in list(self.predecessors[state_index]):
             predecessors.append([state_index_pre, action_index_pre,self.model[state_index_pre][action_index_pre][1]])
         return predecessors
-
-    def plan(self, q_table, discount, step_size, iterations, current_state_index, current_action_index, next_state_index, reward):
-        self.feed(current_state_index, current_action_index, next_state_index, reward)
-        
-        #if the value updated a lot, we put it into the priority queue 
-        q_values_next_state = q_table[next_state_index]
-        max_value = max(q_values_next_state.values())
-        delta = reward + discount * max_value - q_table[current_state_index][current_action_index]
-        priority = np.abs(delta)
-        if priority > self.theta:
-            self.priority_queue.add_item((current_state_index, current_action_index), -priority)
-
-        # prioritized Sweeping 
-        for _ in tqdm(range(0, iterations)):
-            if self.priority_queue.empty():
-                return
-            _, sampled_current_state_index, sampled_current_action_index, sampled_next_state_index, sampled_reward = self.sample()
-            sampled_q_values_next_state = q_table[sampled_next_state_index]
-            max_value = max(sampled_q_values_next_state.values())
-            delta = sampled_reward + discount * max_value - q_table[sampled_current_state_index][sampled_current_action_index]
-            q_table[sampled_current_state_index][sampled_current_action_index] += step_size * delta
-
-            # deal with all the predecessors of the sample state
-            for pre_state_index, pre_action_index, reward in self._get_predecessors(sampled_current_state_index):
-                q_values_current_state = q_table[sampled_current_state_index]
-                max_value = max(q_values_current_state.values())
-                delta = reward + discount * max_value - q_table[pre_state_index][pre_action_index]
-                priority = np.abs(delta)
-                if priority > self.theta:
-                    self.priority_queue.add_item((pre_state_index, pre_action_index), -priority)
-
 

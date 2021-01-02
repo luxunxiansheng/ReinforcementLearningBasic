@@ -8,7 +8,7 @@ import numpy as np
 
 from algorithm.value_based.tabular_solution_method.td_method.td_common import (GreedyActor,BoltzmannActor, ESoftActor, LambdaCritic, OffPolicyGreedyActor, QLearningLambdaCritic, TDLambdaCritic, TDNSARSACritic,TDNExpectedSARSACritic)
 from algorithm.value_based.tabular_solution_method.td_method.double_q_learning import DoubleQLearning, DoubleQLearningCritic
-from algorithm.value_based.tabular_solution_method.td_method.dyna_q import (DynaQCritic, PRIORITY, TRIVAL, DynaQ, TrivialModel)
+from algorithm.value_based.tabular_solution_method.td_method.dyna_q import (DynaQPriorityCritic, DynaQTrivalCritic, PRIORITY, PriorityModel, TRIVAL, DynaQ, TrivialModel)
 from algorithm.value_based.tabular_solution_method.td_method.expected_sarsa import ExpectedSARSA,ExpectedSARSACritic
 from algorithm.value_based.tabular_solution_method.td_method.n_steps_expected_sarsa import NStepsExpectedSARSA
 from algorithm.value_based.tabular_solution_method.td_method.n_steps_sarsa import NStepsSARSA
@@ -311,7 +311,7 @@ def test_dynaQ_method_trival(env):
 
     model = TrivialModel()  
 
-    critic = DynaQCritic(q_table,model)
+    critic = DynaQTrivalCritic(q_table,model)
     actor  = ESoftActor(b_policy,critic)
 
     dyna_q_statistics = EpisodeStats("Dyna_Q", episode_lengths=np.zeros(
@@ -322,27 +322,34 @@ def test_dynaQ_method_trival(env):
 
     return dyna_q_statistics
 
-"""
+
 def test_dynaQ_method_priority(env):
     q_table = env.build_Q_table()
     b_policy_table = env.build_policy_table()
     b_policy = DiscreteStateValueBasedPolicy(b_policy_table)
 
+    model  = PriorityModel()
+
+    critic = DynaQPriorityCritic(q_table,model)
+    actor  = ESoftActor(b_policy,critic)
+
     dyna_q_statistics = EpisodeStats("Dyna_Q_PRIORITY", episode_lengths=np.zeros(
         num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
 
-    dyna_q_method = DynaQ(q_table, b_policy, 0.1, env,dyna_q_statistics, num_episodes, mode=PRIORITY)
+    dyna_q_method = DynaQ(critic,actor,env,dyna_q_statistics,num_episodes)
     dyna_q_method.improve()
 
     return dyna_q_statistics
 
-"""
+
 
 def test_td_control_method(env):
-    """plot_episode_stats([test_expected_sarsa_method(env),test_n_setps_expected_sarsa_method(env),test_off_policy_n_steps_sarsa(env),
-                        test_n_steps_sarsa_method(env),test_qlearning_method(env),test_sarsa_lambda_method(env),test_q_lambda_method(env)])
     """
-    plot_episode_stats([test_qlearning_method(env),test_q_lambda_method(env),test_double_q_learning_method(env),test_dynaQ_method_trival(env)])
+    plot_episode_stats([test_expected_sarsa_method(env),test_n_setps_expected_sarsa_method(env),test_off_policy_n_steps_sarsa(env),
+                        test_n_steps_sarsa_method(env),test_qlearning_method(env),test_sarsa_lambda_method(env),test_q_lambda_method(env)])
+    
+    """
+    plot_episode_stats([test_qlearning_method(env),test_q_lambda_method(env),test_double_q_learning_method(env),test_dynaQ_method_trival(env),test_dynaQ_method_priority(env)])
 
 
 real_env = get_env("cliffwalking")
