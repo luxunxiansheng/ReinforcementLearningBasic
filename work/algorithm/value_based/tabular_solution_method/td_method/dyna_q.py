@@ -44,30 +44,40 @@ TRIVAL = 1
 PRIORITY = 2
 
 class DynaQCritic(TDCritic):
-    def __init__(self, value_function, step_size):
-        super().__init__(value_function, step_size=step_size)
+    def __init__(self, value_function, model, step_size=0.1, iterations=5):
+        super().__init__(value_function, step_size)
+        self.model = model 
+        self.iterations = iterations
+
+    def evaluate(self, *args):
+        current_state_index  = args[0]
+        current_action_index = args[1]
+        reward = args[2]
+        next_state_index = args[3]
+        
+        q_values_next_state = self.value_function[next_state_index]
+        max_value = max(q_values_next_state.values())
+        target = reward + max_value
+        self.update(current_state_index,current_action_index,target)
+        
+        self.model.feed(current_state_index, current_action_index, next_state_index, reward)
+        
+        # Take Q learning several times. 
+        for _ in tqdm(range(0, self.iterations)):
+            sampled_current_state_index, sampled_current_action_index, sampled_next_state_index, sampled_reward = self.model.sample()
+            sampled_q_values_next_state = self.value_function[sampled_next_state_index]
+            max_value = max(sampled_q_values_next_state.values())
+            sampled_target = sampled_reward + max_value
+            self.update(sampled_current_state_index,sampled_current_action_index,sampled_target)
 
 
-
-class Actor(ActorBase):
-    def __init__(self, q_table, behavior_table_policy, epsilon, env, statistics, episodes, iterations=5, step_size=0.1, discount=1.0, mode=TRIVAL):
-        self.q_table = q_table
-        self.policy = behavior_table_policy
+class DynaQ:
+    def __init__(self, critic,actor, env, statistics, episodes):
         self.env = env
         self.episodes = episodes
-        self.step_size = step_size
-        self.discount = discount
-        self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(epsilon)
-        self.create_distribution_greedily = create_distribution_greedily()
-
+        self.critic = critic 
+        self.actor  = actor 
         self.statistics = statistics
-
-        if mode == PRIORITY:
-            self.model = PriorityModel()
-        else:
-            self.model = TrivialModel()
-
-        self.iterations = iterations
 
     def improve(self):
         for episode in tqdm(range(0, self.episodes)):
@@ -79,7 +89,7 @@ class Actor(ActorBase):
 
         while True:
             # A
-            current_action_index = self.policy.get_action(current_state_index)
+            current_action_index = self.actor.get_behavior_policy().get_action(current_state_index)
             observation = self.env.step(current_action_index)
 
             # R
@@ -92,24 +102,15 @@ class Actor(ActorBase):
             # S'
             next_state_index = observation[0]
 
-            q_values_next_state = self.q_table[next_state_index]
-            max_value = max(q_values_next_state.values())
-            delta = reward + self.discount * max_value - self.q_table[current_state_index][current_action_index]
-            self.q_table[current_state_index][current_action_index] += self.step_size * delta
-            self.model.plan(self.q_table, self.discount, self.step_size, self.iterations, current_state_index, current_action_index, next_state_index, reward)
-            
-            # update policy softly
-            q_values = self.q_table[current_state_index]
-            distribution = self.create_distribution_epsilon_greedily(q_values)
-            self.policy.policy_table[current_state_index] = distribution
+            self.critic.evaluate(current_state_index,current_action_index,reward,next_state_index)
+            self.actor.improve(current_state_index)
 
             if done:
                 break
 
             current_state_index = next_state_index
 
-    def get_optimal_policy(self):
-        return self.policy
+
 
         
 #######################################################################
@@ -135,10 +136,6 @@ class Model():
 
     @abstractmethod
     def sample(self):
-        pass
-
-    @abstractmethod
-    def plan(self, q_table, discount, step_size, iterations, current_state_index, current_action_index, next_state_index, reward):
         pass
 
 
@@ -255,11 +252,3 @@ class PriorityModel(Model):
                     self.priority_queue.add_item((pre_state_index, pre_action_index), -priority)
 
 
-class DynaQ:
-    def __init__(self, q_table, behavior_table_policy, epsilon, env, statistics, episodes, iterations=5, step_size=0.1, discount=1.0, mode=TRIVAL):
-
-        self.actor = Actor(q_table, behavior_table_policy, epsilon, env, statistics,episodes, iterations, step_size, discount,mode)
-
-    def improve(self):
-        self.actor.improve()
-        return self.actor.get_optimal_policy()

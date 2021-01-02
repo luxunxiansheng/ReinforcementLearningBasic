@@ -92,7 +92,8 @@ class TDNExpectedSARSACritic(TDCritic):
 
 class LambdaCritic(CriticBase):
     def __init__(self,value_function,step_size=0.1,discount=1.0,lamb=0.01):
-        super().__init__(value_function, step_size=step_size)
+        self.value_function = value_function
+        self.step_size = step_size
         self.discount = discount
         self.lamb =lamb
 
