@@ -44,7 +44,7 @@ class QValueEstimator:
         pass
 
     @abstractmethod
-    def update(self, alpha, state, action, target):
+    def update(self, state, action, target):
         pass
 
 
@@ -160,7 +160,7 @@ class TileCodingBasesQValueEstimator(QValueEstimator):
         return np.sum(self.weights[active_tiles])
 
 
-    def update(self, alpha, state, action, target,discount = 1.0, lamda=0.0):
+    def update(self,state, action, target,discount = 1.0, lamda=0.0):
         
         delta = target - self.predict(state,action)
         derivative_value= np.zeros_like(self.weights)
@@ -170,4 +170,4 @@ class TileCodingBasesQValueEstimator(QValueEstimator):
             derivative_value[active_tile] = 1
         
         self.eligibility = self.eligibility*lamda*discount+derivative_value
-        self.weights += alpha*delta*self.eligibility
+        self.weights += self.step_size *delta*self.eligibility

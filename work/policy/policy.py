@@ -78,9 +78,13 @@ class ContinuousStateValueBasedPolicy(DiscreteActionPolicy):
         self.create_distribution_fn = create_distribution_fn
         self.q_value_estimator = q_value_estimator
         self.action_space = action_space
+        self.q_values = None 
         
 
     def _construct_discrete_distribution(self,state):
+        
+        return list(self.q_values)
+        
         q_values ={}
         for action_index in range(self.action_space.n):
             q_values[action_index] = self.q_value_estimator.predict(state,action_index)

@@ -37,34 +37,32 @@ from common import ActorBase
 import numpy as np
 from tqdm import tqdm
 
-class Actor(ActorBase):
+class EpisodicSemiGradientExpectedSarsaControl:
     """
     Expected SARSA algorithm: On-policy TD control. Finds the optimal epsilon-greedy policy with approximation of q funciton 
     """
 
-    def __init__(self, estimator, continuous_state_policy, env, statistics, episodes, step_size=0.1, discount=1.0):
-        self.q_value_estimator = estimator
+    def __init__(self, critic, actor ,continuous_state_policy, env, statistics, episodes,discount=1.0):
         self.policy = continuous_state_policy
         self.env = env
-        self.step_size = step_size
         self.discount = discount
         self.statistics = statistics
         self.episodes = episodes
+        self.critic = critic 
+        self.actor  = actor 
 
     def improve(self,*args):
         for episode in tqdm(range(0, self.episodes)):
             self._run_one_episode(episode)
 
-    def get_behavior_policy(self):
-        return self.policy
-    
+
     def _run_one_episode(self, episode):
         # S
-        current_state = self.env.reset()
+        current_state_index = self.env.reset()
 
         while True:
             # A
-            current_action_index = self.get_behavior_policy().get_action(current_state)
+            current_action_index = self.actor.get_behavior_policy().get_action(current_state_index)
             
             observation = self.env.step(current_action_index)
             # R
@@ -75,43 +73,16 @@ class Actor(ActorBase):
             self.statistics.episode_lengths[episode] += 1
 
             # S'
-            next_state = observation[0]
+            next_state_index = observation[0]
 
-        
-            # expected q value of the next state 
-            
-            
-            q_values = {}
-            for action_index in range(self.env.action_space.n):
-                q_values[action_index] = self.q_value_estimator.predict(next_state,action_index)
-            distribution = self.policy.get_action_distribution(q_values)
-
-            expected_q_value = 0
-            for action_index in range(self.env.action_space.n):
-                expected_q_value += distribution[action_index]*q_values[action_index]
-            
-            # set the target 
-            target = reward + self.discount * expected_q_value
-
-            # SGD fitting
-            self.q_value_estimator.update(self.step_size, current_state, current_action_index, target)
+            self.critic.evaluate(current_state_index,current_action_index,reward,next_state_index)
 
             if done:
                 break
 
-            current_state = next_state
-
-
-    def get_optimal_policy(self):
-        return self.policy
+            current_state_index = next_state_index
 
 
 
 
-class EpisodicSemiGradientExpectedSarsaControl:
-    def __init__(self, estimator, discreteactionpolicy, env, statistics, episodes, step_size=0.1, discount=1.0):
-        self.actor= Actor(estimator, discreteactionpolicy, env, statistics, episodes, step_size, discount)
 
-    def improve(self):
-        self.actor.improve()
-        return self.actor.get_optimal_policy()
