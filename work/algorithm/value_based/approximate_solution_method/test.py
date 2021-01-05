@@ -19,7 +19,7 @@ from lib.utility import create_distribution_epsilon_greedily
 from policy.policy import ContinuousStateValueBasedPolicy, DiscreteStateValueBasedPolicy
 from test_setup import get_env
 
-num_episodes = 100
+num_episodes = 100000
 n_steps = 4
 
 
@@ -28,6 +28,11 @@ def test_approximation_evaluation(env):
     b_policy = DiscreteStateValueBasedPolicy(b_policy_table)
 
     distribution = np.zeros(env.nS)
+
+    vf = StateAggregationVValueEstimator(env.nS, 3)
+    gradientmcevalution = GradientMonteCarloEvaluation(vf, b_policy, env, episodes=num_episodes, distribution=distribution)
+    gradientmcevalution.evaluate()
+    mc_sg = plotting.StateValues('gradientMCEvalution', vf)
 
     vf = StateAggregationVValueEstimator(env.nS, 3)
     semigradienttdlambdaevalution = SemiGradientTDLambdaEvaluation(vf, b_policy, env, episodes=num_episodes, lamda=0.0)
@@ -39,10 +44,6 @@ def test_approximation_evaluation(env):
     semigradienttdnevalution.evaluate()
     semi_graident_tdn_sg = plotting.StateValues('semigradientTDNevalution', vf)
 
-    vf = StateAggregationVValueEstimator(env.nS, 3)
-    gradientmcevalution = GradientMonteCarloEvaluation(vf, b_policy, env, episodes=num_episodes, distribution=distribution)
-    gradientmcevalution.evaluate()
-    mc_sg = plotting.StateValues('gradientMCEvalution', vf)
 
     plotting.plot_state_value(env, [semi_grident_tdl_sg, semi_graident_tdn_sg, semi_graident_tdn_sg, mc_sg])
 
