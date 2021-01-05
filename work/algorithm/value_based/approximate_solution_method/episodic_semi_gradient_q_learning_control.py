@@ -33,32 +33,58 @@
 #
 # /
 
-from common import ActorBase
+from common import ActorBase, CriticBase
 import numpy as np
 from tqdm import tqdm
 
+class ApproximationQLearningCritic(CriticBase):
+    def __init__(self,env,estimator,policy,step_size=0.01,discount= 1.0):
+        self.env = env 
+        self.estimator = estimator
+        self.discount = discount
+        self.policy = policy 
+        self.step_size = step_size
 
-class Actor(ActorBase):
+    def evaluate(self, *args):
+        current_state_index = args[0]
+        current_action_index = args[1]
+        reward = args[2]
+        next_state_index = args[3]    
+        
+        # max action value of the next state 
+        q_values = {}
+        for action_index in range(self.env.action_space.n):
+            q_values[action_index] = self.estimator.predict(next_state_index,action_index)
+        max_value = max(q_values.values())
+
+        # set the target 
+        target = reward + self.discount * max_value
+
+        # SGD fitting
+        self.estimator.update(current_state_index, current_action_index, target)
+
+    
+    def get_value_function(self):
+        return self.estimator
+
+
+
+class EpisodicSemiGradientQLearningControl:
     """
     Q_Learning algorithm: Off-policy TD control. Finds the optimal epsilon-greedy policy with approximation of q funciton 
     """
 
-    def __init__(self, estimator, discreteactionpolicy, env, statistics, episodes, step_size=0.1, discount=1.0):
-        self.estimator = estimator
-        self.policy = discreteactionpolicy
+    def __init__(self, critic, actor, env, statistics, episodes,discount=1.0):
         self.env = env
-        self.step_size = step_size
         self.discount = discount
         self.statistics = statistics
         self.episodes = episodes
+        self.critic = critic 
+        self.actor  = actor 
 
-
-    def improve(self):
+    def improve(self,*args):
         for episode in tqdm(range(0, self.episodes)):
             self._run_one_episode(episode)
-
-    def get_behavior_policy(self):
-        return self.policy
 
     def _run_one_episode(self, episode):
         # S
@@ -66,7 +92,8 @@ class Actor(ActorBase):
 
         while True:
             # A
-            current_action_index = self.get_behavior_policy().get_action(current_state)
+            self.actor.improve()
+            current_action_index = self.actor.get_behavior_policy().get_action(current_state)
             
             observation = self.env.step(current_action_index)
             # R
@@ -78,31 +105,11 @@ class Actor(ActorBase):
 
             # S'
             next_state = observation[0]
+            self.critic.evaluate(current_state_index,current_action_index,reward,next_state_index)
 
-            # max action value of the next state 
-            q_values = {}
-            for action_index in range(self.env.action_space.n):
-                q_values[action_index] = self.estimator.predict(next_state,action_index)
-            max_value = max(q_values.values())
-
-            # set the target 
-            target = reward + self.discount * max_value
-
-            # SGD fitting
-            self.estimator.update(self.step_size, current_state, current_action_index, target)
-
+            
             if done:
                 break
 
             current_state = next_state
     
-    def get_optimal_policy(self):
-        return self.policy
-
-class EpisodicSemiGradientQLearningControl:
-    def __init__(self, estimator, discreteactionpolicy, env, statistics, episodes, step_size=0.1, discount=1.0):
-        self.actor = Actor(estimator, discreteactionpolicy, env, statistics, episodes, step_size, discount)
-    
-    def improve(self):
-        self.actor.improve()
-        return self.actor.get_optimal_policy()

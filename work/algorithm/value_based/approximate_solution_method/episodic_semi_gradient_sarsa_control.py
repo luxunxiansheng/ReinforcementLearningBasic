@@ -33,38 +33,79 @@
 #
 # /
 
-from common import ActorBase
+from common import ActorBase, CriticBase
 import numpy as np
 from tqdm import tqdm
+from lib.utility import (create_distribution_epsilon_greedily,create_distribution_greedily)
 
 
-class Actor(ActorBase):
+class ApproximationSARSACritic(CriticBase):
+    def __init__(self,env,estimator,policy,step_size=0.01,discount= 1.0):
+        self.env = env 
+        self.estimator = estimator
+        self.discount = discount
+        self.policy = policy 
+        self.step_size = step_size
+
+    def evaluate(self, *args):
+        current_state_index = args[0]
+        current_action_index = args[1]
+        reward = args[2]
+        next_state_index  = args[3]
+        next_action_index = args[4]
+
+        # set the target 
+        target = reward + self.discount * self.estimator.predict(next_state_index, next_action_index)
+
+        # SGD fitting
+        self.estimator.update(current_state_index, current_action_index, target)
+    
+    def get_value_function(self):
+        return self.estimator
+
+
+class ESoftActor(ActorBase):
+    def __init__(self, policy,critic,epsilon=0.1):
+        self.policy = policy
+        self.critic = critic
+        self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(epsilon)
+        self.create_distribution_greedily = create_distribution_greedily()
+
+    def improve(self, *args):
+        current_state_index = args[0]
+        q_value_function = self.critic.get_value_function()
+        q_values = q_value_function[current_state_index]
+        soft_greedy_distibution = self.create_distribution_epsilon_greedily(q_values)
+        self.policy.instant_distribution = soft_greedy_distibution
+
+    def get_behavior_policy(self):
+        return self.policy
+
+class EpisodicSemiGradientSarsaControl:
     """
     SARSA algorithm: On-policy TD control. Finds the optimal epsilon-greedy policy with approximation of q funciton 
     """
 
-    def __init__(self, estimator, discreteactionpolicy, env, statistics, episodes, step_size=0.1, discount=1.0):
-        self.estimator = estimator
-        self.policy = discreteactionpolicy
+    def __init__(self, critic, actor, env, statistics, episodes,discount=1.0):
         self.env = env
-        self.step_size = step_size
         self.discount = discount
         self.statistics = statistics
         self.episodes = episodes
+        self.critic = critic 
+        self.actor  = actor 
 
     def improve(self):
         for episode in tqdm(range(0, self.episodes)):
             self._run_one_episode(episode)
     
-    def get_behavior_policy(self):
-        return self.policy
 
     def _run_one_episode(self, episode):
         # S
-        current_state = self.env.reset()
+        current_state_index = self.env.reset()
 
         # A
-        current_action_index = self.get_behavior_policy().get_action(current_state)
+        self.actor.improve()
+        current_action_index = self.get_behavior_policy().get_action(current_state_index)
 
         while True:
             observation = self.env.step(current_action_index)
@@ -76,32 +117,17 @@ class Actor(ActorBase):
             self.statistics.episode_lengths[episode] += 1
 
             # S'
-            next_state = observation[0]
+            next_state_index = observation[0]
 
             # A'
-            next_action_index = self.policy.get_action(next_state)
 
-            
-            # set the target 
-            target = reward + self.discount * self.estimator.predict(next_state, next_action_index)
+            next_action_index = self.policy.get_action(next_state_index)
 
-            # SGD fitting
-            self.estimator.update(self.step_size, current_state, current_action_index, target)
+            self.critic.evaluate(current_state_index,current_action_index,reward,next_state_index,next_action_index)
 
             if done:
                 break
 
-            current_state = next_state
+            current_state_index = next_state_index
             current_action_index = next_action_index
-    
-    def get_optimal_policy(self):
-        return self.policy
 
-
-class EpisodicSemiGradientSarsaControl:
-    def __init__(self, estimator, discreteactionpolicy, env, statistics, episodes, step_size=0.1, discount=1.0):
-        self.actor= Actor(estimator, discreteactionpolicy, env, statistics, episodes, step_size, discount)
-    
-    def improve(self):
-        self.actor.improve()
-        return self.actor.get_optimal_policy()

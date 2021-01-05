@@ -56,11 +56,11 @@ class DiscreteActionPolicy(ABC):
 
     """
     @abstractmethod
-    def _construct_discrete_distribution(self,state):
+    def get_discrete_distribution(self,state):
         pass   
 
     def get_action(self, state):
-        distribution = self._construct_discrete_distribution(state)
+        distribution = self.get_discrete_distribution(state)
         action = np.random.choice(np.arange(len(distribution)), p=distribution)
         return action
 
@@ -69,30 +69,16 @@ class DiscreteStateValueBasedPolicy(DiscreteActionPolicy):
     def __init__(self,policy_table):
         self.policy_table = policy_table
 
-    def _construct_discrete_distribution(self, state):
+    def get_discrete_distribution(self, state):
         return list(self.policy_table[state].values())
 
 
 class ContinuousStateValueBasedPolicy(DiscreteActionPolicy):
-    def __init__(self,action_space,q_value_estimator,create_distribution_fn):
-        self.create_distribution_fn = create_distribution_fn
-        self.q_value_estimator = q_value_estimator
-        self.action_space = action_space
-        self.q_values = None 
-        
+    def __init__(self):
+        self.instant_distribution = None
 
-    def _construct_discrete_distribution(self,state):
-        
-        return list(self.q_values)
-        
-        q_values ={}
-        for action_index in range(self.action_space.n):
-            q_values[action_index] = self.q_value_estimator.predict(state,action_index)
-        
-        return  list(self.create_distribution_fn(q_values).values())
-    
-    def get_action_distribution(self,q_values):
-        return list(self.create_distribution_fn(q_values).values())
+    def get_discrete_distribution(self,state):
+        return  list(self.instant_distribution)
 
 class ParameterizedPolicy(DiscreteActionPolicy):
     """

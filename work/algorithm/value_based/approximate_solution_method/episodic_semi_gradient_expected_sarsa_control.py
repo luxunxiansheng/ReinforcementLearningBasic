@@ -37,13 +37,49 @@ from common import ActorBase
 import numpy as np
 from tqdm import tqdm
 
+from common import CriticBase
+
+class ApproximationExpectedSARSACritic(CriticBase):
+    def __init__(self,env,estimator,policy,step_size=0.01,discount= 1.0):
+        self.env = env 
+        self.estimator = estimator
+        self.discount = discount
+        self.policy = policy 
+        self.step_size = step_size
+
+    def evaluate(self, *args):
+        current_state_index = args[0]
+        current_action_index = args[1]
+        reward = args[2]
+        next_state_index = args[3]    
+        
+        q_values = {}
+        for action_index in range(self.env.action_space.n):
+            q_values[action_index] = self.estimator.predict(next_state_index,action_index)
+        distribution = self.policy.get_action_distribution(q_values)
+
+        expected_q_value = 0
+        for action_index in range(self.env.action_space.n):
+            expected_q_value += distribution[action_index]*q_values[action_index]
+        
+        # set the target 
+        target = reward + self.discount * expected_q_value
+
+        # SGD fitting
+        self.estimator.update(current_state_index, current_action_index, target)
+
+    
+    def get_value_function(self):
+        return self.estimator
+
+
+
 class EpisodicSemiGradientExpectedSarsaControl:
     """
     Expected SARSA algorithm: On-policy TD control. Finds the optimal epsilon-greedy policy with approximation of q funciton 
     """
 
-    def __init__(self, critic, actor ,continuous_state_policy, env, statistics, episodes,discount=1.0):
-        self.policy = continuous_state_policy
+    def __init__(self, critic, actor, env, statistics, episodes,discount=1.0):
         self.env = env
         self.discount = discount
         self.statistics = statistics
@@ -62,6 +98,7 @@ class EpisodicSemiGradientExpectedSarsaControl:
 
         while True:
             # A
+            self.actor.improve()
             current_action_index = self.actor.get_behavior_policy().get_action(current_state_index)
             
             observation = self.env.step(current_action_index)

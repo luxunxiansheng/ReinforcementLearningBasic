@@ -16,7 +16,7 @@ from algorithm.value_based.approximate_solution_method.semi_gradient_td_lambda_e
 from algorithm.value_based.approximate_solution_method.semi_gradient_tdn_evaluation import SemiGradientTDNEvalution
 from lib import plotting
 from lib.utility import create_distribution_epsilon_greedily
-from policy.policy import ContinuousStateValueBasedPolicy
+from policy.policy import ContinuousStateValueBasedPolicy, DiscreteStateValueBasedPolicy
 from test_setup import get_env
 
 num_episodes = 100
@@ -25,7 +25,7 @@ n_steps = 4
 
 def test_approximation_evaluation(env):
     b_policy_table = env.build_policy_table()
-    b_policy = ContinuousStateValueBasedPolicy(b_policy_table)
+    b_policy = DiscreteStateValueBasedPolicy(b_policy_table)
 
     distribution = np.zeros(env.nS)
 
@@ -114,9 +114,11 @@ def test_approximation_control_method(env):
     plotting.plot_3d_q_value(env, episode_stats)
 
 
-real_env = get_env("mountaincar")
+real_env = get_env("randomwalking")
 
-test_approximation_control_method(real_env)
+test_approximation_evaluation(real_env)
+
+#test_approximation_control_method(real_env)
 
 
 
