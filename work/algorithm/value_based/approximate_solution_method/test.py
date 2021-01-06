@@ -7,7 +7,7 @@ import numpy as np
 
 from algorithm.value_based.approximate_solution_method.episodic_semi_gradient_expected_sarsa_control import EpisodicSemiGradientExpectedSarsaControl
 from algorithm.value_based.approximate_solution_method.episodic_semi_gradient_q_learning_control import EpisodicSemiGradientQLearningControl
-from algorithm.value_based.approximate_solution_method.episodic_semi_gradient_sarsa_control import EpisodicSemiGradientSarsaControl
+from algorithm.value_based.approximate_solution_method.episodic_semi_gradient_sarsa_control import ApproximationSARSACritic, ESoftActor, EpisodicSemiGradientSarsaControl
 from algorithm.value_based.approximate_solution_method.estimator.q_value_estimator import TileCodingBasesQValueEstimator
 from algorithm.value_based.approximate_solution_method.estimator.v_value_estimator import (FourierBasesVValueEsimator, PolynomialBasesVValueEsitmator,
     StateAggregationVValueEstimator)
@@ -19,7 +19,7 @@ from lib.utility import create_distribution_epsilon_greedily
 from policy.policy import ContinuousStateValueBasedPolicy, DiscreteStateValueBasedPolicy
 from test_setup import get_env
 
-num_episodes = 100000
+num_episodes = 100
 n_steps = 4
 
 
@@ -50,19 +50,21 @@ def test_approximation_evaluation(env):
 
 def test_approximation_control_sarsa(env):
 
-    action_space = env.action_space
 
     observation_space = env.observation_space
 
     tile_coding_step_size = 0.3
     q_function = TileCodingBasesQValueEstimator(tile_coding_step_size, observation_space.high[0], observation_space.low[0], observation_space.high[1], observation_space.low[1])
     
-    continuous_state_policy = ContinuousStateValueBasedPolicy(action_space, q_function,create_distribution_epsilon_greedily(0.1))
+    continuous_state_policy = ContinuousStateValueBasedPolicy()
 
     q_v = plotting.QValue('Position', 'Speed', q_function)
     approximation_control_statistics = plotting.EpisodeStats("SARSA", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=q_v)
 
-    episodicsemigradsarsacontrol = EpisodicSemiGradientSarsaControl(q_function, continuous_state_policy, env, approximation_control_statistics, num_episodes)
+    critic = ApproximationSARSACritic(env,q_function,continuous_state_policy)
+    actor  = ESoftActor(continuous_state_policy,critic)
+
+    episodicsemigradsarsacontrol = EpisodicSemiGradientSarsaControl(critic,actor,env,approximation_control_statistics,num_episodes)
     episodicsemigradsarsacontrol.improve()
 
     return approximation_control_statistics
@@ -77,7 +79,7 @@ def test_approximation_control_expected_sarsa(env):
     tile_coding_step_size = 0.3
     q_function = TileCodingBasesQValueEstimator(tile_coding_step_size, observation_space.high[0], observation_space.low[0], observation_space.high[1], observation_space.low[1])
 
-    continuous_state_policy = ContinuousStateValueBasedPolicy(action_space, q_function,create_distribution_epsilon_greedily(0.1))
+    continuous_state_policy = ContinuousStateValueBasedPolicy()
     
     q_v = plotting.QValue('Position', 'Speed', q_function)
     approximation_control_statistics = plotting.EpisodeStats("Expected SARSA", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=q_v)
@@ -97,7 +99,7 @@ def test_approximation_control_q_learning(env):
     tile_coding_step_size = 0.3
     q_function = TileCodingBasesQValueEstimator(tile_coding_step_size, observation_space.high[0], observation_space.low[0], observation_space.high[1], observation_space.low[1])
 
-    continuous_state_policy = ContinuousStateValueBasedPolicy(action_space, q_function,create_distribution_epsilon_greedily(0.1))
+    continuous_state_policy = ContinuousStateValueBasedPolicy()
     
     q_v = plotting.QValue('Position', 'Speed', q_function)
     approximation_control_statistics = plotting.EpisodeStats("Q_Learning", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=q_v)
@@ -115,11 +117,11 @@ def test_approximation_control_method(env):
     plotting.plot_3d_q_value(env, episode_stats)
 
 
-real_env = get_env("randomwalking")
+real_env = get_env("mountaincar")
 
-test_approximation_evaluation(real_env)
+#test_approximation_evaluation(real_env)
 
-#test_approximation_control_method(real_env)
+test_approximation_control_method(real_env)
 
 
 

@@ -40,6 +40,7 @@ def create_distribution_epsilon_greedily(epsilon):
         num_values = len(dict_values)
         for index, _ in dict_values.items():
             probs[index] = epsilon/num_values
+        
         best_action_index = max(dict_values, key=dict_values.get)
         probs[best_action_index] += (1.0 - epsilon)
         return probs

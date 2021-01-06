@@ -78,7 +78,7 @@ class ContinuousStateValueBasedPolicy(DiscreteActionPolicy):
         self.instant_distribution = None
 
     def get_discrete_distribution(self,state):
-        return  list(self.instant_distribution)
+        return  list(self.instant_distribution.values())
 
 class ParameterizedPolicy(DiscreteActionPolicy):
     """

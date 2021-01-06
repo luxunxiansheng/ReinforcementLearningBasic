@@ -71,9 +71,6 @@ class CriticBase(ABC):
     def get_value_function(self):
         pass 
 
-    @abstractmethod
-    def get_value(self,*arg):
-        pass 
 
 
 class ActorBase(ABC):
@@ -87,7 +84,6 @@ class ActorBase(ABC):
     def improve(self,*args): 
         pass
     
-    @abstractmethod
     def get_optimal_policy(self):
         pass
 

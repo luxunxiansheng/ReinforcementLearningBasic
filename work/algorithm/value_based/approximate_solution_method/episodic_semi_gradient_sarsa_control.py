@@ -73,8 +73,13 @@ class ESoftActor(ActorBase):
 
     def improve(self, *args):
         current_state_index = args[0]
-        q_value_function = self.critic.get_value_function()
-        q_values = q_value_function[current_state_index]
+        action_space= args[1]
+        estimator = self.critic.get_value_function()
+        
+        q_values = {}
+        for action_index in range(action_space.n):
+            q_values[action_index] = estimator.predict(current_state_index,action_index)
+
         soft_greedy_distibution = self.create_distribution_epsilon_greedily(q_values)
         self.policy.instant_distribution = soft_greedy_distibution
 
@@ -104,8 +109,8 @@ class EpisodicSemiGradientSarsaControl:
         current_state_index = self.env.reset()
 
         # A
-        self.actor.improve()
-        current_action_index = self.get_behavior_policy().get_action(current_state_index)
+        self.actor.improve(current_state_index,self.env.action_space)
+        current_action_index = self.actor.get_behavior_policy().get_action(current_state_index)
 
         while True:
             observation = self.env.step(current_action_index)
@@ -121,7 +126,7 @@ class EpisodicSemiGradientSarsaControl:
 
             # A'
 
-            next_action_index = self.policy.get_action(next_state_index)
+            next_action_index = self.actor.get_behavior_policy().get_action(next_state_index)
 
             self.critic.evaluate(current_state_index,current_action_index,reward,next_state_index,next_action_index)
 
