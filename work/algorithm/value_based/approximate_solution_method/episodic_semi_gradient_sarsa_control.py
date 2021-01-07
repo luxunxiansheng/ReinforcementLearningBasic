@@ -124,8 +124,8 @@ class EpisodicSemiGradientSarsaControl:
             # S'
             next_state_index = observation[0]
 
+            self.actor.improve(current_state_index,self.env.action_space)
             # A'
-
             next_action_index = self.actor.get_behavior_policy().get_action(next_state_index)
 
             self.critic.evaluate(current_state_index,current_action_index,reward,next_state_index,next_action_index)
