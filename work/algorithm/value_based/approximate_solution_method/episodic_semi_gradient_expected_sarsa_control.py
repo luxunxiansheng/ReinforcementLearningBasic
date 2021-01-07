@@ -33,11 +33,8 @@
 #
 # /
 
-from common import ActorBase
-import numpy as np
 from tqdm import tqdm
-
-from common import CriticBase
+from common import  CriticBase
 
 class ApproximationExpectedSARSACritic(CriticBase):
     def __init__(self,env,estimator,policy,step_size=0.01,discount= 1.0):
@@ -56,12 +53,14 @@ class ApproximationExpectedSARSACritic(CriticBase):
         q_values = {}
         for action_index in range(self.env.action_space.n):
             q_values[action_index] = self.estimator.predict(next_state_index,action_index)
+
         distribution = self.policy.get_action_distribution(q_values)
+
 
         expected_q_value = 0
         for action_index in range(self.env.action_space.n):
             expected_q_value += distribution[action_index]*q_values[action_index]
-        
+
         # set the target 
         target = reward + self.discount * expected_q_value
 
@@ -98,7 +97,7 @@ class EpisodicSemiGradientExpectedSarsaControl:
 
         while True:
             # A
-            self.actor.improve()
+            self.actor.improve(current_state_index,self.env.action_space)
             current_action_index = self.actor.get_behavior_policy().get_action(current_state_index)
             
             observation = self.env.step(current_action_index)

@@ -6,16 +6,18 @@ sys.path.append(work_folder)
 import numpy as np
 
 from algorithm.value_based.approximate_solution_method.episodic_semi_gradient_expected_sarsa_control import EpisodicSemiGradientExpectedSarsaControl
+from algorithm.value_based.approximate_solution_method.episodic_semi_gradient_expected_sarsa_control import ApproximationExpectedSARSACritic
 from algorithm.value_based.approximate_solution_method.episodic_semi_gradient_q_learning_control import EpisodicSemiGradientQLearningControl
-from algorithm.value_based.approximate_solution_method.episodic_semi_gradient_sarsa_control import ApproximationSARSACritic, ESoftActor, EpisodicSemiGradientSarsaControl
+from algorithm.value_based.approximate_solution_method.episodic_semi_gradient_sarsa_control import ApproximationSARSACritic, EpisodicSemiGradientSarsaControl
 from algorithm.value_based.approximate_solution_method.estimator.q_value_estimator import TileCodingBasesQValueEstimator
 from algorithm.value_based.approximate_solution_method.estimator.v_value_estimator import (FourierBasesVValueEsimator, PolynomialBasesVValueEsitmator,
     StateAggregationVValueEstimator)
+from algorithm.value_based.approximate_solution_method.approximation_common import ESoftActor
 from algorithm.value_based.approximate_solution_method.gradient_monte_carlo_evaluation import GradientMonteCarloEvaluation
 from algorithm.value_based.approximate_solution_method.semi_gradient_td_lambda_evaluation import SemiGradientTDLambdaEvaluation
 from algorithm.value_based.approximate_solution_method.semi_gradient_tdn_evaluation import SemiGradientTDNEvalution
+
 from lib import plotting
-from lib.utility import create_distribution_epsilon_greedily
 from policy.policy import ContinuousStateValueBasedPolicy, DiscreteStateValueBasedPolicy
 from test_setup import get_env
 
@@ -72,8 +74,6 @@ def test_approximation_control_sarsa(env):
 
 def test_approximation_control_expected_sarsa(env):
 
-    action_space = env.action_space
-
     observation_space = env.observation_space
 
     tile_coding_step_size = 0.3
@@ -84,11 +84,13 @@ def test_approximation_control_expected_sarsa(env):
     q_v = plotting.QValue('Position', 'Speed', q_function)
     approximation_control_statistics = plotting.EpisodeStats("Expected SARSA", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=q_v)
 
-    episodicsemigradsarsacontrol = EpisodicSemiGradientExpectedSarsaControl(q_function, continuous_state_policy, env, approximation_control_statistics, num_episodes)
+    critic = ApproximationExpectedSARSACritic(env,q_function,continuous_state_policy)
+    actor  = ESoftActor(continuous_state_policy,critic)
+
+    episodicsemigradsarsacontrol = EpisodicSemiGradientExpectedSarsaControl(critic,actor,env,approximation_control_statistics,num_episodes)
     episodicsemigradsarsacontrol.improve()
 
     return approximation_control_statistics
-
 
 def test_approximation_control_q_learning(env):
 
@@ -113,7 +115,7 @@ def test_approximation_control_q_learning(env):
 def test_approximation_control_method(env):
 
     #episode_stats = [test_approximation_control_sarsa(env),test_approximation_control_expected_sarsa(env),test_approximation_control_q_learning(env)]
-    episode_stats = [test_approximation_control_sarsa(env)]
+    episode_stats = [test_approximation_control_sarsa(env),test_approximation_control_expected_sarsa(env)]
     plotting.plot_episode_stats(episode_stats)
     plotting.plot_3d_q_value(env, episode_stats)
 
