@@ -59,3 +59,6 @@ class ESoftActor(ActorBase):
 
     def get_behavior_policy(self):
         return self.policy
+
+    def get_create_behavior_policy_fn(self):
+        return self.create_distribution_epsilon_greedily

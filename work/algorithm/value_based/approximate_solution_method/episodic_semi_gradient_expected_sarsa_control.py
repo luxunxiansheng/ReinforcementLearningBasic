@@ -33,15 +33,15 @@
 #
 # /
 
+
 from tqdm import tqdm
 from common import  CriticBase
 
 class ApproximationExpectedSARSACritic(CriticBase):
-    def __init__(self,env,estimator,policy,step_size=0.01,discount= 1.0):
+    def __init__(self,env,estimator,step_size=0.01,discount= 1.0):
         self.env = env 
         self.estimator = estimator
         self.discount = discount
-        self.policy = policy 
         self.step_size = step_size
 
     def evaluate(self, *args):
@@ -49,13 +49,13 @@ class ApproximationExpectedSARSACritic(CriticBase):
         current_action_index = args[1]
         reward = args[2]
         next_state_index = args[3]    
+        create_distribution_fn= args[4]
         
         q_values = {}
         for action_index in range(self.env.action_space.n):
             q_values[action_index] = self.estimator.predict(next_state_index,action_index)
 
-        distribution = self.policy.get_action_distribution(q_values)
-
+        distribution = create_distribution_fn(q_values)
 
         expected_q_value = 0
         for action_index in range(self.env.action_space.n):
@@ -111,7 +111,7 @@ class EpisodicSemiGradientExpectedSarsaControl:
             # S'
             next_state_index = observation[0]
 
-            self.critic.evaluate(current_state_index,current_action_index,reward,next_state_index)
+            self.critic.evaluate(current_state_index,current_action_index,reward,next_state_index,self.actor.get_create_behavior_policy_fn())
 
             if done:
                 break

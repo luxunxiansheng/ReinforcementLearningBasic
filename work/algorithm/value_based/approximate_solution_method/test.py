@@ -84,7 +84,7 @@ def test_approximation_control_expected_sarsa(env):
     q_v = plotting.QValue('Position', 'Speed', q_function)
     approximation_control_statistics = plotting.EpisodeStats("Expected SARSA", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=q_v)
 
-    critic = ApproximationExpectedSARSACritic(env,q_function,continuous_state_policy)
+    critic = ApproximationExpectedSARSACritic(env,q_function)
     actor  = ESoftActor(continuous_state_policy,critic)
 
     episodicsemigradsarsacontrol = EpisodicSemiGradientExpectedSarsaControl(critic,actor,env,approximation_control_statistics,num_episodes)
@@ -113,9 +113,8 @@ def test_approximation_control_q_learning(env):
 
 
 def test_approximation_control_method(env):
-
     #episode_stats = [test_approximation_control_sarsa(env),test_approximation_control_expected_sarsa(env),test_approximation_control_q_learning(env)]
-    episode_stats = [test_approximation_control_sarsa(env),test_approximation_control_expected_sarsa(env)]
+    episode_stats = [test_approximation_control_sarsa(env)]
     plotting.plot_episode_stats(episode_stats)
     plotting.plot_3d_q_value(env, episode_stats)
 
