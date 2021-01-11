@@ -7,7 +7,7 @@ import numpy as np
 
 from algorithm.value_based.approximate_solution_method.episodic_semi_gradient_expected_sarsa_control import EpisodicSemiGradientExpectedSarsaControl
 from algorithm.value_based.approximate_solution_method.episodic_semi_gradient_expected_sarsa_control import ApproximationExpectedSARSACritic
-from algorithm.value_based.approximate_solution_method.episodic_semi_gradient_q_learning_control import EpisodicSemiGradientQLearningControl
+from algorithm.value_based.approximate_solution_method.episodic_semi_gradient_q_learning_control import ApproximationQLearningCritic, EpisodicSemiGradientQLearningControl
 from algorithm.value_based.approximate_solution_method.episodic_semi_gradient_sarsa_control import ApproximationSARSACritic, EpisodicSemiGradientSarsaControl
 from algorithm.value_based.approximate_solution_method.estimator.q_value_estimator import TileCodingBasesQValueEstimator
 from algorithm.value_based.approximate_solution_method.estimator.v_value_estimator import (FourierBasesVValueEsimator, PolynomialBasesVValueEsitmator,
@@ -52,7 +52,6 @@ def test_approximation_evaluation(env):
 
 def test_approximation_control_sarsa(env):
 
-
     observation_space = env.observation_space
 
     tile_coding_step_size = 0.3
@@ -94,8 +93,6 @@ def test_approximation_control_expected_sarsa(env):
 
 def test_approximation_control_q_learning(env):
 
-    action_space = env.action_space
-
     observation_space = env.observation_space
 
     tile_coding_step_size = 0.3
@@ -106,15 +103,19 @@ def test_approximation_control_q_learning(env):
     q_v = plotting.QValue('Position', 'Speed', q_function)
     approximation_control_statistics = plotting.EpisodeStats("Q_Learning", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=q_v)
 
-    episodicsemigradsarsacontrol = EpisodicSemiGradientQLearningControl(q_function, continuous_state_policy, env, approximation_control_statistics, num_episodes)
+    critic = ApproximationQLearningCritic(env,q_function)
+    actor  = ESoftActor(continuous_state_policy,critic)
+
+    episodicsemigradsarsacontrol = EpisodicSemiGradientQLearningControl(critic,actor,env,approximation_control_statistics,num_episodes)
     episodicsemigradsarsacontrol.improve()
 
     return approximation_control_statistics
 
 
 def test_approximation_control_method(env):
-    #episode_stats = [test_approximation_control_sarsa(env),test_approximation_control_expected_sarsa(env),test_approximation_control_q_learning(env)]
-    episode_stats = [test_approximation_control_sarsa(env)]
+
+    episode_stats = [test_approximation_control_sarsa(env),test_approximation_control_expected_sarsa(env),test_approximation_control_q_learning(env)]
+    
     plotting.plot_episode_stats(episode_stats)
     plotting.plot_3d_q_value(env, episode_stats)
 

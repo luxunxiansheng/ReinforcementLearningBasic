@@ -12,7 +12,7 @@ StateValues = namedtuple("StateValues", ['appr_method','state_value'])
 
 
 
-def plot_episode_stats(stats, smoothing_window=100, noshow=False):
+def plot_episode_stats(stats, smoothing_window=10, noshow=False):
     # Plot the episode length over time
     fig1 = plt.figure(figsize=(10, 5))
 

@@ -33,16 +33,15 @@
 #
 # /
 
-from common import ActorBase, CriticBase
-import numpy as np
 from tqdm import tqdm
+from common import CriticBase
+
 
 class ApproximationQLearningCritic(CriticBase):
-    def __init__(self,env,estimator,policy,step_size=0.01,discount= 1.0):
+    def __init__(self,env,estimator,step_size=0.01,discount= 1.0):
         self.env = env 
         self.estimator = estimator
         self.discount = discount
-        self.policy = policy 
         self.step_size = step_size
 
     def evaluate(self, *args):
@@ -88,12 +87,12 @@ class EpisodicSemiGradientQLearningControl:
 
     def _run_one_episode(self, episode):
         # S
-        current_state = self.env.reset()
+        current_state_index = self.env.reset()
 
         while True:
             # A
-            self.actor.improve()
-            current_action_index = self.actor.get_behavior_policy().get_action(current_state)
+            self.actor.improve(current_state_index,self.env.action_space)
+            current_action_index = self.actor.get_behavior_policy().get_action(current_state_index)
             
             observation = self.env.step(current_action_index)
             # R
@@ -104,12 +103,12 @@ class EpisodicSemiGradientQLearningControl:
             self.statistics.episode_lengths[episode] += 1
 
             # S'
-            next_state = observation[0]
+            next_state_index = observation[0]
             self.critic.evaluate(current_state_index,current_action_index,reward,next_state_index)
 
             
             if done:
                 break
 
-            current_state = next_state
+            current_state_index = next_state_index
     
