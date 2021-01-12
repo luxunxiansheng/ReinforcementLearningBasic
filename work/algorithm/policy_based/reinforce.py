@@ -1,12 +1,9 @@
 from common import ActorBase
-import itertools
 import sys
 from collections import namedtuple
 
 import numpy as np
-import numpy
 
-sys.path.append('/home/ornot/GymRL')
 from lib import utility
 
 from tqdm import tqdm
