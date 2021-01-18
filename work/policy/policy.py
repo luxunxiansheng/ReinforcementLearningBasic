@@ -83,12 +83,13 @@ class ContinuousStateValueBasedPolicy(DiscreteActionPolicy):
 class ParameterizedPolicy(DiscreteActionPolicy):
     """
     In tabular policy, the actions' probability distribution is built from the Q values. In ParameterizedPolicy, the distribution 
-    is a direct output of a parameterized function. 
+    is a direct output of a parameterized differentiable  function. 
     """
     
-    def __init__(self,policy_estimator):
-        self.policy_estimator = policy_estimator
+    def __init__(self,estimator):
+        self.estimator = estimator
 
-    def _construct_distribution(self, state):
-        distribution = self.policy_estimator.predict(state)
-        return distribution
+    def get_discrete_distribution(self, state):
+        return self.estimator.predict(state)
+
+    

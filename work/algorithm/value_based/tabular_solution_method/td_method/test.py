@@ -3,12 +3,11 @@ current_dir= os.path.dirname(os.path.realpath(__file__))
 work_folder=current_dir[:current_dir.find('algorithm')]
 sys.path.append(work_folder)
 
-
 import numpy as np
 
-from algorithm.value_based.tabular_solution_method.td_method.td_common import (GreedyActor,BoltzmannActor, ESoftActor, LambdaCritic, OffPolicyGreedyActor, QLearningLambdaCritic, TDLambdaCritic, TDNSARSACritic,TDNExpectedSARSACritic)
+from algorithm.value_based.tabular_solution_method.td_method.td_common import (BoltzmannActor, ESoftActor, OffPolicyGreedyActor, QLearningLambdaCritic, TDLambdaCritic, TDNSARSACritic,TDNExpectedSARSACritic)
 from algorithm.value_based.tabular_solution_method.td_method.double_q_learning import DoubleQLearning, DoubleQLearningCritic
-from algorithm.value_based.tabular_solution_method.td_method.dyna_q import (DynaQPriorityCritic, DynaQTrivalCritic, PRIORITY, PriorityModel, TRIVAL, DynaQ, TrivialModel)
+from algorithm.value_based.tabular_solution_method.td_method.dyna_q import (DynaQPriorityCritic, DynaQTrivalCritic,  PriorityModel,  DynaQ, TrivialModel)
 from algorithm.value_based.tabular_solution_method.td_method.expected_sarsa import ExpectedSARSA,ExpectedSARSACritic
 from algorithm.value_based.tabular_solution_method.td_method.n_steps_expected_sarsa import NStepsExpectedSARSA
 from algorithm.value_based.tabular_solution_method.td_method.n_steps_sarsa import NStepsSARSA
@@ -296,7 +295,6 @@ def test_double_q_learning_method(env):
 
     critic = DoubleQLearningCritic(q_table)
     actor  = ESoftActor(b_policy,critic)
-
 
     double_qlearning_method = DoubleQLearning(critic,actor, env, double_q_learning_statistics, num_episodes)
     double_qlearning_method.improve()

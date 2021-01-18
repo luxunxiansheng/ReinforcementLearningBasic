@@ -5,7 +5,6 @@ permalink: https://perma.cc/6Z2N-PFWC
 
 import math
 
-import gym
 import numpy as np
 from gym import spaces
 from gym.utils import seeding
@@ -25,15 +24,15 @@ class MountainCarEnv(DiscreteActionEnv):
     Observation: 
         Type: Box(2)
         Num	Observation               Min            Max
-        0	    Car Position             -1.2            0.6
-        1	    Car Velocity             -0.07           0.07
+        0	    Car Position         -1.2            0.6
+        1	    Car Velocity         -0.07           0.07
 
     Actions:
         Type: Discrete(3)
         Num	Action
         0	    Accelerate to the Left
         1	    Dont accelerate
-        2      Accelerate to the Right
+        2       Accelerate to the Right
 
         Note: This does not affect the amount of velocity affected by the gravitational pull acting on the car
 
@@ -72,6 +71,7 @@ class MountainCarEnv(DiscreteActionEnv):
 
         self._action_space = spaces.Discrete(3)
         self._observation_space = spaces.Box(self.low, self.high, dtype=np.float32)
+        self._observation_space_name = ('Position','Speed')
 
         self.seed()
 
@@ -176,3 +176,9 @@ class MountainCarEnv(DiscreteActionEnv):
     @property
     def observation_space(self):
         return self._observation_space
+  
+    @property
+    def observation_space_name(self):
+        return self._observation_space_name
+    
+        

@@ -33,7 +33,6 @@
 #
 # /
 
-
 from tqdm import tqdm
 from common import  CriticBase
 

@@ -59,7 +59,8 @@ def test_approximation_control_sarsa(env):
     
     continuous_state_policy = ContinuousStateValueBasedPolicy()
 
-    q_v = plotting.QValue('Position', 'Speed', q_function)
+            
+    q_v = plotting.QValue(env.observation_space_name[0], env.observation_space_name[1], q_function)
     approximation_control_statistics = plotting.EpisodeStats("SARSA", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=q_v)
 
     critic = ApproximationSARSACritic(env,q_function,continuous_state_policy)
@@ -80,7 +81,7 @@ def test_approximation_control_expected_sarsa(env):
 
     continuous_state_policy = ContinuousStateValueBasedPolicy()
     
-    q_v = plotting.QValue('Position', 'Speed', q_function)
+    q_v = plotting.QValue(env.observation_space_name[0], env.observation_space_name[1], q_function)
     approximation_control_statistics = plotting.EpisodeStats("Expected SARSA", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=q_v)
 
     critic = ApproximationExpectedSARSACritic(env,q_function)
@@ -100,7 +101,7 @@ def test_approximation_control_q_learning(env):
 
     continuous_state_policy = ContinuousStateValueBasedPolicy()
     
-    q_v = plotting.QValue('Position', 'Speed', q_function)
+    q_v = plotting.QValue(env.observation_space_name[0], env.observation_space_name[1], q_function)
     approximation_control_statistics = plotting.EpisodeStats("Q_Learning", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=q_v)
 
     critic = ApproximationQLearningCritic(env,q_function)

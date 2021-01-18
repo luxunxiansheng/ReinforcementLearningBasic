@@ -104,7 +104,6 @@ This project is built With [Python](www.python.org) and several libraries:
    3. Expericence replay
    4. More dense reward
 
-
 ## Getting Started
 
 This is an example of how you may give instructions on setting up your project locally.

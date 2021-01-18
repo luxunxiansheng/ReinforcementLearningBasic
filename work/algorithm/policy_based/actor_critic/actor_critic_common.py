@@ -32,26 +32,22 @@
 # #### END LICENSE BLOCK #####
 #
 # /
-
-from gym import Env 
 from abc import abstractmethod
 
-class DiscreteActionEnv(Env):
-    """
-    Only the action space is discrete while the state space is continuous. 
-    """
-
-    @property
+class PolicyEstimator:
     @abstractmethod
-    def action_space(self):
+    def predict(self, state):
         pass
 
-    @property
     @abstractmethod
-    def observation_space(self):
+    def update(self, state):
         pass
 
-    @property
+class ValueEstimator:
     @abstractmethod
-    def observation_space_name(self):
-        return None
+    def predict(self, state):
+        pass
+
+    @abstractmethod
+    def update(self, state):
+        pass
