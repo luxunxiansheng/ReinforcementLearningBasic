@@ -8,10 +8,9 @@ from policy.policy import ParameterizedPolicy
 from algorithm.policy_based.actor_critic.actor_critic import Actor, Critic, CriticActor, PolicyEsitmator, ValueEestimator
 
 from lib import plotting
-from policy.policy import ContinuousStateValueBasedPolicy
 from test_setup import get_env
 
-num_episodes = 200
+num_episodes = 500
 
 def test_critic_actor_method(env):
     value_estimator = ValueEestimator(env.observation_space.shape[0])

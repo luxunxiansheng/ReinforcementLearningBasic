@@ -32,10 +32,6 @@
 # #### END LICENSE BLOCK #####
 #
 # /
-
-
-
-import copy
 from collections import namedtuple
 import numpy as np 
 from tqdm import tqdm
@@ -44,8 +40,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+from torch.utils.tensorboard import SummaryWriter, writer
 
-from algorithm.policy_based.actor_critic.reinforce import model
 from algorithm.policy_based.actor_critic.actor_critic_common import ValueEstimator
 from common import ActorBase,CriticBase
 
@@ -64,7 +60,7 @@ class PolicyEsitmator:
         def forward(self, state):
             state = torch.from_numpy(state).float()
             state = F.relu(self.dropout(self.affine(state)))
-            actions_prob = F.softmax(self.action_head(state))
+            actions_prob = F.softmax(self.action_head(state),dim=0)
             return actions_prob
     
     def __init__(self,observation_space_size,action_space_size):
@@ -73,13 +69,12 @@ class PolicyEsitmator:
     
     def predict(self,state):
         actions_prob=self.model.forward(state)
-        return actions_prob.detach().numpy()
+        return actions_prob
 
     def update(self,*args):
-        policy_losses = args[0]
+        loss = args[0]
         self.optimizer.zero_grad()
-        policy_losses = torch.stack(policy_losses).sum()
-        policy_losses.backward()
+        loss.backward()
         self.optimizer.step()
         
 class Actor(ActorBase):
@@ -89,6 +84,8 @@ class Actor(ActorBase):
         
     def improve(self,*args):
         trajectory = args[0]
+        episode = args[1]
+        writer  = args[2]
     
         G = 0.0
         log_action_probs=[]
@@ -100,17 +97,19 @@ class Actor(ActorBase):
         for _,state_value,_,action_prob,reward in trajectory[::-1]:
             # estimate the sate value with Monte Carlo target   
             G = reward + self.discount*G
-            log_action_probs.insert(0,np.log(action_prob))
+            log_action_probs.insert(0,torch.log(action_prob))
             state_values.insert(0,state_value)
             returns.insert(0,G)
         returns = torch.tensor(returns)
         returns = (returns-returns.mean())/(returns.std()+CriticActor.EPS)
 
-        for log_action_prob,value, G in zip(log_action_probs,state_values,returns):
-            advantage = G - value
+        for log_action_prob,state_value, G in zip(log_action_probs,state_values,returns):
+            advantage = G - state_value.detach()
             policy_losses.append(-log_action_prob*advantage)
-
-        self.policy.estimator.update(policy_losses)
+        
+        total_loss = torch.stack(policy_losses).sum()
+        writer.add_scalar('policy_loss',total_loss,episode)
+        self.policy.estimator.update(total_loss)
 
     def get_behavior_policy(self):
         return self.policy
@@ -138,10 +137,9 @@ class ValueEestimator(ValueEstimator):
         return value
 
     def update(self,*args):
-        value_losses = args[0]
+        loss = args[0]
         self.optimizer.zero_grad()
-        value_loss = torch.stack(value_losses).sum()
-        value_loss.backward()
+        loss.backward()
         self.optimizer.step()
 
 class Critic(CriticBase):
@@ -150,11 +148,13 @@ class Critic(CriticBase):
         self.discount  = discount
     
     def evaluate(self,*args):
+        trajectory = args[0]
+        episode = args[1]
+        writer = args[2]
+
         state_values=[]
         returns = []
         value_losses=[]
-        
-        trajectory = args[0]
 
         G = 0.0 
         # reduce the variance  
@@ -162,13 +162,17 @@ class Critic(CriticBase):
             G = reward + self.discount*G
             state_values.insert(0,state_value)
             returns.insert(0,G)
+        writer.add_scalar('returns',G,episode)  
+        writer.add_scalar('steps',len(trajectory),episode)  
         returns = torch.tensor(returns)
         returns = (returns-returns.mean())/(returns.std()+CriticActor.EPS)
 
         for value, G in zip(state_values,returns):
             value_losses.append(F.smooth_l1_loss(value,torch.tensor([G])))
 
-        self.estimator.update(value_losses)
+        total_loss = torch.stack(value_losses).sum()
+        writer.add_scalar('value_loss',total_loss,episode)
+        self.estimator.update(total_loss)
     
     def get_value_function(self):
         return self.estimator
@@ -180,15 +184,16 @@ class CriticActor:
         self.actor= actor
         self.env = env
         self.num_episodes = num_episodes
+        self.writer = SummaryWriter()
+    
         
     def improve(self):
-        for _ in tqdm(range(0,self.num_episodes)):
+        for episode in tqdm(range(0,self.num_episodes)):
             trajectory = self._run_one_episode()    
             
-            self.critic.evaluate(trajectory)
+            self.critic.evaluate(trajectory,episode,self.writer)
 
-            trajectory = self._run_one_episode()
-            self.actor.improve(trajectory)
+            self.actor.improve(trajectory,episode,self.writer)
         
     def _run_one_episode(self):
         trajectory = []
