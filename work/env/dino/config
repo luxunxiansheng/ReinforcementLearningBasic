@@ -1,0 +1,15 @@
+[GAME]
+game_url      = http://apps.thecodepost.org/trex/trex.html
+chrome_driver_path = chromedriver
+
+reward_if_well_done=1
+reward_if_crash=-1
+
+; a float number to control how fast the dino runs. Defualt is 0.
+acceleration = 0
+
+
+; It is interesting to set the carton dino visible or invisible, 
+; which can help to know better what makes the deep neural network 
+; understand the patten of the game
+dino_invisible= False

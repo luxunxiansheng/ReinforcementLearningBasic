@@ -95,6 +95,7 @@ class EpisodicSemiGradientQLearningControl:
             current_action_index = self.actor.get_behavior_policy().get_action(current_state_index)
             
             observation = self.env.step(current_action_index)
+            self.env.render()
             # R
             reward = observation[1]
             done = observation[2]

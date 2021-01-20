@@ -65,7 +65,7 @@ class PolicyEsitmator:
     
     def __init__(self,observation_space_size,action_space_size):
         self.model = PolicyEsitmator.Model(observation_space_size,action_space_size)
-        self.optimizer = optim.Adam(self.model.parameters(),lr =3e-2)
+        self.optimizer = optim.Adam(self.model.parameters(),lr =1e-3)
     
     def predict(self,state):
         actions_prob=self.model.forward(state)
@@ -130,7 +130,7 @@ class ValueEestimator(ValueEstimator):
 
     def __init__(self,observation_space_size):
         self.model = ValueEestimator.Model(observation_space_size)
-        self.optimizer = optim.Adam(self.model.parameters(),lr =3e-2)
+        self.optimizer = optim.Adam(self.model.parameters(),lr =1e-3)
         
     def predict(self,state):
         value = self.model.forward(state)
@@ -179,34 +179,38 @@ class Critic(CriticBase):
 
 class CriticActor:
     EPS = np.finfo(np.float32).eps.item()
+    MAX_STEPS = 500000
     def  __init__(self,critic,actor,env,num_episodes):
         self.critic=critic 
         self.actor= actor
         self.env = env
         self.num_episodes = num_episodes
         self.writer = SummaryWriter()
-    
-        
+            
     def improve(self):
         for episode in tqdm(range(0,self.num_episodes)):
             trajectory = self._run_one_episode()    
             
-            self.critic.evaluate(trajectory,episode,self.writer)
-
-            self.actor.improve(trajectory,episode,self.writer)
+            if len(trajectory)< CriticActor.MAX_STEPS:
+                self.critic.evaluate(trajectory,episode,self.writer)
+                self.actor.improve(trajectory,episode,self.writer)
         
     def _run_one_episode(self):
         trajectory = []
         current_state = self.env.reset()
+
+        steps = 0
         while True:
             action_index = self.actor.get_behavior_policy().get_action(current_state)
             action_prob=self.actor.get_behavior_policy().get_discrete_distribution(current_state)[action_index]
             state_value  = self.critic.get_value_function().predict(current_state)
             observation = self.env.step(action_index)
+            self.env.render()
+            steps = steps+1
             reward = observation[1]
             trajectory.append((current_state,state_value,action_index,action_prob,reward))
             done = observation[2]
-            if done:
+            if done or steps > CriticActor.MAX_STEPS:
                 break
             current_state = observation[0]
         return trajectory

@@ -91,6 +91,7 @@ class EpisodicSemiGradientSarsaControl:
 
         while True:
             observation = self.env.step(current_action_index)
+            self.env.render()
             # R
             reward = observation[1]
             done = observation[2]

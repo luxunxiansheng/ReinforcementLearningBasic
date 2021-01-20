@@ -59,7 +59,7 @@ class DiscreteActionPolicy(ABC):
         pass   
 
     def get_action(self, state):
-        distribution = self.get_discrete_distribution(state).detach().numpy()
+        distribution = self.get_discrete_distribution(state)
         action = np.random.choice(np.arange(len(distribution)), p=distribution)
         return action
 
@@ -88,6 +88,6 @@ class ParameterizedPolicy(DiscreteActionPolicy):
         self.estimator = estimator
 
     def get_discrete_distribution(self, state):
-        return self.estimator.predict(state)
+        return self.estimator.predict(state).detach().numpy()
 
     
