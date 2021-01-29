@@ -101,7 +101,7 @@ class Actor(ActorBase):
             state_values.insert(0,state_value)
             returns.insert(0,G)
         returns = torch.tensor(returns)
-        returns = (returns-returns.mean())/(returns.std()+CriticActor.EPS)
+        returns = (returns-returns.mean())/(returns.std()+MonteCarloCriticActor.EPS)
 
         for log_action_prob,state_value, G in zip(log_action_probs,state_values,returns):
             advantage = G - state_value.detach()
@@ -142,7 +142,7 @@ class ValueEestimator(ValueEstimator):
         loss.backward()
         self.optimizer.step()
 
-class Critic(CriticBase):
+class MonteCarloCritic(CriticBase):
     def __init__(self,value_estimator,discount=1.0):
         self.estimator = value_estimator
         self.discount  = discount
@@ -165,7 +165,7 @@ class Critic(CriticBase):
         writer.add_scalar('returns',G,episode)  
         writer.add_scalar('steps',len(trajectory),episode)  
         returns = torch.tensor(returns)
-        returns = (returns-returns.mean())/(returns.std()+CriticActor.EPS)
+        returns = (returns-returns.mean())/(returns.std()+MonteCarloCriticActor.EPS)
 
         for value, G in zip(state_values,returns):
             value_losses.append(F.smooth_l1_loss(value,torch.tensor([G])))
@@ -177,7 +177,43 @@ class Critic(CriticBase):
     def get_value_function(self):
         return self.estimator
 
-class CriticActor:
+class TDCritic(CriticBase):
+    def __init__(self,value_estimator,discount=1.0):
+        self.estimator = value_estimator
+        self.discount  = discount
+    
+    def evaluate(self,*args):
+        trajectory = args[0]
+        episode = args[1]
+        writer = args[2]
+
+        state_values=[]
+        returns = []
+        value_losses=[]
+
+        G = 0.0 
+        # reduce the variance  
+        for _,state_value,_,_,reward in trajectory[::-1]:
+            G = reward + self.discount*G
+            state_values.insert(0,state_value)
+            returns.insert(0,G)
+        writer.add_scalar('returns',G,episode)  
+        writer.add_scalar('steps',len(trajectory),episode)  
+        returns = torch.tensor(returns)
+        returns = (returns-returns.mean())/(returns.std()+MonteCarloCriticActor.EPS)
+
+        for value, G in zip(state_values,returns):
+            value_losses.append(F.smooth_l1_loss(value,torch.tensor([G])))
+
+        total_loss = torch.stack(value_losses).sum()
+        writer.add_scalar('value_loss',total_loss,episode)
+        self.estimator.update(total_loss)
+    
+    def get_value_function(self):
+        return self.estimator
+
+
+class MonteCarloCriticActor:
     EPS = np.finfo(np.float32).eps.item()
     MAX_STEPS = 500000
     def  __init__(self,critic,actor,env,num_episodes):
@@ -191,7 +227,7 @@ class CriticActor:
         for episode in tqdm(range(0,self.num_episodes)):
             trajectory = self._run_one_episode()    
             
-            if len(trajectory)< CriticActor.MAX_STEPS:
+            if len(trajectory)< MonteCarloCriticActor.MAX_STEPS:
                 self.critic.evaluate(trajectory,episode,self.writer)
                 self.actor.improve(trajectory,episode,self.writer)
         
@@ -210,7 +246,7 @@ class CriticActor:
             reward = observation[1]
             trajectory.append((current_state,state_value,action_index,action_prob,reward))
             done = observation[2]
-            if done or steps > CriticActor.MAX_STEPS:
+            if done or steps > MonteCarloCriticActor.MAX_STEPS:
                 break
             current_state = observation[0]
         return trajectory
