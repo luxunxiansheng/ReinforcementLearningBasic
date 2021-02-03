@@ -40,7 +40,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from torch.utils.tensorboard import SummaryWriter, writer
+from torch.utils.tensorboard import SummaryWriter
 
 from algorithm.policy_based.actor_critic.actor_critic_common import ValueEstimator
 from common import ActorBase,CriticBase
@@ -77,7 +77,7 @@ class PolicyEsitmator:
         loss.backward()
         self.optimizer.step()
         
-class Actor(ActorBase):
+class BatchActor(ActorBase):
     def __init__(self,policy,discount=1.0):
         self.policy = policy 
         self.discount = discount
@@ -101,7 +101,7 @@ class Actor(ActorBase):
             state_values.insert(0,state_value)
             returns.insert(0,G)
         returns = torch.tensor(returns)
-        returns = (returns-returns.mean())/(returns.std()+MonteCarloCriticActor.EPS)
+        returns = (returns-returns.mean())/(returns.std()+BatchCriticActor.EPS)
 
         for log_action_prob,state_value, G in zip(log_action_probs,state_values,returns):
             advantage = G - state_value.detach()
@@ -142,7 +142,7 @@ class ValueEestimator(ValueEstimator):
         loss.backward()
         self.optimizer.step()
 
-class MonteCarloCritic(CriticBase):
+class BatchCritic(CriticBase):
     def __init__(self,value_estimator,discount=1.0):
         self.estimator = value_estimator
         self.discount  = discount
@@ -165,42 +165,7 @@ class MonteCarloCritic(CriticBase):
         writer.add_scalar('returns',G,episode)  
         writer.add_scalar('steps',len(trajectory),episode)  
         returns = torch.tensor(returns)
-        returns = (returns-returns.mean())/(returns.std()+MonteCarloCriticActor.EPS)
-
-        for value, G in zip(state_values,returns):
-            value_losses.append(F.smooth_l1_loss(value,torch.tensor([G])))
-
-        total_loss = torch.stack(value_losses).sum()
-        writer.add_scalar('value_loss',total_loss,episode)
-        self.estimator.update(total_loss)
-    
-    def get_value_function(self):
-        return self.estimator
-
-class TDCritic(CriticBase):
-    def __init__(self,value_estimator,discount=1.0):
-        self.estimator = value_estimator
-        self.discount  = discount
-    
-    def evaluate(self,*args):
-        trajectory = args[0]
-        episode = args[1]
-        writer = args[2]
-
-        state_values=[]
-        returns = []
-        value_losses=[]
-
-        G = 0.0 
-        # reduce the variance  
-        for _,state_value,_,_,reward in trajectory[::-1]:
-            G = reward + self.discount*G
-            state_values.insert(0,state_value)
-            returns.insert(0,G)
-        writer.add_scalar('returns',G,episode)  
-        writer.add_scalar('steps',len(trajectory),episode)  
-        returns = torch.tensor(returns)
-        returns = (returns-returns.mean())/(returns.std()+MonteCarloCriticActor.EPS)
+        returns = (returns-returns.mean())/(returns.std()+BatchCriticActor.EPS)
 
         for value, G in zip(state_values,returns):
             value_losses.append(F.smooth_l1_loss(value,torch.tensor([G])))
@@ -213,7 +178,7 @@ class TDCritic(CriticBase):
         return self.estimator
 
 
-class MonteCarloCriticActor:
+class BatchCriticActor:
     EPS = np.finfo(np.float32).eps.item()
     MAX_STEPS = 500000
     def  __init__(self,critic,actor,env,num_episodes):
@@ -227,7 +192,7 @@ class MonteCarloCriticActor:
         for episode in tqdm(range(0,self.num_episodes)):
             trajectory = self._run_one_episode()    
             
-            if len(trajectory)< MonteCarloCriticActor.MAX_STEPS:
+            if len(trajectory)< BatchCriticActor.MAX_STEPS:
                 self.critic.evaluate(trajectory,episode,self.writer)
                 self.actor.improve(trajectory,episode,self.writer)
         
@@ -238,15 +203,15 @@ class MonteCarloCriticActor:
         steps = 0
         while True:
             action_index = self.actor.get_behavior_policy().get_action(current_state)
-            action_prob=self.actor.get_behavior_policy().get_discrete_distribution(current_state)[action_index]
+            action_prob = self.actor.get_behavior_policy().get_discrete_distribution(current_state)[action_index]
             state_value  = self.critic.get_value_function().predict(current_state)
             observation = self.env.step(action_index)
             self.env.render()
             steps = steps+1
             reward = observation[1]
-            trajectory.append((current_state,state_value,action_index,action_prob,reward))
+            trajectory.append((current_state,state_value,action_index,torch.tensor(action_prob),reward))
             done = observation[2]
-            if done or steps > MonteCarloCriticActor.MAX_STEPS:
+            if done or steps > BatchCriticActor.MAX_STEPS:
                 break
             current_state = observation[0]
         return trajectory

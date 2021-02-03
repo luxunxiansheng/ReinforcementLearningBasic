@@ -63,7 +63,6 @@ class DiscreteActionPolicy(ABC):
         action = np.random.choice(np.arange(len(distribution)), p=distribution)
         return action
 
-
 class DiscreteStateValueBasedPolicy(DiscreteActionPolicy):
     def __init__(self,policy_table):
         self.policy_table = policy_table
@@ -89,5 +88,8 @@ class ParameterizedPolicy(DiscreteActionPolicy):
 
     def get_discrete_distribution(self, state):
         return self.estimator.predict(state).detach().numpy()
+    
+    def get_discrete_distribution_tensor(self, state):
+        return self.estimator.predict(state)
 
     
