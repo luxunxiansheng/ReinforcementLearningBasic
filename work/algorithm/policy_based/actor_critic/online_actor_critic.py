@@ -40,7 +40,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from torch.utils.tensorboard import SummaryWriter, writer
+from torch.utils.tensorboard import SummaryWriter
 
 from algorithm.policy_based.actor_critic.actor_critic_common import ValueEstimator
 from common import ActorBase,CriticBase
@@ -87,8 +87,9 @@ class OnlineCritic(CriticBase):
         current_state_index = args[0]
         reward = args[1]
         next_state_index = args[2]    
-        episode =args[3]
-        writer = args[4]
+        done = args[3]
+        episode =args[4]
+        writer = args[5]
         
         value_of_next_state = self.estimator.predict(next_state_index)
 
@@ -97,7 +98,8 @@ class OnlineCritic(CriticBase):
         input  = self.estimator.predict(current_state_index)
         loss  = F.smooth_l1_loss(input,target)
 
-        writer.add_scalar('value_loss',loss,episode)
+        if done:
+            writer.add_scalar('value_loss',loss,episode)
         
         self.estimator.update(loss)
     
@@ -146,16 +148,16 @@ class OnlineActor(ActorBase):
         reward = args[1]
         action_prob = args[2]
         next_state_index = args[3]
-        episode =args[4]
-        writer = args[5]
+        done = args[4]
+        episode =args[5]
+        writer = args[6]
 
         advantage = torch.tensor(reward) + self.discount* self.critic.estimator.predict(next_state_index) - self.critic.estimator.predict(current_state_index)
         policy_loss = -torch.log(torch.round(action_prob*10**3)/10**3)*advantage.detach()
-
-        print(action_prob)
-
-        writer.add_scalar('action_prob',action_prob.item(),episode)
-        writer.add_scalar('advanage',advantage.item(),episode)
+    
+        if done:
+            writer.add_scalar('policy_loss',policy_loss.item(),episode)
+    
 
         self.policy.estimator.update(policy_loss)
 
@@ -181,7 +183,7 @@ class OnlineCriticActor:
         # S
         current_state_index = self.env.reset()
 
-        for sub_episode in tqdm(range(0, OnlineCriticActor.MAX_STEPS)):
+        for _ in tqdm(range(0, OnlineCriticActor.MAX_STEPS)):
             # A
             current_action_index = self.actor.get_behavior_policy().get_action(current_state_index)
             observation = self.env.step(current_action_index)
@@ -195,10 +197,10 @@ class OnlineCriticActor:
             # S'
             next_state_index = observation[0]
 
-            self.critic.evaluate(current_state_index,reward,next_state_index,episode*OnlineCriticActor.MAX_STEPS+sub_episode,self.writer)
+            self.critic.evaluate(current_state_index,reward,next_state_index,done,episode,self.writer)
             
             action_prob=self.actor.get_behavior_policy().get_discrete_distribution_tensor(current_state_index)[current_action_index]
-            self.actor.improve(current_state_index,reward,action_prob,next_state_index,episode*OnlineCriticActor.MAX_STEPS+sub_episode,self.writer)
+            self.actor.improve(current_state_index,reward,action_prob,next_state_index,done,episode,self.writer)
 
             if done:
                 break

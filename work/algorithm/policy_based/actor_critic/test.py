@@ -39,6 +39,6 @@ def test_online_critic_actor_method(env):
 real_env = get_env("mountaincar")
 
 
-test_online_critic_actor_method(real_env)
-#test_batch_critic_actor_method(real_env)
+#test_online_critic_actor_method(real_env)
+test_batch_critic_actor_method(real_env)
 

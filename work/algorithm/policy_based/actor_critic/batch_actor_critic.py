@@ -162,8 +162,7 @@ class BatchCritic(CriticBase):
             G = reward + self.discount*G
             state_values.insert(0,state_value)
             returns.insert(0,G)
-        writer.add_scalar('returns',G,episode)  
-        writer.add_scalar('steps',len(trajectory),episode)  
+
         returns = torch.tensor(returns)
         returns = (returns-returns.mean())/(returns.std()+BatchCriticActor.EPS)
 
@@ -190,28 +189,27 @@ class BatchCriticActor:
             
     def improve(self):
         for episode in tqdm(range(0,self.num_episodes)):
-            trajectory = self._run_one_episode()    
+            trajectory = self._run_one_episode(episode)    
             
             if len(trajectory)< BatchCriticActor.MAX_STEPS:
                 self.critic.evaluate(trajectory,episode,self.writer)
                 self.actor.improve(trajectory,episode,self.writer)
         
-    def _run_one_episode(self):
+    def _run_one_episode(self,episode):
         trajectory = []
         current_state = self.env.reset()
-
-        steps = 0
-        while True:
+        
+        for step in tqdm(range(0,BatchCriticActor.MAX_STEPS)):
             action_index = self.actor.get_behavior_policy().get_action(current_state)
-            action_prob = self.actor.get_behavior_policy().get_discrete_distribution(current_state)[action_index]
+            action_prob = self.actor.get_behavior_policy().get_discrete_distribution_tensor(current_state)[action_index]
             state_value  = self.critic.get_value_function().predict(current_state)
             observation = self.env.step(action_index)
             self.env.render()
-            steps = steps+1
             reward = observation[1]
-            trajectory.append((current_state,state_value,action_index,torch.tensor(action_prob),reward))
+            trajectory.append((current_state,state_value,action_index,action_prob,reward))
             done = observation[2]
-            if done or steps > BatchCriticActor.MAX_STEPS:
+            if done:
+                self.writer.add_scalar('steps_to_go',step,episode)
                 break
             current_state = observation[0]
         return trajectory
