@@ -89,15 +89,17 @@ class BatchActor(ActorBase):
     
         G = 0.0
         log_action_probs=[]
+        entroys=[]
         state_values=[]
         returns = []
         policy_losses=[]
 
         # reduce the variance  
-        for _,state_value,_,action_prob,reward in trajectory[::-1]:
+        for _,state_value,_,action_prob,entroy,reward in trajectory[::-1]:
             # estimate the sate value with Monte Carlo target   
             G = reward + self.discount*G
             log_action_probs.insert(0,torch.log(action_prob))
+            entroys.insert(0,entroy)
             state_values.insert(0,state_value)
             returns.insert(0,G)
         returns = torch.tensor(returns)
@@ -107,7 +109,7 @@ class BatchActor(ActorBase):
             advantage = G - state_value.detach()
             policy_losses.append(-log_action_prob*advantage)
         
-        total_loss = torch.stack(policy_losses).sum()
+        total_loss = torch.stack(policy_losses).sum() + torch.stack(entroys).sum()
         writer.add_scalar('policy_loss',total_loss,episode)
         self.policy.estimator.update(total_loss)
 
@@ -158,7 +160,7 @@ class BatchCritic(CriticBase):
 
         G = 0.0 
         # reduce the variance  
-        for _,state_value,_,_,reward in trajectory[::-1]:
+        for _,state_value,_,_,_,reward in trajectory[::-1]:
             G = reward + self.discount*G
             state_values.insert(0,state_value)
             returns.insert(0,G)
@@ -201,12 +203,14 @@ class BatchCriticActor:
         
         for step in tqdm(range(0,BatchCriticActor.MAX_STEPS)):
             action_index = self.actor.get_behavior_policy().get_action(current_state)
-            action_prob = self.actor.get_behavior_policy().get_discrete_distribution_tensor(current_state)[action_index]
+            distribution = self.actor.get_behavior_policy().get_discrete_distribution_tensor(current_state)
+            entropy = torch.distributions.Categorical(distribution).entropy()
+            action_prob = distribution[action_index]
             state_value  = self.critic.get_value_function().predict(current_state)
             observation = self.env.step(action_index)
             self.env.render()
             reward = observation[1]
-            trajectory.append((current_state,state_value,action_index,action_prob,reward))
+            trajectory.append((current_state,state_value,action_index,action_prob,entropy,reward))
             done = observation[2]
             if done:
                 self.writer.add_scalar('steps_to_go',step,episode)
