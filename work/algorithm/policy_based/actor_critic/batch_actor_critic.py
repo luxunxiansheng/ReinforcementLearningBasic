@@ -78,6 +78,8 @@ class PolicyEsitmator:
         self.optimizer.step()
         
 class BatchActor(ActorBase):
+    ENTROY_BETA = 0.0
+    
     def __init__(self,policy,discount=1.0):
         self.policy = policy 
         self.discount = discount
@@ -109,8 +111,9 @@ class BatchActor(ActorBase):
             advantage = G - state_value.detach()
             policy_losses.append(-log_action_prob*advantage)
         
-        total_loss = torch.stack(policy_losses).sum() + torch.stack(entroys).sum()
-        writer.add_scalar('policy_loss',total_loss,episode)
+        total_policy_loss = torch.stack(policy_losses).sum()
+        total_loss =  total_policy_loss - BatchActor.ENTROY_BETA*torch.stack(entroys).sum()
+        writer.add_scalar('policy_loss',total_policy_loss,episode)
         self.policy.estimator.update(total_loss)
 
     def get_behavior_policy(self):
@@ -177,7 +180,6 @@ class BatchCritic(CriticBase):
     
     def get_value_function(self):
         return self.estimator
-
 
 class BatchCriticActor:
     EPS = np.finfo(np.float32).eps.item()

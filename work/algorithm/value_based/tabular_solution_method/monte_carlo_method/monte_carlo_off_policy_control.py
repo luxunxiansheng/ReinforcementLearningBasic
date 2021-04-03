@@ -41,7 +41,7 @@ from lib.utility import create_distribution_greedily
 from tqdm import tqdm
 
 
-class MonteCarloOffPolicyActor(ActorBase):
+class MonteCarloActor(ActorBase):
     def __init__(self,behavior_policy,target_policy,critic):
         self.target_policy = target_policy
         self.behavior_policy = behavior_policy

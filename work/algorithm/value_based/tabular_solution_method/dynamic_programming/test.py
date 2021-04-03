@@ -30,7 +30,7 @@ def test_policy_iteration(env):
     transition_table = env.P
     policy_table = env.build_policy_table()
     table_policy = DiscreteStateValueBasedPolicy(policy_table)
-  
+
     critic = PoplicyIterationCritic(table_policy,v_table,transition_table,1e-5,1.0)
     actor  = PolicyIterationActor(table_policy,critic,transition_table,1e-5,1.0)
 

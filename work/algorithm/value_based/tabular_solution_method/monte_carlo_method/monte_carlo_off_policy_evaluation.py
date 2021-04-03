@@ -40,8 +40,6 @@ from common import ActorBase, CriticBase
 from lib.utility import create_distribution_greedily
 from tqdm import tqdm
 
-    
-
 class MonteCarloOffPolicyEvaluation:
     def __init__(self, critic,behavior_policy, target_policy,env, episodes=500000, discount=1.0,epsilon=0.5):
         self.behavior_policy = behavior_policy
