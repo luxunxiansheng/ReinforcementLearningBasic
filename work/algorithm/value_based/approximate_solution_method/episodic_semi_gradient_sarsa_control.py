@@ -36,8 +36,6 @@
 from tqdm import tqdm
 from common import CriticBase
 
-
-
 class ApproximationSARSACritic(CriticBase):
     def __init__(self,env,estimator,policy,step_size=0.01,discount= 1.0):
         self.env = env 
@@ -61,8 +59,6 @@ class ApproximationSARSACritic(CriticBase):
     
     def get_value_function(self):
         return self.estimator
-
-
 
 class EpisodicSemiGradientSarsaControl:
     """
