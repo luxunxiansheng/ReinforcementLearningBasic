@@ -45,9 +45,69 @@ from torch.utils.tensorboard import SummaryWriter
 from algorithm.policy_based.actor_critic.actor_critic_common import ValueEstimator
 from common import ActorBase,CriticBase
 
-'''
-It is O.K. to combine two newtworks into one for efficiency. We take two just for clarity 
-'''
+class ValueEestimator(ValueEstimator):
+    class Model(nn.Module):
+        def __init__(self,observation_space_size):
+            super().__init__()
+            self.affine = nn.Linear(observation_space_size, 128)
+            self.dropout = nn.Dropout(p=0.6)
+            self.value_head = nn.Linear(128, 1)
+
+        def forward(self, state):
+            state = torch.from_numpy(state).float()
+            state = F.relu(self.dropout(self.affine(state)))
+            state_value = self.value_head(state)
+            return state_value
+
+    def __init__(self,observation_space_size):
+        self.model = ValueEestimator.Model(observation_space_size)
+        self.optimizer = optim.Adam(self.model.parameters(),lr =1e-3)
+        
+    def predict(self,state):
+        value = self.model.forward(state)
+        return value
+
+    def update(self,*args):
+        loss = args[0]
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
+
+class BatchCritic(CriticBase):
+    def __init__(self,value_estimator,discount=1.0):
+        self.estimator = value_estimator
+        self.discount  = discount
+    
+    def evaluate(self,*args):
+        trajectory = args[0]
+        episode = args[1]
+        writer = args[2]
+
+        state_values=[]
+        returns = []
+        value_losses=[]
+
+        G = 0.0 
+        
+        # reduce the variance  
+        for _,state_value,_,_,_,reward in trajectory[::-1]:
+            G = reward + self.discount*G
+            state_values.insert(0,state_value)
+            returns.insert(0,G)
+
+        returns = torch.tensor(returns)
+        returns = (returns-returns.mean())/(returns.std()+BatchCriticActor.EPS)
+
+        for value, G in zip(state_values,returns):
+            value_losses.append(F.smooth_l1_loss(value,torch.tensor([G])))
+
+        total_loss = torch.stack(value_losses).sum()
+        writer.add_scalar('value_loss',total_loss,episode)
+        self.estimator.update(total_loss)
+    
+    def get_value_function(self):
+        return self.estimator
+
 
 class PolicyEsitmator:
     class Model(nn.Module):
@@ -119,67 +179,6 @@ class BatchActor(ActorBase):
     def get_behavior_policy(self):
         return self.policy
 
-class ValueEestimator(ValueEstimator):
-    class Model(nn.Module):
-        def __init__(self,observation_space_size):
-            super().__init__()
-            self.affine = nn.Linear(observation_space_size, 128)
-            self.dropout = nn.Dropout(p=0.6)
-            self.value_head = nn.Linear(128, 1)
-
-        def forward(self, state):
-            state = torch.from_numpy(state).float()
-            state = F.relu(self.dropout(self.affine(state)))
-            state_value = self.value_head(state)
-            return state_value
-
-    def __init__(self,observation_space_size):
-        self.model = ValueEestimator.Model(observation_space_size)
-        self.optimizer = optim.Adam(self.model.parameters(),lr =1e-3)
-        
-    def predict(self,state):
-        value = self.model.forward(state)
-        return value
-
-    def update(self,*args):
-        loss = args[0]
-        self.optimizer.zero_grad()
-        loss.backward()
-        self.optimizer.step()
-
-class BatchCritic(CriticBase):
-    def __init__(self,value_estimator,discount=1.0):
-        self.estimator = value_estimator
-        self.discount  = discount
-    
-    def evaluate(self,*args):
-        trajectory = args[0]
-        episode = args[1]
-        writer = args[2]
-
-        state_values=[]
-        returns = []
-        value_losses=[]
-
-        G = 0.0 
-        # reduce the variance  
-        for _,state_value,_,_,_,reward in trajectory[::-1]:
-            G = reward + self.discount*G
-            state_values.insert(0,state_value)
-            returns.insert(0,G)
-
-        returns = torch.tensor(returns)
-        returns = (returns-returns.mean())/(returns.std()+BatchCriticActor.EPS)
-
-        for value, G in zip(state_values,returns):
-            value_losses.append(F.smooth_l1_loss(value,torch.tensor([G])))
-
-        total_loss = torch.stack(value_losses).sum()
-        writer.add_scalar('value_loss',total_loss,episode)
-        self.estimator.update(total_loss)
-    
-    def get_value_function(self):
-        return self.estimator
 
 class BatchCriticActor:
     EPS = np.finfo(np.float32).eps.item()

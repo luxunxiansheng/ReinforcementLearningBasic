@@ -35,6 +35,8 @@
 
 # http://mcneela.github.io/machine_learning/2019/09/03/Writing-Your-Own-Optimizers-In-Pytorch.html
 
+import numpy as np 
+
 import torch
 import torch.nn as nn 
 import torch.nn.functional as F
@@ -42,7 +44,6 @@ import torch.nn.functional as F
 from algorithm.policy_based.actor_critic.actor_critic_common import ValueEstimator
 from lib.utility import SharedAdam
 from common import ActorBase,CriticBase
-
 
 class ValueModel(nn.Module):
     def __init__(self,observation_space_size):
@@ -192,7 +193,7 @@ class OnlineActor(ActorBase):
         return self.policy
 
 
-class OnlineCriticActor:
+class AsynchronousAdvantageActorCritic:
     EPS = np.finfo(np.float32).eps.item()
     MAX_STEPS = 500000
     def  __init__(self,critic,actor,env,num_episodes):
@@ -209,7 +210,7 @@ class OnlineCriticActor:
         # S
         current_state_index = self.env.reset()
 
-        for _ in range(0, OnlineCriticActor.MAX_STEPS):
+        for _ in range(0, AsynchronousAdvantageActorCritic.MAX_STEPS):
             # A
             current_action_index = self.actor.get_behavior_policy().get_action(current_state_index)
             observation = self.env.step(current_action_index)

@@ -32,23 +32,19 @@
 # #### END LICENSE BLOCK #####
 #
 # /
-from collections import namedtuple
-import numpy as np 
-from tqdm import tqdm
 
+# http://mcneela.github.io/machine_learning/2019/09/03/Writing-Your-Own-Optimizers-In-Pytorch.html
+
+import numpy as np
 import torch
+import torch.multiprocessing as mp
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.optim as optim
+from algorithm.policy_based.actor_critic.actor_critic_common import ValueEstimator
+from common import ActorBase, CriticBase
+from lib.utility import SharedAdam
 from torch.utils.tensorboard import SummaryWriter
 
-from algorithm.policy_based.actor_critic.actor_critic_common import ValueEstimator
-from common import ActorBase,CriticBase
-
-'''
-We take two networks in this case just for clarity but for 
-sure it is ok to reduce to one for efficiency.
-'''
 
 class ValueEestimator(ValueEstimator):
     class Model(nn.Module):
@@ -66,7 +62,7 @@ class ValueEestimator(ValueEstimator):
 
     def __init__(self,observation_space_size):
         self.model = ValueEestimator.Model(observation_space_size)
-        self.optimizer = optim.Adam(self.model.parameters(),lr =1e-3)
+        self.optimizer = SharedAdam(self.model.parameters(),lr =1e-3)
         
     def predict(self,state):
         value = self.model.forward(state)
@@ -87,57 +83,51 @@ class OnlineCritic(CriticBase):
         current_state_index = args[0]
         reward = args[1]
         next_state_index = args[2]    
-        done = args[3]
-        episode =args[4]
-        writer = args[5]
-        
+
         value_of_next_state = self.estimator.predict(next_state_index)
 
         # set the target 
         target = reward + self.discount * value_of_next_state
         input  = self.estimator.predict(current_state_index)
         loss  = F.smooth_l1_loss(input,target)
-
-        if done:
-            writer.add_scalar('value_loss',loss,episode)
         
         self.estimator.update(loss)
     
     def get_value_function(self):
         return self.estimator
 
-class PolicyEsitmator:
-    class Model(nn.Module):
-        def __init__(self,observation_space_size,action_space_size):
-            super().__init__()
-            self.affine = nn.Linear(observation_space_size, 128)
-            self.dropout = nn.Dropout(p=0.6)
-            self.action_head = nn.Linear(128, action_space_size)
-            
-        def forward(self, state):
-            state = torch.from_numpy(state).float()
-            state = self.affine(state)
-            state = self.dropout(state)
-            state = F.relu(state)
-            state = self.action_head(state)
-            actions_prob = F.softmax(state,dim=0)
-            return actions_prob
-    
+
+class Model(nn.Module):
     def __init__(self,observation_space_size,action_space_size):
-        self.model = PolicyEsitmator.Model(observation_space_size,action_space_size)
-        self.optimizer = optim.Adam(self.model.parameters(),lr =1e-3)
-    
-    def predict(self,state):
-        actions_prob=self.model.forward(state)
+        super().__init__()
+        self.observation_space_size = observation_space_size
+        self.action_space_size = action_space_size
+        
+        self.affine = nn.Linear(observation_space_size, 128)
+        self.dropout = nn.Dropout(p=0.6)
+        self.action_head = nn.Linear(128, action_space_size)
+            
+    def forward(self, state):
+        state = torch.from_numpy(state).float()
+        state = self.affine(state)
+        state = self.dropout(state)
+        state = F.relu(state)
+        state = self.action_head(state)
+        actions_prob = F.softmax(state,dim=0)
         return actions_prob
+
+class GlobalPolicyEsitmator:
+    def __init__(self,observation_space_size,action_space_size):
+        self.model = Model(observation_space_size,action_space_size)
+        self.optimizer = SharedAdam(self.model.parameters(),lr =1e-3)
 
     def update(self,*args):
         loss = args[0]
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
-        
-class OnlineActor(ActorBase):
+
+class OnlineGlobalActor(ActorBase):
     def __init__(self,policy,critic,discount=1.0):
         self.policy = policy 
         self.discount = discount
@@ -148,44 +138,88 @@ class OnlineActor(ActorBase):
         reward = args[1]
         action_prob = args[2]
         next_state_index = args[3]
-        done = args[4]
-        episode =args[5]
-        writer = args[6]
 
         advantage = torch.tensor(reward) + self.discount* self.critic.estimator.predict(next_state_index) - self.critic.estimator.predict(current_state_index)
         policy_loss = -torch.log(torch.round(action_prob*10**3)/10**3)*advantage.detach()
-    
-        if done:
-            writer.add_scalar('policy_loss',policy_loss.item(),episode)
 
         self.policy.estimator.update(policy_loss)
 
     def get_behavior_policy(self):
         return self.policy
 
-class OnlineCriticActor:
+
+class LocalPolicyEstimator:
+    def __init__(self,global_model):
+        self.model = Model(global_model.observation_space_size,global_model.action_space_size)
+        self.model.load_state_dict(global_model.state_dict())
+    
+    def predict(self,state):
+        actions_prob=self.model.forward(state)
+        return actions_prob
+
+
+class OnlineLocalActor(ActorBase):
+    def __init__(self,policy,critic,discount=1.0):
+        self.policy = policy 
+        self.discount = discount
+        self.critic = critic
+        
+    def improve(self,*args):
+        current_state_index = args[0]
+        reward = args[1]
+        action_prob = args[2]
+        next_state_index = args[3]
+
+        advantage = torch.tensor(reward) + self.discount* self.critic.estimator.predict(next_state_index) - self.critic.estimator.predict(current_state_index)
+        policy_loss = -torch.log(torch.round(action_prob*10**3)/10**3)*advantage.detach()
+
+        self.policy.estimator.update(policy_loss)
+
+    def get_behavior_policy(self):
+        return self.policy
+
+class OnlineA3C:
     EPS = np.finfo(np.float32).eps.item()
     MAX_STEPS = 500000
-    def  __init__(self,critic,actor,env,num_episodes):
-        self.critic=critic 
-        self.actor= actor
+    NUM_PROCESSES = 8
+    def  __init__(self,global_critic,local_critic,global_actor,local_actor,env,num_episodes):
+        self.global_critic= global_critic 
+        self.local_critic = local_critic
+        self.global_actor= global_actor
+        self.local_actor = local_actor
         self.env = env
         self.num_episodes = num_episodes
         self.writer = SummaryWriter()
-            
+
     def improve(self):
-        for episode in tqdm(range(0, self.num_episodes)):
-            self._run_one_episode(episode)
+        processes=[]
+        for rank in range(0, OnlineA3C.NUM_PROCESSES):
+            p = mp.Process(target=OnlineA3C._improve, args=(rank, self.num_episodes,self.global_critic, self.local_critic, self.global_actor,self.local_actor))
+            p.start()
+            processes.append(p)
+        for p in processes:
+            p.join()
 
-    def _run_one_episode(self, episode):
+
+    @staticmethod
+    def _improve(env,num_episodes,global_critic, local_critic, global_actor,local_actor):
+        for episode in range(0, num_episodes):
+            OnlineA3C._run_one_episode(env,global_critic,local_critic, global_actor,local_actor)
+    
+    @staticmethod
+    def _run_one_episode(env,global_critic, local_critic, global_actor,local_actor):
+        local_critic.sync(global_critic)
+        local_actor.sync(global_actor)
+
+        new_env = env()
         # S
-        current_state_index = self.env.reset()
+        current_state_index = new_env.reset()
 
-        for _ in tqdm(range(0, OnlineCriticActor.MAX_STEPS)):
+        for _ in range(0, OnlineA3C.MAX_STEPS):
             # A
-            current_action_index = self.actor.get_behavior_policy().get_action(current_state_index)
-            observation = self.env.step(current_action_index)
-            self.env.render()
+            current_action_index = local_actor.get_behavior_policy().get_action(current_state_index)
+            observation = new_env.step(current_action_index)
+            
 
             # R
             reward = observation[1]
@@ -194,13 +228,12 @@ class OnlineCriticActor:
             # S'
             next_state_index = observation[0]
 
-            self.critic.evaluate(current_state_index,reward,next_state_index,done,episode,self.writer)
+            local_critic.evaluate(current_state_index,reward,next_state_index)
             
-            action_prob=self.actor.get_behavior_policy().get_discrete_distribution_tensor(current_state_index)[current_action_index]
-            self.actor.improve(current_state_index,reward,action_prob,next_state_index,done,episode,self.writer)
+            action_prob=local_actor.get_behavior_policy().get_discrete_distribution_tensor(current_state_index)[current_action_index]
+            global_actor.improve(current_state_index,reward,action_prob,next_state_index,)
 
             if done:
                 break
 
             current_state_index = next_state_index
-

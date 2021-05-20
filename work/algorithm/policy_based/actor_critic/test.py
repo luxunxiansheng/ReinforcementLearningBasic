@@ -7,11 +7,24 @@ sys.path.append(work_folder)
 from policy.policy import ParameterizedPolicy
 from algorithm.policy_based.actor_critic.batch_actor_critic import BatchActor, BatchCritic, BatchCriticActor, PolicyEsitmator, ValueEestimator
 from algorithm.policy_based.actor_critic.online_actor_critic import OnlineActor, OnlineCritic, OnlineCriticActor, PolicyEsitmator, ValueEestimator
+from algorithm.policy_based.actor_critic.batch_a3c import BatchA3C, GlobalBatchActor, GlobalBatchCritic, GlobalPolicyEsitmator, GlobalValueEestimator
+from env.mountain_car import MountainCarEnv
 
 from lib import plotting
 from test_setup import get_env
 
 num_episodes = 500
+
+def test_batch_a3c_method(env):
+    gloal_value_estimator = GlobalValueEestimator(env.observation_space.shape[0])
+    global_critic = GlobalBatchCritic(gloal_value_estimator)
+
+    global_policy_estimator = GlobalPolicyEsitmator(env.observation_space.shape[0],env.action_space.n)
+    policy = ParameterizedPolicy(global_policy_estimator)
+    global_actor = GlobalBatchActor(policy,global_critic)
+
+    critic_actor = BatchA3C(global_critic,global_actor,env,num_episodes)
+    critic_actor.improve()
 
 def test_batch_critic_actor_method(env):
     value_estimator = ValueEestimator(env.observation_space.shape[0])
@@ -36,9 +49,11 @@ def test_online_critic_actor_method(env):
     critic_actor.improve()
 
 
-real_env = get_env("mountaincar")
+real_env = get_env(MountainCarEnv.__name__)
 
 
 #test_online_critic_actor_method(real_env)
-test_batch_critic_actor_method(real_env)
+#test_batch_critic_actor_method(real_env)
+
+test_batch_a3c_method(real_env)
 

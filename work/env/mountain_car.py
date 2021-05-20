@@ -74,6 +74,10 @@ class MountainCarEnv(DiscreteActionEnv):
         self._observation_space_name = ('Position','Speed')
 
         self.seed()
+    
+    def __call__(self):
+        clone = self.__init__(self.goal_velocity)
+        return clone 
 
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)

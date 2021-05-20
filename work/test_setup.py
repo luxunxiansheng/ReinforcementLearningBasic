@@ -6,22 +6,22 @@ from env.mountain_car import MountainCarEnv
 from env.random_walking import RandomWalkingEnv
 from env.windy_gridworld import WindyGridworldEnv
 
-
+# A simple factory method
 def get_env(env):
-    if env == 'grid_world':
+    if env == GridworldEnv.__name__:
         return GridworldEnv()
 
-    if env == 'blackjack':
+    if env == BlackjackEnv.__name__:
         return BlackjackEnv()
 
-    if env == 'randomwalking':
+    if env == RandomWalkingEnv.__name__:
         return RandomWalkingEnv()
 
-    if env == 'windygridworld':
+    if env == WindyGridworldEnv.__name__:
         return WindyGridworldEnv()
 
-    if env == 'cliffwalking':
+    if env == CliffWalkingEnv.__name__:
         return CliffWalkingEnv()
 
-    if env == 'mountaincar':
+    if env == MountainCarEnv.__name__:
         return MountainCarEnv()
