@@ -193,7 +193,6 @@ class BatchCriticActor:
     def improve(self):
         for episode in tqdm(range(0,self.num_episodes)):
             trajectory = self._run_one_episode(episode)    
-            
             if len(trajectory)< BatchCriticActor.MAX_STEPS:
                 self.critic.evaluate(trajectory,episode,self.writer)
                 self.actor.improve(trajectory,episode,self.writer)
