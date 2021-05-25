@@ -1,7 +1,5 @@
 import sys,os
 
-from multiprocessing import freeze_support
-
 current_dir= os.path.dirname(os.path.realpath(__file__))
 work_folder=current_dir[:current_dir.find('algorithm')]
 sys.path.append(work_folder)

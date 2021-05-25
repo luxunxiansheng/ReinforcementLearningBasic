@@ -44,13 +44,10 @@ import torch
 import torch.multiprocessing as mp
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.optim as optim
 from algorithm.policy_based.actor_critic.actor_critic_common import ValueEstimator
 from common import ActorBase, CriticBase
 from lib.utility import SharedAdam
 from policy.policy import ParameterizedPolicy
-from torch.optim import optimizer
-from torch.utils.tensorboard import SummaryWriter
 
 
 class ValueModel(nn.Module):
@@ -79,8 +76,6 @@ class GlobalValueEestimator(ValueEstimator):
                 return
             shared_param._grad = param.grad
 
-
-
 class LocalValueEestimator(ValueEstimator):
     def __init__(self,observation_space_size):
         self.model = ValueModel(observation_space_size)
@@ -88,17 +83,16 @@ class LocalValueEestimator(ValueEstimator):
     def predict(self,state):
         value = self.model.forward(state)
         return value
-    
+
 
 class LocalBatchCritic(CriticBase):
-    def __init__(self,local_value_estimator, global_value_estimator, optimizer, discount=1.0):
+    def __init__(self,local_value_estimator, global_value_estimator,discount=1.0):
         self.local_value_estimator =  local_value_estimator
         self.global_value_estimator = global_value_estimator
-        self.optimizer = optimizer
         self.discount  = discount
     
-    def ensure_shared_grads(self,model, shared_model):
-        for param, shared_param in zip(model.parameters(),shared_model.parameters()):
+    def ensure_shared_grads(self,model, global_model):
+        for param, shared_param in zip(model.parameters(),global_model.parameters()):
             if shared_param.grad is not None:
                 return
             shared_param._grad = param.grad
@@ -125,10 +119,10 @@ class LocalBatchCritic(CriticBase):
             value_losses.append(F.smooth_l1_loss(value,torch.tensor([G])))
 
         total_loss = torch.stack(value_losses).sum()
-        self.optimizer.zero_grad()
+        self.global_value_estimator.optimizer.zero_grad()
         total_loss.backward()
         self.ensure_shared_grads(self.local_value_estimator.model,self.global_value_estimator.model)
-        self.optimizer.step()
+        self.global_value_estimator.optimizer.step()
         
     def get_value_function(self):
         return self.local_value_estimator
@@ -166,12 +160,11 @@ class LocalPolicyEsitmator:
 class LocalBatchActor(ActorBase):
     ENTROY_BETA = 0.0
     
-    def __init__(self,local_policy,global_policy,optimizer,discount=1.0):
+    def __init__(self,local_policy,global_policy,discount=1.0):
         self.local_policy = local_policy 
         self.global_policy = global_policy
-
         self.discount = discount
-        self.optimizer = optimizer
+    
 
     def ensure_shared_grads(self,model, shared_model):
         for param, shared_param in zip(model.parameters(),shared_model.parameters()):
@@ -206,10 +199,10 @@ class LocalBatchActor(ActorBase):
         total_policy_loss = torch.stack(policy_losses).sum()
         total_loss =  total_policy_loss - LocalBatchActor.ENTROY_BETA*torch.stack(entroys).sum()
         
-        self.optimizer.zero_grad()
+        self.global_policy.estimator.optimizer.zero_grad()
         total_loss.backward()
         self.ensure_shared_grads(self.local_policy.estimator.model,self.global_policy.estimator.model)
-        self.optimizer.step()
+        self.global_policy.estimator.optimizer.step()
 
     def get_behavior_policy(self):
         return self.local_policy
@@ -257,12 +250,12 @@ class BatchA3C:
         local_env = BatchA3C._create_env(env)
         local_value_estimator = LocalValueEestimator(local_env.observation_space.shape[0])
         local_value_estimator.model.load_state_dict(gloal_value_estimator.model.state_dict())
-        local_critic = LocalBatchCritic(local_value_estimator,gloal_value_estimator,gloal_value_estimator.optimizer)
+        local_critic = LocalBatchCritic(local_value_estimator,gloal_value_estimator)
 
         local_policy_estimator = LocalPolicyEsitmator(local_env.observation_space.shape[0],local_env.action_space.n)
         local_policy_estimator.model.load_state_dict(global_policy.estimator.model.state_dict())
         local_policy = ParameterizedPolicy(local_policy_estimator)
-        local_actor = LocalBatchActor(local_policy,global_policy,global_policy.estimator.optimizer)
+        local_actor = LocalBatchActor(local_policy,global_policy)
 
         for episode in range(0,num_episodes):
             trajectory = BatchA3C._run_one_episode(env,local_critic,local_actor)    
