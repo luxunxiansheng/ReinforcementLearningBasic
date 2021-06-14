@@ -109,7 +109,3 @@ class MonteCarloOnPolicyControl:
                 state_count[state_index][action_index] = (0, 0.0)
         return state_count
 
-
-
-    
-    

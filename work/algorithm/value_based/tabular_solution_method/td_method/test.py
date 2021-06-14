@@ -223,8 +223,7 @@ def test_qlearning_method(env):
     b_policy_table = env.build_policy_table()
     b_policy = DiscreteStateValueBasedPolicy(b_policy_table)
 
-    q_learning_statistics = EpisodeStats("Q_Learning", episode_lengths=np.zeros(
-        num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
+    q_learning_statistics = EpisodeStats("Q_Learning", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
 
     critic = QLearningCritic(q_table)
     actor  = ESoftActor(b_policy,critic)
@@ -240,8 +239,7 @@ def test_off_policy_n_steps_sarsa(env):
     b_policy = DiscreteStateValueBasedPolicy(b_policy_table)
     t_policy_table = env.build_policy_table()
     t_policy = DiscreteStateValueBasedPolicy(t_policy_table)
-    n_steps_off_policy_sarsa_statistics = EpisodeStats("N_Steps_Offpolicy_Sarsa", episode_lengths=np.zeros(
-        num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
+    n_steps_off_policy_sarsa_statistics = EpisodeStats("N_Steps_Offpolicy_Sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
 
     critic = TDNOffPolicySARSACritic(q_table,b_policy,t_policy,n_steps)
     actor  = OffPolicyGreedyActor(b_policy,t_policy,critic)

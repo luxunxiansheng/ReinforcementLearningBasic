@@ -10,7 +10,6 @@ from algorithm.policy_based.actor_critic.online_actor_critic import OnlineActor,
 from algorithm.policy_based.actor_critic.batch_a3c import BatchA3C, GlobalPolicyEsitmator, GlobalValueEestimator
 from env.mountain_car import MountainCarEnv
 
-from lib import plotting
 from test_setup import get_env
 
 num_episodes = 500
@@ -45,8 +44,6 @@ def test_online_critic_actor_method(env):
 
     critic_actor = OnlineCriticActor(critic,actor,env,num_episodes)
     critic_actor.improve()
-
-
 
 #test_online_critic_actor_method(real_env)
 #test_batch_critic_actor_method(real_env)

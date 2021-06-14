@@ -236,7 +236,7 @@ class BatchA3C:
             state_value  = local_critic.get_value_function().predict(current_state)
             observation = env.step(action_index)
             reward = observation[1]
-            #env.render()
+            env.render()
             trajectory.append((current_state,state_value,action_index,action_prob,entropy,reward))
             done = observation[2]
             if done:
