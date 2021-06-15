@@ -31,11 +31,10 @@
 #
 # /
 
-from algorithm.value_based.tabular_solution_method.td_method.td_common import TDCritic
+from algorithm.value_based.tabular_solution_method.td_method.td_common import TDExploitator
 from tqdm import tqdm
 
-
-class QLearningCritic(TDCritic):
+class QLearningExploitator(TDExploitator):
     def __init__(self,value_function,step_size=0.1,discount = 1.0):
         super().__init__(value_function,step_size)
         self.discount = discount

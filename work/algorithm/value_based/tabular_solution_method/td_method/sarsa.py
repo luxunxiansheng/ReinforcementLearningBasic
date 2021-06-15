@@ -35,11 +35,11 @@
 
 from tqdm import tqdm
 
-from algorithm.value_based.tabular_solution_method.td_method.td_common import TDCritic
+from algorithm.value_based.tabular_solution_method.td_method.td_common import TDExploitator
 """
 It is certainly ok to implement SRASA with N_Step_SARSA as long as to set the Setps to 1.  We keep sarsa just for tutorial 
 """
-class SARSACritic(TDCritic):
+class SARSACritic(TDExploitator):
     def __init__(self,value_function,step_size=0.1,discount=1.0):
         super().__init__(value_function,step_size)
         self.discount = discount 

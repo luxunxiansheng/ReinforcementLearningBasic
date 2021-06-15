@@ -37,12 +37,12 @@
 import copy
 
 
-from common import ActorBase, CriticBase
+from common import ActorBase, ExploitatorBase
 from lib.utility import create_distribution_greedily
 
 
 
-class PoplicyIterationCritic(CriticBase):
+class PoplicyIterationCritic(ExploitatorBase):
     """
     Given a policy, calculate the value of state with Jacobi-like itration method. The calculated value of state may not be 
     very accurate, but it doesn't mattter since our goal is to find the optimal policy after all. 

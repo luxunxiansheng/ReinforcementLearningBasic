@@ -5,7 +5,7 @@ sys.path.append(work_folder)
 
 import numpy as np
 
-from algorithm.value_based.tabular_solution_method.td_method.td_common import (BoltzmannActor, ESoftActor, OffPolicyGreedyActor, QLearningLambdaCritic, TDLambdaCritic, TDNSARSACritic,TDNExpectedSARSACritic)
+from algorithm.value_based.tabular_solution_method.td_method.td_common import (BoltzmannExplorator, ESoftExplorator, OffPolicyGreedyActor, QLearningLambdaCritic, TDLambdaCritic, TDNSARSACritic,TDNExpectedSARSACritic)
 from algorithm.value_based.tabular_solution_method.td_method.double_q_learning import DoubleQLearning, DoubleQLearningCritic
 from algorithm.value_based.tabular_solution_method.td_method.dyna_q import (DynaQPriorityCritic, DynaQTrivalCritic,  PriorityModel,  DynaQ, TrivialModel)
 from algorithm.value_based.tabular_solution_method.td_method.expected_sarsa import ExpectedSARSA,ExpectedSARSACritic
@@ -13,7 +13,7 @@ from algorithm.value_based.tabular_solution_method.td_method.n_steps_expected_sa
 from algorithm.value_based.tabular_solution_method.td_method.n_steps_sarsa import NStepsSARSA
 from algorithm.value_based.tabular_solution_method.td_method.off_policy_n_steps_sarsa import OffPolicyNStepsSARSA, TDNOffPolicySARSACritic
 from algorithm.value_based.tabular_solution_method.td_method.q_lambda import QLambda
-from algorithm.value_based.tabular_solution_method.td_method.q_learning import QLearning, QLearningCritic
+from algorithm.value_based.tabular_solution_method.td_method.q_learning import QLearning, QLearningExploitator
 from algorithm.value_based.tabular_solution_method.td_method.sarsa import SARSA,SARSACritic
 from algorithm.value_based.tabular_solution_method.td_method.sarsa_lambda import SARSALambda
 from algorithm.value_based.tabular_solution_method.td_method.td_lambda_evaluation import  TDLambdaEvalutaion
@@ -138,7 +138,7 @@ def test_sarsa_method(env):
 
     sarsa_statistics = EpisodeStats("sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
     critic = SARSACritic(q_table)
-    actor  = ESoftActor(b_policy,critic)
+    actor  = ESoftExplorator(b_policy,critic)
     sarsa_method = SARSA(critic, actor, env,sarsa_statistics, num_episodes)
     sarsa_method.improve()
 
@@ -154,7 +154,7 @@ def test_b_sarsa_method(env):
 
     sarsa_statistics = EpisodeStats("b_sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
     critic = SARSACritic(q_table)
-    actor  = BoltzmannActor(b_policy,critic)
+    actor  = BoltzmannExplorator(b_policy,critic)
     sarsa_method = SARSA(critic, actor, env,sarsa_statistics, num_episodes)
     sarsa_method.improve()
 
@@ -167,7 +167,7 @@ def test_n_steps_sarsa_method(env):
     n_sarsa_statistics = EpisodeStats("N_Steps_Sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
 
     critic = TDNSARSACritic(q_table,n_steps)
-    actor  = ESoftActor(b_policy,critic)
+    actor  = ESoftExplorator(b_policy,critic)
     n_sarsa_method = NStepsSARSA(critic,actor,env,n_steps,n_sarsa_statistics, num_episodes)
     n_sarsa_method.improve()
     return n_sarsa_statistics
@@ -181,7 +181,7 @@ def test_b_n_steps_sarsa_method(env):
     n_sarsa_statistics = EpisodeStats("b_N_Steps_Sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
 
     critic = TDNSARSACritic(q_table,n_steps)
-    actor  = BoltzmannActor(b_policy,critic)
+    actor  = BoltzmannExplorator(b_policy,critic)
     n_sarsa_method = NStepsSARSA(critic,actor,env,n_steps,n_sarsa_statistics, num_episodes)
     n_sarsa_method.improve()
     return n_sarsa_statistics
@@ -195,7 +195,7 @@ def test_expected_sarsa_method(env):
     expectedsarsa_statistics = EpisodeStats("Expected_Sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
 
     critic = ExpectedSARSACritic(b_policy,q_table)
-    actor  = ESoftActor(b_policy,critic)
+    actor  = ESoftExplorator(b_policy,critic)
 
     expectedsarsa_method = ExpectedSARSA(critic,actor, env, expectedsarsa_statistics, num_episodes)
     expectedsarsa_method.improve()
@@ -211,7 +211,7 @@ def test_n_setps_expected_sarsa_method(env):
     n_steps_expectedsarsa_statistics = EpisodeStats("N_Steps_Expected_Sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
 
     critic = TDNExpectedSARSACritic(q_table,b_policy,n_steps)
-    actor  = ESoftActor(b_policy,critic) 
+    actor  = ESoftExplorator(b_policy,critic) 
 
     n_steps_expectedsarsa_method = NStepsExpectedSARSA(critic,actor, env, n_steps, n_steps_expectedsarsa_statistics, num_episodes)
     n_steps_expectedsarsa_method.improve()
@@ -225,8 +225,8 @@ def test_qlearning_method(env):
 
     q_learning_statistics = EpisodeStats("Q_Learning", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
 
-    critic = QLearningCritic(q_table)
-    actor  = ESoftActor(b_policy,critic)
+    critic = QLearningExploitator(q_table)
+    actor  = ESoftExplorator(b_policy,critic)
 
     qlearning_method = QLearning(critic,actor, env, q_learning_statistics, num_episodes)
     qlearning_method.improve()
@@ -258,7 +258,7 @@ def test_sarsa_lambda_method(env):
     sarsa_statistics = EpisodeStats("sarsa_labmda", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
     
     critic = TDLambdaCritic(q_table)
-    actor  = ESoftActor(b_policy,critic)
+    actor  = ESoftExplorator(b_policy,critic)
 
     sarsa_method = SARSALambda(critic,actor,env,sarsa_statistics, num_episodes)
     sarsa_method.improve()
@@ -276,7 +276,7 @@ def test_q_lambda_method(env):
         num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
 
     critic = QLearningLambdaCritic(q_table)
-    actor  = ESoftActor(b_policy,critic)    
+    actor  = ESoftExplorator(b_policy,critic)    
     q_lambda_method = QLambda(critic,actor,env,q_lambda_statistics, num_episodes)
     q_lambda_method.improve()
 
@@ -292,7 +292,7 @@ def test_double_q_learning_method(env):
         num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
 
     critic = DoubleQLearningCritic(q_table)
-    actor  = ESoftActor(b_policy,critic)
+    actor  = ESoftExplorator(b_policy,critic)
 
     double_qlearning_method = DoubleQLearning(critic,actor, env, double_q_learning_statistics, num_episodes)
     double_qlearning_method.improve()
@@ -308,7 +308,7 @@ def test_dynaQ_method_trival(env):
     model = TrivialModel()  
 
     critic = DynaQTrivalCritic(q_table,model)
-    actor  = ESoftActor(b_policy,critic)
+    actor  = ESoftExplorator(b_policy,critic)
 
     dyna_q_statistics = EpisodeStats("Dyna_Q", episode_lengths=np.zeros(
         num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
@@ -327,7 +327,7 @@ def test_dynaQ_method_priority(env):
     model  = PriorityModel()
 
     critic = DynaQPriorityCritic(q_table,model)
-    actor  = ESoftActor(b_policy,critic)
+    actor  = ESoftExplorator(b_policy,critic)
 
     dyna_q_statistics = EpisodeStats("Dyna_Q_PRIORITY", episode_lengths=np.zeros(
         num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)

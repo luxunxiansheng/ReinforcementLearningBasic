@@ -35,9 +35,9 @@
 
 import numpy as np
 from tqdm import tqdm
-from algorithm.value_based.tabular_solution_method.td_method.td_common import TDCritic
+from algorithm.value_based.tabular_solution_method.td_method.td_common import TDExploitator
 
-class TDNOffPolicySARSACritic(TDCritic):
+class TDNOffPolicySARSACritic(TDExploitator):
     def __init__(self,value_function,behavior_policy,target_policy,steps=1,step_size=0.1,discount=1.0):
         self.value_function=value_function
         self.steps = steps

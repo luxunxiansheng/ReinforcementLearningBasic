@@ -32,7 +32,7 @@
 # #### END LICENSE BLOCK #####
 #
 # /
-from algorithm.value_based.tabular_solution_method.td_method.td_common import TDCritic
+from algorithm.value_based.tabular_solution_method.td_method.td_common import TDExploitator
 import heapq
 from abc import abstractmethod
 
@@ -43,7 +43,7 @@ from copy import deepcopy
 TRIVAL = 1
 PRIORITY = 2
 
-class DynaQTrivalCritic(TDCritic):
+class DynaQTrivalCritic(TDExploitator):
     def __init__(self, value_function, model, step_size=0.1, discount=1.0,iterations=5):
         super().__init__(value_function, step_size)
         self.model = model 
@@ -71,7 +71,7 @@ class DynaQTrivalCritic(TDCritic):
             self.update(sampled_current_state_index,sampled_current_action_index,sampled_target)
 
 
-class DynaQPriorityCritic(TDCritic):
+class DynaQPriorityCritic(TDExploitator):
     def __init__(self, value_function, model, step_size=0.1, discount = 1.0,iterations=5):
         super().__init__(value_function, step_size)
         self.model = model 

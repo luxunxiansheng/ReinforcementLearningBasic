@@ -36,9 +36,9 @@
 
 
 from collections import defaultdict
-from common import CriticBase
+from common import ExploitatorBase
 
-class MonteCarloIncrementalCritic(CriticBase):
+class MonteCarloIncrementalCritic(ExploitatorBase):
     def __init__(self, q_value_function):
         self.q_value_function = q_value_function
     
@@ -68,7 +68,7 @@ class MonteCarloIncrementalCritic(CriticBase):
     def get_value_function(self):
         return self.q_value_function
     
-class MonteCarloAverageCritic(CriticBase):
+class MonteCarloAverageCritic(ExploitatorBase):
     def __init__(self, q_value_function):
         self.q_value_function= q_value_function
         self.state_count=self._init_state_count()

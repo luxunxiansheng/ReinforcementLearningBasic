@@ -1,11 +1,11 @@
 from copy import deepcopy
 import numpy as np 
 from numpy import array
-from common import ActorBase,CriticBase
+from common import ExploitatorBase, ExploratorBase
 from lib.utility import (create_distribution_epsilon_greedily,create_distribution_greedily,create_distribution_boltzmann)
 from policy.policy import DiscreteStateValueBasedPolicy
 
-class TDCritic(CriticBase):
+class TDExploitator(ExploitatorBase):
     def __init__(self,value_function,step_size=0.1):
         self.value_function = value_function
         self.step_size = step_size
@@ -33,7 +33,8 @@ class TDCritic(CriticBase):
         return self.value_function
 
 
-class TDNSARSACritic(TDCritic):
+
+class TDNSARSACritic(TDExploitator):
     def __init__(self,value_function,steps,step_size=0.1,discount=1.0):
         super().__init__(value_function, step_size=step_size)
         self.steps = steps
@@ -62,7 +63,7 @@ class TDNSARSACritic(TDCritic):
                 G += np.power(self.discount, self.steps) *  self.get_value_function()[trajectory[current_timestamp][0]][trajectory[current_timestamp][1]]
             self.update(trajectory[updated_timestamp][0],trajectory[updated_timestamp][1],G)
 
-class TDNExpectedSARSACritic(TDCritic):
+class TDNExpectedSARSACritic(TDExploitator):
     def __init__(self,value_function,policy,steps=1,step_size=0.1,discount=1.0):
         super().__init__(value_function, step_size=step_size)
         self.steps = steps
@@ -86,11 +87,11 @@ class TDNExpectedSARSACritic(TDCritic):
                 expected_next_q += action_prob * self.get_value_function()[trajectory[current_timestamp][0]][action]
             G += np.power(self.discount, self.steps) * expected_next_q
             
+
         self.update(trajectory[updated_timestamp][0],trajectory[updated_timestamp][1],G)      
 
 
-
-class LambdaCritic(CriticBase):
+class LambdaCritic(ExploitatorBase):
     def __init__(self,value_function,step_size=0.1,discount=1.0,lamb=0.01):
         self.value_function = value_function
         self.step_size = step_size
@@ -186,7 +187,11 @@ class QLearningLambdaCritic(LambdaCritic):
         self.update(current_state_index,current_action_index,target)   
         
 
-class OffPolicyGreedyActor(ActorBase):
+
+
+
+
+class OffPolicyGreedyActor(ExploratorBase):
     def __init__(self,behavior_policy,target_policy,critic):
         self.behavior_policy = behavior_policy
         self.target_policy =   target_policy
@@ -207,80 +212,59 @@ class OffPolicyGreedyActor(ActorBase):
     def get_optimal_policy(self):
         self.target_policy    
 
-class GreedyActor(ActorBase):
-    def __init__(self, policy,critic):
-        self.policy = policy
-        self.critic = critic
+class GreedyExplorator(ExploratorBase):
+    def __init__(self,behavior_policy,exploitator):
+        self.behavior_policy = behavior_policy
+        self.exploitator = exploitator
         self.create_distribution_greedily = create_distribution_greedily()
 
     def improve(self, *args):
         current_state_index = args[0]
-        q_value_function = self.critic.get_value_function()
+        q_value_function = self.exploitator.get_value_function()
         for state_index, _ in q_value_function.items():
             q_values = q_value_function[state_index]
             greedy_distibution = self.create_distribution_greedily(q_values)
-            self.policy.policy_table[current_state_index] = greedy_distibution
-
+            self.behavior_policy.policy_table[current_state_index] = greedy_distibution
 
     def get_behavior_policy(self):
-        return self.policy
+        return self.behavior_policy
 
-    def get_optimal_policy(self):
-        return self.policy
 
-class ESoftActor(ActorBase):
-    def __init__(self, policy,critic,epsilon=0.1):
-        self.policy = policy
-        self.critic = critic
+class ESoftExplorator(ExploratorBase):
+    def __init__(self, behavior_policy,exploitator,epsilon=0.1):
+        self.behavior_policy = behavior_policy
+        self.exploitator = exploitator
         self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(epsilon)
-        self.create_distribution_greedily = create_distribution_greedily()
+
 
     def improve(self, *args):
         current_state_index = args[0]
-        q_value_function = self.critic.get_value_function()
+        q_value_function = self.exploitator.get_value_function()
         q_values = q_value_function[current_state_index]
         soft_greedy_distibution = self.create_distribution_epsilon_greedily(q_values)
-        self.policy.policy_table[current_state_index] = soft_greedy_distibution
+        self.behavior_policy.policy_table[current_state_index] = soft_greedy_distibution
 
     def get_behavior_policy(self):
-        return self.policy
-
-    def get_optimal_policy(self):
-        policy_table = {}
-        q_value_function = self.critic.get_value_function()
-        for state_index, _ in q_value_function.items():
-            q_values = q_value_function[state_index]
-            greedy_distibution = self.create_distribution_greedily(q_values)
-            policy_table[state_index] = greedy_distibution
-        table_policy = DiscreteStateValueBasedPolicy(policy_table)
-        return table_policy
+        return self.behavior_policy
 
 
-class BoltzmannActor(ActorBase):
-    def __init__(self, policy,critic):
-        self.policy = policy
-        self.critic = critic
-        self.create_distribution_boltzmann = create_distribution_boltzmann()
-        self.create_distribution_greedily = create_distribution_greedily()
+class BoltzmannExplorator(ExploratorBase):
+    def __init__(self, behavior_policy,exploitator,epsilon=0.1):
+        self.behavior_policy = behavior_policy
+        self.exploitator = exploitator
+        self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(epsilon)
+    
 
     def improve(self, *args):
         current_state_index = args[0]
-        q_value_function = self.critic.get_value_function()
+        q_value_function = self.exploitator.get_value_function()
         q_values = q_value_function[current_state_index]
-        boltzmann_distibution = self.create_distribution_boltzmann(q_values)
-        self.get_behavior_policy().policy_table[current_state_index] = boltzmann_distibution
+        soft_greedy_distibution = self.create_distribution_epsilon_greedily(q_values)
+        self.behavior_policy.policy_table[current_state_index] = soft_greedy_distibution
 
     def get_behavior_policy(self):
-        return self.policy
+        return self.behavior_policy
 
-    def get_optimal_policy(self):
-        policy_table = {}
-        q_value_function = self.critic.get_value_function()
-        for state_index, _ in q_value_function.items():
-            q_values = q_value_function[state_index]
-            greedy_distibution = self.create_distribution_greedily(q_values)
-            policy_table[state_index] = greedy_distibution
-        table_policy = DiscreteStateValueBasedPolicy(policy_table)
-        return table_policy
+
 
 

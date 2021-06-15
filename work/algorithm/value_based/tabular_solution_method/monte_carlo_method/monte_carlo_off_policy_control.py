@@ -36,7 +36,7 @@
 from collections import defaultdict
 
 import numpy as np
-from common import ActorBase, CriticBase
+from common import ActorBase, ExploitatorBase
 from lib.utility import create_distribution_greedily
 from tqdm import tqdm
 

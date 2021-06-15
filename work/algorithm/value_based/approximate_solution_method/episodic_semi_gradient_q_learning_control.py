@@ -34,10 +34,10 @@
 # /
 
 from tqdm import tqdm
-from common import CriticBase
+from common import ExploitatorBase
 
 
-class ApproximationQLearningCritic(CriticBase):
+class ApproximationQLearningCritic(ExploitatorBase):
     def __init__(self,env,estimator,step_size=0.01,discount= 1.0):
         self.env = env 
         self.estimator = estimator

@@ -45,7 +45,7 @@ import torch.multiprocessing as mp
 import torch.nn as nn
 import torch.nn.functional as F
 from algorithm.policy_based.actor_critic.actor_critic_common import ValueEstimator
-from common import ActorBase, CriticBase
+from common import ActorBase, ExploitatorBase
 from lib.utility import SharedAdam
 from policy.policy import ParameterizedPolicy
 
@@ -85,7 +85,7 @@ class LocalValueEestimator(ValueEstimator):
         return value
 
 
-class LocalBatchCritic(CriticBase):
+class LocalBatchCritic(ExploitatorBase):
     def __init__(self,local_value_estimator, global_value_estimator,discount=1.0):
         self.local_value_estimator =  local_value_estimator
         self.global_value_estimator = global_value_estimator

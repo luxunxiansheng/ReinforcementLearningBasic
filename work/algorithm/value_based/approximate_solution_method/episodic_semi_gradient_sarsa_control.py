@@ -34,9 +34,9 @@
 # /
 
 from tqdm import tqdm
-from common import CriticBase
+from common import ExploitatorBase
 
-class ApproximationSARSACritic(CriticBase):
+class ApproximationSARSACritic(ExploitatorBase):
     def __init__(self,env,estimator,policy,step_size=0.01,discount= 1.0):
         self.env = env 
         self.estimator = estimator

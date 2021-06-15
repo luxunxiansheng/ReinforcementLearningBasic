@@ -59,9 +59,10 @@ class PolicyBase(ABC):
         return action
 
 
-class CriticBase(ABC):
+class ExploitatorBase(ABC):
     """
-    The critic takes as input the policy and evaluates the action by computing the value function(value based)
+    The Exploitator calculates the value of state or value of (state,action) pair by following target policy. 
+    This is essentially calculating the Bellman optimality equation approximately.
     """
     @abstractmethod
     def evaluate(self,*args):
@@ -71,22 +72,21 @@ class CriticBase(ABC):
     def get_value_function(self):
         pass 
 
+    @abstractmethod
+    def get_optimal_policy(self):
+        pass
 
-
-class ActorBase(ABC):
+class ExploratorBase(ABC):
     """
-    The actor takes as input the state and outputs the best action (policy based). It essentially controls how 
-    the agent behaves by learning the optimal policy. 
-
-    The most important is the process for the actor to improve the given policy. 
+    If the dynamics of the enviroment is hard to know, the explorator will define a behavior policy to sample data from the enviroment. 
+    Ideally, the behavior policy will be the same as the target policy. But in practise, it is a progressive process ,say, learning process.
+    With constrained computing resources, the explorator must learn a policy which can identify those states of high value instead of getting 
+    accurate value of those states. 
     """
     @abstractmethod
     def improve(self,*args): 
         pass
     
-    def get_optimal_policy(self):
-        pass
-
     @abstractmethod
     def get_behavior_policy(self):
         pass
