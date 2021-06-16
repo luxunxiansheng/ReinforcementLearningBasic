@@ -48,7 +48,7 @@ class SemiGradientTDLambdaEvaluation:
         self.estimator = value_function
         self.lamda = lamda
 
-    def evaluate(self):
+    def exploit(self):
         for _ in tqdm(range(0, self.episodes)):
             self._run_one_episode()
 

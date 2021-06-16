@@ -78,7 +78,7 @@ class BatchCritic(ExploitatorBase):
         self.estimator = value_estimator
         self.discount  = discount
     
-    def evaluate(self,*args):
+    def exploit(self,*args):
         trajectory = args[0]
         episode = args[1]
         writer = args[2]
@@ -144,7 +144,7 @@ class BatchActor(ActorBase):
         self.policy = policy 
         self.discount = discount
         
-    def improve(self,*args):
+    def explore(self,*args):
         trajectory = args[0]
         episode = args[1]
         writer  = args[2]
@@ -190,12 +190,12 @@ class BatchCriticActor:
         self.num_episodes = num_episodes
         self.writer = SummaryWriter()
             
-    def improve(self):
+    def explore(self):
         for episode in tqdm(range(0,self.num_episodes)):
             trajectory = self._run_one_episode(episode)    
             if len(trajectory)< BatchCriticActor.MAX_STEPS:
-                self.critic.evaluate(trajectory,episode,self.writer)
-                self.actor.improve(trajectory,episode,self.writer)
+                self.critic.exploit(trajectory,episode,self.writer)
+                self.actor.explore(trajectory,episode,self.writer)
         
     def _run_one_episode(self,episode):
         trajectory = []

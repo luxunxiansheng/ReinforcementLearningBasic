@@ -32,17 +32,17 @@ def test_approximation_evaluation(env):
 
     vf = StateAggregationVValueEstimator(env.nS, 3)
     gradientmcevalution = GradientMonteCarloEvaluation(vf, b_policy, env, episodes=num_episodes, distribution=distribution)
-    gradientmcevalution.evaluate()
+    gradientmcevalution.exploit()
     mc_sg = plotting.StateValues('gradientMCEvalution', vf)
 
     vf = StateAggregationVValueEstimator(env.nS, 3)
     semigradienttdlambdaevalution = SemiGradientTDLambdaEvaluation(vf, b_policy, env, episodes=num_episodes, lamda=0.0)
-    semigradienttdlambdaevalution.evaluate()
+    semigradienttdlambdaevalution.exploit()
     semi_grident_tdl_sg = plotting.StateValues('semigradientTDLambdaevalution', vf)
 
     vf = StateAggregationVValueEstimator(env.nS, 3)
     semigradienttdnevalution = SemiGradientTDNEvalution(vf, b_policy, 5, env, episodes=num_episodes, distribution=distribution)
-    semigradienttdnevalution.evaluate()
+    semigradienttdnevalution.exploit()
     semi_graident_tdn_sg = plotting.StateValues('semigradientTDNevalution', vf)
 
 
@@ -66,7 +66,7 @@ def test_approximation_control_sarsa(env):
     actor  = ESoftActor(continuous_state_policy,critic)
 
     episodicsemigradsarsacontrol = EpisodicSemiGradientSarsaControl(critic,actor,env,approximation_control_statistics,num_episodes)
-    episodicsemigradsarsacontrol.improve()
+    episodicsemigradsarsacontrol.explore()
 
     return approximation_control_statistics
 
@@ -87,7 +87,7 @@ def test_approximation_control_expected_sarsa(env):
     actor  = ESoftActor(continuous_state_policy,critic)
 
     episodicsemigradsarsacontrol = EpisodicSemiGradientExpectedSarsaControl(critic,actor,env,approximation_control_statistics,num_episodes)
-    episodicsemigradsarsacontrol.improve()
+    episodicsemigradsarsacontrol.explore()
 
     return approximation_control_statistics
 
@@ -107,7 +107,7 @@ def test_approximation_control_q_learning(env):
     actor  = ESoftActor(continuous_state_policy,critic)
 
     episodicsemigradsarsacontrol = EpisodicSemiGradientQLearningControl(critic,actor,env,approximation_control_statistics,num_episodes)
-    episodicsemigradsarsacontrol.improve()
+    episodicsemigradsarsacontrol.explore()
 
     return approximation_control_statistics
 

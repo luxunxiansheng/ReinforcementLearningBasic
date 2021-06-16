@@ -29,7 +29,7 @@ def test_q_mc_es_control_method(env):
     critic = MonteCarloAverageCritic(q_table) 
     actor = MonteCarloESActor(behavior_policy,critic)
     rl_method = MonteCarloESControl(critic,actor,env,8000)
-    optimal_policy=rl_method.improve()
+    optimal_policy=rl_method.explore()
     env.show_policy(optimal_policy)
 
 #test_q_mc_es_control_method(real_env)
@@ -43,7 +43,7 @@ def test_mc_onpolicy_control_method(env):
     actor = MonteCarloOnPolicyActor(behavior_policy,critic)
 
     rl_method = MonteCarloOnPolicyControl(critic,actor,env,8000)
-    optimal_policy=rl_method.improve()
+    optimal_policy=rl_method.explore()
     env.show_policy(optimal_policy)
 
 #test_mc_onpolicy_control_method(real_env)
@@ -59,7 +59,7 @@ def test_mc_offpolicy_control_method(env):
     actor = MonteCarloActor(behavior_policy,target_policy,critic)
 
     rl_method = MonteCarloOffPolicyControl(critic, actor , env,8000)
-    optimal_policy=rl_method.improve()
+    optimal_policy=rl_method.explore()
     env.show_policy(optimal_policy)
 
 #test_mc_offpolicy_control_method(real_env)
@@ -93,7 +93,7 @@ def test_mc_offpolicy_evaluation_method_for_blackjack():
         for _ in range(100):
             critic = MonteCarloIncrementalCritic(q_table)
             rl_method = MonteCarloOffPolicyEvaluation(critic, b_policy, t_policy, env, episode)
-            current_q_value= rl_method.evaluate()
+            current_q_value= rl_method.exploit()
             error_square = error_square+(current_q_value[init_state][BlackjackEnv.HIT] + 0.27726)*(current_q_value[init_state][BlackjackEnv.HIT] + 0.27726)
         
         error.append(error_square/100)

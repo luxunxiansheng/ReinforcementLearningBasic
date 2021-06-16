@@ -45,7 +45,7 @@ class MonteCarloIncrementalCritic(ExploitatorBase):
         # it is necessary to keep the weight total for every state_action pair
         self.C = self._init_weight_total()
 
-    def evaluate(self, *args):
+    def exploit(self, *args):
         state_index  = args[0]
         action_index = args[1]
         G = args[2]
@@ -73,7 +73,7 @@ class MonteCarloAverageCritic(ExploitatorBase):
         self.q_value_function= q_value_function
         self.state_count=self._init_state_count()
         
-    def evaluate(self,*args):
+    def exploit(self,*args):
         state_index= args[0]
         action_index = args[1]
         R= args[2]

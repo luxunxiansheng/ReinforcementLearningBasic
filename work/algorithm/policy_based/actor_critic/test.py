@@ -21,7 +21,7 @@ def test_batch_a3c_method(env):
     global_policy = ParameterizedPolicy(global_policy_estimator)
 
     critic_actor = BatchA3C(gloal_value_estimator,global_policy,env,num_episodes)
-    critic_actor.improve()
+    critic_actor.explore()
 
 def test_batch_critic_actor_method(env):
     value_estimator = ValueEestimator(env.observation_space.shape[0])
@@ -32,7 +32,7 @@ def test_batch_critic_actor_method(env):
     actor = BatchActor(policy)
 
     critic_actor = BatchCriticActor(critic,actor,env,num_episodes)
-    critic_actor.improve()
+    critic_actor.explore()
 
 def test_online_critic_actor_method(env):
     value_estimator = ValueEestimator(env.observation_space.shape[0])
@@ -43,7 +43,7 @@ def test_online_critic_actor_method(env):
     actor = OnlineActor(policy,critic)
 
     critic_actor = OnlineCriticActor(critic,actor,env,num_episodes)
-    critic_actor.improve()
+    critic_actor.explore()
 
 #test_online_critic_actor_method(real_env)
 #test_batch_critic_actor_method(real_env)

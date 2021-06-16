@@ -48,7 +48,7 @@ class MonteCarloOnPolicyActor(ActorBase):
         self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(episilon)
         self.create_distribution_greedily = create_distribution_greedily()
     
-    def improve(self,*args): 
+    def explore(self,*args): 
         state_index = args[0]
         
         q_value_function = self.critic.get_value_function()
@@ -77,14 +77,14 @@ class MonteCarloOnPolicyControl:
         self.critic = critic 
         self.actor = actor
 
-    def improve(self, *args):
+    def explore(self, *args):
         for _ in tqdm(range(0, self.episodes)):
             trajectory = self._run_one_episode()
             R = 0.0
             for state_index, action_index, reward in trajectory[::-1]:
                 R = reward+self.discount*R
-                self.critic.evaluate(state_index,action_index,R)
-                self.actor.improve(state_index)
+                self.critic.exploit(state_index,action_index,R)
+                self.actor.explore(state_index)
                 
         return self.actor.get_optimal_policy()
 

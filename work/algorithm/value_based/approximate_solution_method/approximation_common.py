@@ -45,7 +45,7 @@ class ESoftActor(ActorBase):
         self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(epsilon)
         self.create_distribution_greedily = create_distribution_greedily()
 
-    def improve(self, *args):
+    def explore(self, *args):
         current_state_index = args[0]
         action_space= args[1]
         estimator = self.critic.get_value_function()

@@ -77,7 +77,7 @@ class SharedAdam(optim.Adam):
     def step(self, closure=None):
         """Performs a single optimization step.
         Arguments:
-            closure (callable, optional): A closure that reevaluates the model
+            closure (callable, optional): A closure that reexploits the model
                 and returns the loss.
         """
         loss = None

@@ -34,49 +34,35 @@
 # /
 
 import numpy as np
+from algorithm.value_based.tabular_solution_method.td_method.td_exploitator import TDExploitator
 
-
-class TDNEvalutaion:
-    def __init__(self, critic, policy, env,  n_steps=1, episodes=1000):
-        self.policy = policy
-        self.env = env
-        self.episodes = episodes
-        self.steps = n_steps
-        self.critic = critic
-        
-    def exploit(self,*args):
-        for _ in range(0, self.episodes):
-            self._run_one_episode()
-        
-        return self.critic.get_value_function()
+class TDNExpectedSARSAExploitator(TDExploitator):
+    def __init__(self,value_function,policy,steps=1,step_size=0.1,discount=1.0):
+        super().__init__(value_function, step_size=step_size)
+        self.steps = steps
+        self.discount = discount
+        self.policy = policy 
     
-    def _run_one_episode(self):
-        """
-        Tabular TD(N) for estimating V(pi) book 7.1 section
-        """
-        current_timestamp = 0
-        final_timestamp = np.inf
+    def exploit(self,*args):
+        '''
+        Obviously, it will be very slow for expected Sarsa asymptotical to converge to the optimal values 
+        '''
+        trajectory = args[0]
+        current_timestamp = args[1]
+        updated_timestamp = args[2]
+        final_timestamp   = args[3]
+        
+        G = 0
+        for i in range(updated_timestamp, min(updated_timestamp + self.steps, final_timestamp)):
+            G += np.power(self.discount, i - updated_timestamp) * trajectory[i][2]
+        if updated_timestamp + self.steps < final_timestamp:
+            # expected Q value, actullay the v(s)
+            expected_next_q = 0
+            next_actions = self.policy.policy_table[trajectory[current_timestamp][0]]
+            for action, action_prob in next_actions.items():
+                expected_next_q += action_prob * self.get_value_function()[trajectory[current_timestamp][0]][action]
+            G += np.power(self.discount, self.steps) * expected_next_q
+            
 
-        trajectory = []
-        current_state_index = self.env.reset()
-        while True:
-            if current_timestamp < final_timestamp:
-                action_index = self.policy.get_action(current_state_index)
-                observation = self.env.step(action_index)
-                next_state_index = observation[0]
-                reward = observation[1]
-                done = observation[2]
-                trajectory.append((current_state_index,reward))
-                if done:
-                    final_timestamp = current_timestamp+1
-                current_state_index = next_state_index
-
-            updated_timestamp = current_timestamp-self.steps 
-            if updated_timestamp >=0:
-                self.critic.exploit(trajectory,current_timestamp,updated_timestamp,final_timestamp)
-                if updated_timestamp == final_timestamp - 1:
-                    break
-
-            current_timestamp += 1
-
+        self.update(trajectory[updated_timestamp][0],trajectory[updated_timestamp][1],G)      
 

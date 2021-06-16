@@ -52,7 +52,7 @@ class DoubleQLearningCritic:
 
         self.q_table = deepcopy(value_function)
         
-    def evaluate(self, *args):
+    def exploit(self, *args):
         current_state_index  = args[0]
         current_action_index = args[1]
         reward = args[2]
@@ -97,7 +97,7 @@ class DoubleQLearning:
         self.actor  = actor 
         self.statistics = statistics
 
-    def improve(self):
+    def explore(self):
         for episode in tqdm(range(0, self.episodes)):
             self._run_one_episode(episode)
     
@@ -121,8 +121,8 @@ class DoubleQLearning:
             # S'
             next_state_index = observation[0]
 
-            self.critic.evaluate(current_state_index,current_action_index,reward,next_state_index)
-            self.actor.improve(current_state_index)
+            self.critic.exploit(current_state_index,current_action_index,reward,next_state_index)
+            self.actor.explore(current_state_index)
 
             if done:
                 break

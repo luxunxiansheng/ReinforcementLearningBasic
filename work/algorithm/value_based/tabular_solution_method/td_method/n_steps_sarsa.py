@@ -46,7 +46,7 @@ class NStepsSARSA:
         self.critic = critic
         self.actor  = actor
 
-    def improve(self):
+    def explore(self):
         for episode in tqdm(range(0, self.episodes)):
             self._run_one_episode(episode)
     
@@ -85,9 +85,9 @@ class NStepsSARSA:
             updated_timestamp = current_timestamp - self.steps
 
             if updated_timestamp >= 0:
-                self.critic.evaluate(trajectory,current_timestamp,updated_timestamp,final_timestamp)
+                self.critic.exploit(trajectory,current_timestamp,updated_timestamp,final_timestamp)
 
-                self.actor.improve(trajectory[updated_timestamp][0])
+                self.actor.explore(trajectory[updated_timestamp][0])
 
                 if updated_timestamp == final_timestamp - 1:
                     break

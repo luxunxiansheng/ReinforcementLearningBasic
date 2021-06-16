@@ -48,7 +48,7 @@ class MonteCarloActor(ActorBase):
         self.critic = critic
         self.create_distribution_greedily = create_distribution_greedily()
 
-    def improve(self, *args):
+    def explore(self, *args):
         state_index = args[0]
         q_value_function = self.critic.get_value_function()
         greedy_distibution = self.create_distribution_greedily(q_value_function[state_index])
@@ -77,7 +77,7 @@ class MonteCarloOffPolicyControl:
         self.critic= critic
         self.actor = actor
 
-    def improve(self):
+    def explore(self):
         for _ in tqdm(range(0, self.episodes)):
             trajectory = self._run_one_episode()
             G = 0.0
@@ -87,8 +87,8 @@ class MonteCarloOffPolicyControl:
                 G = reward + self.discount*G
                 
                 # The return for current state_action pair
-                self.critic.evaluate(state_index, action_index, G, W)
-                self.actor.improve(state_index)
+                self.critic.exploit(state_index, action_index, G, W)
+                self.actor.explore(state_index)
             
                 # If the action taken by the behavior policy is not the action taken by the target policy,the probability will be 0 and we can break
                 if action_index != np.argmax(self.actor.get_action_distribution(state_index)):

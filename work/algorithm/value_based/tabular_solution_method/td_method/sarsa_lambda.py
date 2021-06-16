@@ -51,7 +51,7 @@ class SARSALambda:
         self.actor  = actor 
 
 
-    def improve(self):
+    def explore(self):
         for episode in tqdm(range(0, self.episodes)):
             self._run_one_episode(episode)
 
@@ -77,8 +77,8 @@ class SARSALambda:
             # A'
             next_action_index = self.actor.get_behavior_policy().get_action(next_state_index)
 
-            self.critic.evaluate(current_state_index,current_action_index,reward,next_state_index,next_action_index)
-            self.actor.improve(current_state_index,current_action_index)
+            self.critic.exploit(current_state_index,current_action_index,reward,next_state_index,next_action_index)
+            self.actor.explore(current_state_index,current_action_index)
         
 
             if done:

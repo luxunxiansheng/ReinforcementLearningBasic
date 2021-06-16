@@ -44,7 +44,7 @@ class TDLambdaEvalutaion:
         self.episodes = episodes
         self.critic = critic
 
-    def evaluate(self,*args):
+    def exploit(self,*args):
         for _ in range(self.episodes):
             self._run_one_episode()
         return self.critic.get_value_function()
@@ -62,7 +62,7 @@ class TDLambdaEvalutaion:
             reward = observation[1]
             done = observation[2]
 
-            self.critic.evaluate(current_state_index,reward,next_state_index)
+            self.critic.exploit(current_state_index,reward,next_state_index)
 
             if done:
                 break               

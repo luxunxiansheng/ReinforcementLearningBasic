@@ -43,7 +43,7 @@ class ExpectedSARSACritic(TDCritic):
         self.discount = discount
 
         
-    def evaluate(self,*args):
+    def exploit(self,*args):
         current_state_index  = args[0]
         current_action_index = args[1]
         reward = args[2]
@@ -67,7 +67,7 @@ class ExpectedSARSA:
         self.critic = critic
         self.actor  = actor
 
-    def improve(self):
+    def explore(self):
         for episode in tqdm(range(0, self.episodes)):
             # S
             current_state_index = self.env.reset()
@@ -90,8 +90,8 @@ class ExpectedSARSA:
                 # A'
                 next_action_index = self.actor.get_behavior_policy().get_action(next_state_index)
 
-                self.critic.evaluate(current_state_index,current_action_index,reward,next_state_index)
-                self.actor.improve(current_state_index)
+                self.critic.exploit(current_state_index,current_action_index,reward,next_state_index)
+                self.actor.explore(current_state_index)
 
                 if done:
                     break

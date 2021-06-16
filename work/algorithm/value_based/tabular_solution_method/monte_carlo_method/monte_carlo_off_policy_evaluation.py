@@ -51,7 +51,7 @@ class MonteCarloOffPolicyEvaluation:
         
         self.critic= critic
     
-    def evaluate(self):
+    def exploit(self):
         for _ in tqdm(range(0, self.episodes)):
             trajectory = self._run_one_episode()
             G = 0.0
@@ -60,7 +60,7 @@ class MonteCarloOffPolicyEvaluation:
                 # The return for current state_action pair
                 G = reward + self.discount*G
                 # The return for current state_action pair
-                self.critic.evaluate(state_index, action_index, G, W)
+                self.critic.exploit(state_index, action_index, G, W)
 
                 # probability product
                 W = W * self.target_policy.policy_table[state_index][action_index] / self.behavior_policy.policy_table[state_index][action_index]

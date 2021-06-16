@@ -20,7 +20,7 @@ def test_v_iteration(env):
 
     actor= ValueIterationActor(v_table, table_policy,transition_table, 1e-5, 1.0)
     rl_method = ValueIteration(actor)
-    optimal_policy =rl_method.improve()
+    optimal_policy =rl_method.explore()
     env.show_policy(optimal_policy)
 
 test_v_iteration(real_env)
@@ -35,7 +35,7 @@ def test_policy_iteration(env):
     actor  = PolicyIterationActor(table_policy,critic,transition_table,1e-5,1.0)
 
     rl_method = PolicyIteration(critic,actor)
-    optimal_policy =rl_method.improve()
+    optimal_policy =rl_method.explore()
     env.show_policy(optimal_policy)
 
 test_policy_iteration(real_env)

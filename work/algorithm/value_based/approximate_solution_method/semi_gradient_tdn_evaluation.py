@@ -48,7 +48,7 @@ class SemiGradientTDNEvalution:
         self.distribution = distribution
         self.steps = n_steps
 
-    def evaluate(self):
+    def exploit(self):
         for _ in tqdm(range(0,self.episodes)):
             self._run_one_episode()
             

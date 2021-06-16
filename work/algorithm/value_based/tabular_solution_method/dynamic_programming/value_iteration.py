@@ -44,7 +44,7 @@ class ValueIterationActor(ActorBase):
         self.delta = delta
         self.discount = discount
     
-    def improve(self, *args):
+    def explore(self, *args):
         while True:
             delta = 1e-10
             for state_index, old_value_of_state in self.value_function.items():
@@ -115,6 +115,6 @@ class ValueIteration:
         self.actor = actor
     
 
-    def improve(self):
-        self.actor.improve()
+    def explore(self):
+        self.actor.explore()
         return self.actor.get_optimal_policy()

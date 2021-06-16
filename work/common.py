@@ -65,7 +65,7 @@ class ExploitatorBase(ABC):
     This is essentially calculating the Bellman optimality equation approximately.
     """
     @abstractmethod
-    def evaluate(self,*args):
+    def exploit(self,*args):
         pass
     
     @abstractmethod
@@ -84,7 +84,7 @@ class ExploratorBase(ABC):
     accurate value of those states. 
     """
     @abstractmethod
-    def improve(self,*args): 
+    def explore(self,*args): 
         pass
     
     @abstractmethod

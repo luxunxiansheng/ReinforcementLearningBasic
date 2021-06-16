@@ -46,7 +46,7 @@ class TDNOffPolicySARSACritic(TDExploitator):
         self.behavior_policy = behavior_policy
         self.target_policy =  target_policy
 
-    def evaluate(self,*args):
+    def exploit(self,*args):
         trajectory = args[0]
         current_timestamp = args[1]
         updated_timestamp = args[2]
@@ -85,7 +85,7 @@ class OffPolicyNStepsSARSA:
         self.critic = critic
         self.actor = actor
 
-    def improve(self):
+    def explore(self):
         for episode in tqdm(range(0, self.episodes)):
             self._run_one_episode(episode)
 
@@ -123,8 +123,8 @@ class OffPolicyNStepsSARSA:
             updated_timestamp = current_timestamp - self.steps
 
             if updated_timestamp >= 0:
-                self.critic.evaluate(trajectory,current_timestamp,updated_timestamp,final_timestamp)
-                self.actor.improve(trajectory[updated_timestamp][0])
+                self.critic.exploit(trajectory,current_timestamp,updated_timestamp,final_timestamp)
+                self.actor.explore(trajectory[updated_timestamp][0])
 
                 if updated_timestamp == final_timestamp - 1:
                     break

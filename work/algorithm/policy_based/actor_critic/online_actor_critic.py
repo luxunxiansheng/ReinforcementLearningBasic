@@ -83,7 +83,7 @@ class OnlineCritic(ExploitatorBase):
         self.estimator = value_estimator
         self.discount  = discount
     
-    def evaluate(self,*args):
+    def exploit(self,*args):
         current_state_index = args[0]
         reward = args[1]
         next_state_index = args[2]    
@@ -143,7 +143,7 @@ class OnlineActor(ActorBase):
         self.discount = discount
         self.critic = critic
         
-    def improve(self,*args):
+    def explore(self,*args):
         current_state_index = args[0]
         reward = args[1]
         action_prob = args[2]
@@ -173,7 +173,7 @@ class OnlineCriticActor:
         self.num_episodes = num_episodes
         self.writer = SummaryWriter()
             
-    def improve(self):
+    def explore(self):
         for episode in tqdm(range(0, self.num_episodes)):
             self._run_one_episode(episode)
 
@@ -194,10 +194,10 @@ class OnlineCriticActor:
             # S'
             next_state_index = observation[0]
 
-            self.critic.evaluate(current_state_index,reward,next_state_index,done,episode,self.writer)
+            self.critic.exploit(current_state_index,reward,next_state_index,done,episode,self.writer)
             
             action_prob=self.actor.get_behavior_policy().get_discrete_distribution_tensor(current_state_index)[current_action_index]
-            self.actor.improve(current_state_index,reward,action_prob,next_state_index,done,episode,self.writer)
+            self.actor.explore(current_state_index,reward,action_prob,next_state_index,done,episode,self.writer)
 
             if done:
                 break

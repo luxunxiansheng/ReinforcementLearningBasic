@@ -54,16 +54,16 @@ class PoplicyIterationCritic(ExploitatorBase):
         self.delta = delta
         self.discount = discount
         
-    def evaluate(self,*args):
+    def exploit(self,*args):
         while True:
-            delta = self._evaluate_once()
+            delta = self._exploit_once()
             if delta < self.delta:
                 break
         
     def get_value_function(self):
         return self.value_function
     
-    def _evaluate_once(self):
+    def _exploit_once(self):
         delta = 1e-10
         for state_index, old_value_of_state in self.value_function.items():
             value_of_state = self._get_value_of_state(state_index)
@@ -89,7 +89,7 @@ class PoplicyIterationCritic(ExploitatorBase):
 
 class PolicyIterationActor(ActorBase):
     """
-    It is trival for the actor to improve the policy by sweeping the state space. 
+    It is trival for the actor to explore the policy by sweeping the state space. 
     
     """
     def __init__(self,policy,critic,transition_table,delta,discount):
@@ -99,16 +99,16 @@ class PolicyIterationActor(ActorBase):
         self.delta = delta
         self.discount = discount
         
-    def improve(self,*args):
+    def explore(self,*args):
         while True:
-            delta = self._improve_once()
+            delta = self._explore_once()
             if delta < self.delta:
                 break
 
     def get_behavior_policy(self):
         return self.policy
 
-    def _improve_once(self):
+    def _explore_once(self):
         delta = 1e-10
         for state_index, action_distribution in self.policy.policy_table.items():
             old_policy = copy.deepcopy(action_distribution)
@@ -137,7 +137,7 @@ class PolicyIterationActor(ActorBase):
 class PolicyIteration:
     """
     1. Policy iteration is a policy-based method.
-    2. Because the previous values will be discarded once policy is improved, pollicy itration is
+    2. Because the previous values will be discarded once policy is explored, pollicy itration is
         on-policy 
     """
 
@@ -146,7 +146,7 @@ class PolicyIteration:
         self.critic = critic
         self.actor  = actor 
         
-    def improve(self):
-        self.critic.evaluate()
-        self.actor.improve()
+    def explore(self):
+        self.critic.exploit()
+        self.actor.explore()
         return  self.actor.get_optimal_policy()

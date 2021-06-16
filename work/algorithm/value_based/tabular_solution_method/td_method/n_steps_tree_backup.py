@@ -51,7 +51,7 @@ class NStepsTreeBackup:
 
         self.statistics = statistics
 
-    def improve(self):
+    def explore(self):
         for episode in tqdm(range(0, self.episodes)):
             self._run_one_episode(episode)
 

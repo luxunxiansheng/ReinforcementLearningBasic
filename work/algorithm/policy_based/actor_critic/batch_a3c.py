@@ -97,7 +97,7 @@ class LocalBatchCritic(ExploitatorBase):
                 return
             shared_param._grad = param.grad
 
-    def evaluate(self,*args): 
+    def exploit(self,*args): 
         trajectory = args[0]
         
         state_values=[]
@@ -172,7 +172,7 @@ class LocalBatchActor(ActorBase):
                 return
             shared_param._grad = param.grad
 
-    def improve(self,*args):
+    def explore(self,*args):
         trajectory = args[0]
         G = 0.0
         log_action_probs=[]
@@ -246,7 +246,7 @@ class BatchA3C:
 
 
     @staticmethod
-    def _improve(gloal_value_estimator,global_policy,env,num_episodes):
+    def _explore(gloal_value_estimator,global_policy,env,num_episodes):
         local_env = BatchA3C._create_env(env)
         local_value_estimator = LocalValueEestimator(local_env.observation_space.shape[0])
         local_value_estimator.model.load_state_dict(gloal_value_estimator.model.state_dict())
@@ -261,12 +261,12 @@ class BatchA3C:
             trajectory = BatchA3C._run_one_episode(env,local_critic,local_actor)    
             print(len(trajectory))
             if len(trajectory)< BatchA3C.MAX_STEPS:
-                local_critic.evaluate(trajectory)
-                local_actor.improve(trajectory)
+                local_critic.exploit(trajectory)
+                local_actor.explore(trajectory)
             
 
 
-    def improve(self):
+    def explore(self):
         freeze_support()
     
         os.environ['OMP_NUM_THREADS'] = '1'
@@ -275,7 +275,7 @@ class BatchA3C:
         processes = []
 
         for _ in range(0,BatchA3C.NUM_PROCESS):
-            p = mp.Process(target=BatchA3C._improve,args=(self.gloal_value_estimator,self.global_policy,self.env,self.num_episodes))
+            p = mp.Process(target=BatchA3C._explore,args=(self.gloal_value_estimator,self.global_policy,self.env,self.num_episodes))
             p.start()
             processes.append(p)
         
