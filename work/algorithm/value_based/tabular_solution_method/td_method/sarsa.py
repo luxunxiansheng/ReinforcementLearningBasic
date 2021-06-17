@@ -33,6 +33,8 @@
 #
 # /
 
+from algorithm.value_based.tabular_solution_method.td_method.td_actor import TDESoftActor
+from policy.policy import DiscreteStateValueBasedPolicy
 from algorithm.value_based.tabular_solution_method.td_method.td_critic import TDCritic
 from tqdm import tqdm
 
@@ -40,17 +42,17 @@ from tqdm import tqdm
 It is certainly ok to implement SRASA with N_Step_SARSA as long as to set the Setps to 1.  We keep sarsa just for tutorial 
 """
 class SARSACritic(TDCritic):
-    def __init__(self,value_function,step_size=0.1,discount=1.0):
+    def __init__(self,value_function,policy,step_size=0.1,discount=1.0):
         super().__init__(value_function,step_size)
         self.discount = discount 
+        self.target_policy = policy
 
     def evaluate(self,*args):
         current_state_index = args[0]
         current_action_index =args[1]
         reward = args[2]
         next_state_index = args[3]
-        targe_policy = args[4]
-
+        next_action_index = self.target_policy.get_action(next_state_index)
         # To calculate the target, it is necessary to know what is the next action for the next state according to current policy (On Policy)
         target = reward + self.discount * self.get_value_function()[next_state_index][next_action_index]
         self.update(current_state_index,current_action_index,target)
@@ -60,13 +62,14 @@ class SARSA:
     SARSA algorithm: On-policy TD control. 
     """
 
-    def __init__(self, critic, actor, env, statistics, episodes,discount=1.0):
+    def __init__(self,env, statistics, episodes,discount=1.0):
         self.env = env
         self.episodes = episodes
         self.statistics=statistics
         self.discount = discount
-        self.critic = critic
-        self.actor  = actor
+        self.policy = DiscreteStateValueBasedPolicy(self.env.build_policy_table())
+        self.critic = SARSACritic(self.env.build_Q_table(),self.policy)
+        self.actor  = TDESoftActor(self.policy,self.critic)
 
     def learn(self):
         for episode in tqdm(range(0, self.episodes)):
@@ -89,15 +92,13 @@ class SARSA:
                 self.statistics.episode_rewards[episode] += reward
                 self.statistics.episode_lengths[episode] += 1
 
-                # A'
-                next_action_index = self.actor.get_behavior_policy().get_action(next_state_index)
-
-                self.critic.evaluate(current_state_index,current_action_index,reward,next_state_index,next_action_index)
+                self.critic.evaluate(current_state_index,current_action_index,reward,next_state_index)
 
                 self.actor.explore(current_state_index)
 
                 if done:
                     break
-
+            
+                current_action_index = self.actor.get_behavior_policy().get_action(next_state_index)
                 current_state_index = next_state_index
-                current_action_index = next_action_index
+                

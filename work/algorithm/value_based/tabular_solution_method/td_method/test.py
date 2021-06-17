@@ -5,8 +5,8 @@ sys.path.append(work_folder)
 
 import numpy as np
 
-from algorithm.value_based.tabular_solution_method.td_method.td_actor import TDESoftActor
-from algorithm.value_based.tabular_solution_method.td_method.q_learning import QLearning, QLearningCritic
+from algorithm.value_based.tabular_solution_method.td_method.sarsa import SARSA
+from algorithm.value_based.tabular_solution_method.td_method.q_learning import QLearning
 
 """ from algorithm.value_based.approximate_solution_method.approximation_common import ESoftActor
 from algorithm.value_based.tabular_solution_method.td_method.double_q_learning import DoubleQLearning, DoubleQLearningCritic
@@ -134,19 +134,6 @@ def test_td_lambda_evalution_method_for_blackjack():
 # test_td_lambda_evalution_method_for_blackjack()
 
 
-def test_sarsa_method(env):
-    q_table = env.build_Q_table()
-    b_policy_table = env.build_policy_table()
-    b_policy = DiscreteStateValueBasedPolicy(b_policy_table)
-
-    sarsa_statistics = EpisodeStats("sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
-    critic = SARSACritic(q_table)
-    actor  = ESoftactor(b_policy,critic)
-    sarsa_method = SARSA(critic, actor, env,sarsa_statistics, num_episodes)
-    sarsa_method.learn()
-
-    return sarsa_statistics
-
 
 
 def test_b_sarsa_method(env):
@@ -225,9 +212,21 @@ def test_qlearning_method(env):
     q_learning_statistics = EpisodeStats("Q_Learning", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
     qlearning_method = QLearning(env, q_learning_statistics, num_episodes)
     qlearning_method.learn()
-    qlearning_method.test()
+    #qlearning_method.test()
 
     return q_learning_statistics
+
+def test_sarsa_method(env):
+        
+    sarsa_statistics = EpisodeStats("sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
+    sarsa_method = SARSA(env,sarsa_statistics, num_episodes)
+    sarsa_method.learn()
+
+    return sarsa_statistics
+
+
+
+
 """ 
 def test_off_policy_n_steps_sarsa(env):
     q_table = env.build_Q_table()
@@ -341,7 +340,7 @@ def test_td_control_method(env):
                         test_n_steps_sarsa_method(env),test_qlearning_method(env),test_sarsa_lambda_method(env),test_q_lambda_method(env)])
     
     """
-    plot_episode_stats([test_qlearning_method(env)])
+    plot_episode_stats([test_qlearning_method(env),test_sarsa_method(env)])
 
 real_env = get_env("GridworldEnv")
 test_td_control_method(real_env)
