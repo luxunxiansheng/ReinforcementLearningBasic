@@ -1,3 +1,4 @@
+
 import sys,os
 current_dir= os.path.dirname(os.path.realpath(__file__))
 work_folder=current_dir[:current_dir.find('algorithm')]
@@ -7,6 +8,7 @@ import numpy as np
 
 from algorithm.value_based.tabular_solution_method.td_method.sarsa import SARSA
 from algorithm.value_based.tabular_solution_method.td_method.q_learning import QLearning
+from algorithm.value_based.tabular_solution_method.td_method.expected_sarsa import ExpectedSARSA
 
 """ from algorithm.value_based.approximate_solution_method.approximation_common import ESoftActor
 from algorithm.value_based.tabular_solution_method.td_method.double_q_learning import DoubleQLearning, DoubleQLearningCritic
@@ -27,7 +29,7 @@ from policy.policy import DiscreteStateValueBasedPolicy
 from test_setup import get_env
 from tqdm import tqdm
 
-num_episodes = 2000
+num_episodes = 20000
 n_steps = 2
 
 """ def test_td0_evaluation_method_for_blackjack():
@@ -177,20 +179,7 @@ def test_b_n_steps_sarsa_method(env):
     return n_sarsa_statistics
 
 
-def test_expected_sarsa_method(env):
-    q_table = env.build_Q_table()
-    b_policy_table = env.build_policy_table()
-    b_policy = DiscreteStateValueBasedPolicy(b_policy_table)
 
-    expectedsarsa_statistics = EpisodeStats("Expected_Sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
-
-    critic = ExpectedSARSACritic(b_policy,q_table)
-    actor  = ESoftactor(b_policy,critic)
-
-    expectedsarsa_method = ExpectedSARSA(critic,actor, env, expectedsarsa_statistics, num_episodes)
-    expectedsarsa_method.learn()
-
-    return expectedsarsa_statistics
 
 def test_n_setps_expected_sarsa_method(env):
 
@@ -217,14 +206,18 @@ def test_qlearning_method(env):
     return q_learning_statistics
 
 def test_sarsa_method(env):
-        
     sarsa_statistics = EpisodeStats("sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
     sarsa_method = SARSA(env,sarsa_statistics, num_episodes)
     sarsa_method.learn()
 
     return sarsa_statistics
 
+def test_expected_sarsa_method(env):
+    expectedsarsa_statistics = EpisodeStats("Expected_Sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
+    expectedsarsa_method = ExpectedSARSA(env, expectedsarsa_statistics, num_episodes)
+    expectedsarsa_method.learn()
 
+    return expectedsarsa_statistics
 
 
 """ 
@@ -340,7 +333,7 @@ def test_td_control_method(env):
                         test_n_steps_sarsa_method(env),test_qlearning_method(env),test_sarsa_lambda_method(env),test_q_lambda_method(env)])
     
     """
-    plot_episode_stats([test_qlearning_method(env),test_sarsa_method(env)])
+    plot_episode_stats([test_qlearning_method(env),test_sarsa_method(env),test_expected_sarsa_method(env)])
 
-real_env = get_env("GridworldEnv")
+real_env = get_env("CliffWalkingEnv")
 test_td_control_method(real_env)

@@ -33,24 +33,25 @@
 #
 # /
 
+from algorithm.value_based.tabular_solution_method.td_method.td_actor import TDESoftActor
+from algorithm.value_based.tabular_solution_method.td_method.td_critic import TDCritic
+from policy.policy import DiscreteStateValueBasedPolicy
 from tqdm import tqdm
-from td_common import TDCritic
 
 class ExpectedSARSACritic(TDCritic):
-    def __init__(self,policy,value_table,step_size=0.1,discount=1.0):
+    def __init__(self,value_table,policy,step_size=0.1,discount=1.0):
         super().__init__(value_table,step_size)
-        self.policy = policy
+        self.target_policy = policy
         self.discount = discount
-
         
-    def exploit(self,*args):
+    def evaluate(self,*args):
         current_state_index  = args[0]
         current_action_index = args[1]
         reward = args[2]
         next_state_index =  args[3]
     
         expected_q_value = 0
-        next_actions = self.policy.policy_table[next_state_index]
+        next_actions = self.target_policy.policy_table[next_state_index]
         for action, action_prob in next_actions.items():
             expected_q_value += action_prob * self.get_value_function()[next_state_index][action]
 
@@ -60,14 +61,15 @@ class ExpectedSARSACritic(TDCritic):
 
 
 class ExpectedSARSA:
-    def __init__(self, critic, actor, env, statistics, episodes):
+    def __init__(self,env, statistics, episodes):
         self.env = env
         self.episodes = episodes
         self.statistics=statistics
-        self.critic = critic
-        self.actor  = actor
+        self.policy = DiscreteStateValueBasedPolicy(self.env.build_policy_table())
+        self.critic = ExpectedSARSACritic(self.env.build_Q_table(),self.policy)
+        self.actor  = TDESoftActor(self.policy,self.critic)
 
-    def explore(self):
+    def learn(self):
         for episode in tqdm(range(0, self.episodes)):
             # S
             current_state_index = self.env.reset()
@@ -87,14 +89,12 @@ class ExpectedSARSA:
                 self.statistics.episode_rewards[episode] += reward
                 self.statistics.episode_lengths[episode] += 1
 
-                # A'
-                next_action_index = self.actor.get_behavior_policy().get_action(next_state_index)
+                self.critic.evaluate(current_state_index,current_action_index,reward,next_state_index)
 
-                self.critic.exploit(current_state_index,current_action_index,reward,next_state_index)
                 self.actor.explore(current_state_index)
 
                 if done:
                     break
 
+                current_action_index = self.actor.get_behavior_policy().get_action(next_state_index)
                 current_state_index = next_state_index
-                current_action_index = next_action_index
