@@ -222,16 +222,8 @@ def test_n_setps_expected_sarsa_method(env):
     return n_steps_expectedsarsa_statistics
  """
 def test_qlearning_method(env):
-    q_table = env.build_Q_table()
-    b_policy_table = env.build_policy_table()
-    b_policy = DiscreteStateValueBasedPolicy(b_policy_table)
-
     q_learning_statistics = EpisodeStats("Q_Learning", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
-
-    critic = QLearningCritic(q_table)
-    actor  = TDESoftActor(b_policy,critic)
-
-    qlearning_method = QLearning(critic,actor, env, q_learning_statistics, num_episodes)
+    qlearning_method = QLearning(env, q_learning_statistics, num_episodes)
     qlearning_method.learn()
     qlearning_method.test()
 

@@ -33,23 +33,23 @@
 #
 # /
 
+from algorithm.value_based.tabular_solution_method.td_method.td_critic import TDCritic
 from tqdm import tqdm
 
-from algorithm.value_based.tabular_solution_method.td_method.td_common import TDExploitator
 """
 It is certainly ok to implement SRASA with N_Step_SARSA as long as to set the Setps to 1.  We keep sarsa just for tutorial 
 """
-class SARSACritic(TDExploitator):
+class SARSACritic(TDCritic):
     def __init__(self,value_function,step_size=0.1,discount=1.0):
         super().__init__(value_function,step_size)
         self.discount = discount 
 
-    def exploit(self,*args):
+    def evaluate(self,*args):
         current_state_index = args[0]
         current_action_index =args[1]
         reward = args[2]
         next_state_index = args[3]
-        next_action_index = args[4]
+        targe_policy = args[4]
 
         # To calculate the target, it is necessary to know what is the next action for the next state according to current policy (On Policy)
         target = reward + self.discount * self.get_value_function()[next_state_index][next_action_index]
@@ -57,7 +57,7 @@ class SARSACritic(TDExploitator):
 
 class SARSA:
     """
-    SARSA algorithm: On-policy TD control. Finds the optimal epsilon-greedy policy.
+    SARSA algorithm: On-policy TD control. 
     """
 
     def __init__(self, critic, actor, env, statistics, episodes,discount=1.0):
@@ -68,7 +68,7 @@ class SARSA:
         self.critic = critic
         self.actor  = actor
 
-    def explore(self):
+    def learn(self):
         for episode in tqdm(range(0, self.episodes)):
             # S
             current_state_index = self.env.reset()
@@ -92,7 +92,7 @@ class SARSA:
                 # A'
                 next_action_index = self.actor.get_behavior_policy().get_action(next_state_index)
 
-                self.critic.exploit(current_state_index,current_action_index,reward,next_state_index,next_action_index)
+                self.critic.evaluate(current_state_index,current_action_index,reward,next_state_index,next_action_index)
 
                 self.actor.explore(current_state_index)
 

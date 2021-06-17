@@ -32,6 +32,8 @@
 # /
 
 
+from policy.policy import DiscreteStateValueBasedPolicy
+from algorithm.value_based.tabular_solution_method.td_method.td_actor import TDESoftActor
 from algorithm.value_based.tabular_solution_method.td_method.td_critic import TDCritic
 from tqdm import tqdm
 
@@ -45,7 +47,8 @@ class QLearningCritic(TDCritic):
         current_action_index = args[1]
         reward = args[2]
         next_state_index = args[3]
-
+        
+        # The target policy is implictly greedy 
         q_values_next_state = self.value_function[next_state_index]
         max_value = max(q_values_next_state.values())
         target = reward + max_value
@@ -57,11 +60,11 @@ class QLearning:
     The reason that Q-learning is off-policy is that it updates its Q-values using the Q-value of the 
     next state s' and the greedy action a' no matter what the current policy is .
     """
-    def __init__(self, critic, actor,env, statistics, episodes):
+    def __init__(self,env, statistics, episodes):
         self.env = env
         self.episodes = episodes
-        self.critic = critic 
-        self.actor  = actor 
+        self.critic = QLearningCritic(self.env.build_Q_table()) 
+        self.actor  = TDESoftActor(DiscreteStateValueBasedPolicy(self.env.build_policy_table()),self.critic) 
         self.statistics = statistics
 
     def learn(self):
