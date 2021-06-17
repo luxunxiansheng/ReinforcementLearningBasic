@@ -50,7 +50,6 @@ class QLearningCritic(TDCritic):
         max_value = max(q_values_next_state.values())
         target = reward + max_value
         self.update(current_state_index,current_action_index,target)
-    
 
 
 class QLearning:
@@ -74,7 +73,6 @@ class QLearning:
         current_state_index = self.env.reset()
 
         while True:
-
             # A
             current_action_index = self.actor.get_behavior_policy().get_action(current_state_index)
             observation = self.env.step(current_action_index)
@@ -96,3 +94,39 @@ class QLearning:
 
             current_state_index = next_state_index
 
+    def test(self):
+        # S
+        current_state_index = self.env.reset()
+        optimal_policy = self.critic.get_optimal_policy()
+
+        self.env.show_policy(optimal_policy)
+
+        steps =  0
+        returns = 0 
+        
+        while True:
+            # A
+            current_action_index = optimal_policy.get_action(current_state_index)
+
+            print("current_state_index {} current_action_index {}".format(current_state_index,current_action_index))
+            observation = self.env.step(current_action_index)
+        
+
+            # R
+            reward = observation[1]
+            done = observation[2]
+
+            returns += reward
+            steps += 1
+
+            # S'
+            next_state_index = observation[0]
+            
+
+            if done:
+                print("Total Rewards {} with {} steps!".format(returns,steps))
+                break
+                
+
+
+            current_state_index = next_state_index
