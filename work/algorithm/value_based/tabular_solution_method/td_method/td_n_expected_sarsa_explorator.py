@@ -34,9 +34,9 @@
 # /
 
 import numpy as np
-from algorithm.value_based.tabular_solution_method.td_method.td_exploitator import TDExploitator
+from algorithm.value_based.tabular_solution_method.td_method.td_exploitator import TDCritic
 
-class TDNExpectedSARSAExploitator(TDExploitator):
+class TDNExpectedSARSAExploitator(TDCritic):
     def __init__(self,value_function,policy,steps=1,step_size=0.1,discount=1.0):
         super().__init__(value_function, step_size=step_size)
         self.steps = steps

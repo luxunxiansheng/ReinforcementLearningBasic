@@ -31,18 +31,18 @@
 #
 # /
 
-from common import ExploratorBase  
+from common import ActorBase  
 from lib.utility import (create_distribution_epsilon_greedily,create_distribution_greedily,create_distribution_boltzmann)
 
-class TDGreedyExplorator(ExploratorBase):
-    def __init__(self,behavior_policy,exploitator):
+class TDGreedyActor(ActorBase):
+    def __init__(self,behavior_policy,critic):
         self.behavior_policy = behavior_policy
-        self.exploitator = exploitator
+        self.critic = critic
         self.create_distribution_greedily = create_distribution_greedily()
 
     def explore(self, *args):
         current_state_index = args[0]
-        q_value_function = self.exploitator.get_value_function()
+        q_value_function = self.critic.get_value_function()
         for state_index, _ in q_value_function.items():
             q_values = q_value_function[state_index]
             greedy_distibution = self.create_distribution_greedily(q_values)
@@ -51,16 +51,15 @@ class TDGreedyExplorator(ExploratorBase):
     def get_behavior_policy(self):
         return self.behavior_policy
 
-class TDESoftExplorator(ExploratorBase):
-    def __init__(self, behavior_policy,exploitator,epsilon=0.1):
+class TDESoftActor(ActorBase):
+    def __init__(self, behavior_policy,critic,epsilon=0.1):
         self.behavior_policy = behavior_policy
-        self.exploitator = exploitator
+        self.critic = critic
         self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(epsilon)
-
 
     def explore(self, *args):
         current_state_index = args[0]
-        q_value_function = self.exploitator.get_value_function()
+        q_value_function = self.critic.get_value_function()
         q_values = q_value_function[current_state_index]
         soft_greedy_distibution = self.create_distribution_epsilon_greedily(q_values)
         self.behavior_policy.policy_table[current_state_index] = soft_greedy_distibution
@@ -69,16 +68,15 @@ class TDESoftExplorator(ExploratorBase):
         return self.behavior_policy
 
 
-class TDBoltzmannExplorator(ExploratorBase):
-    def __init__(self, behavior_policy,exploitator,epsilon=0.1):
+class TDBoltzmannActor(ActorBase):
+    def __init__(self, behavior_policy,critic):
         self.behavior_policy = behavior_policy
-        self.exploitator = exploitator
+        self.critic = critic
         self.create_distribution_boltzmann = create_distribution_boltzmann()
     
-
     def explore(self, *args):
         current_state_index = args[0]
-        q_value_function = self.exploitator.get_value_function()
+        q_value_function = self.critic.get_value_function()
         q_values = q_value_function[current_state_index]
         boltzmann_distibution = self.create_distribution_boltzmann(q_values)
         self.behavior_policy.policy_table[current_state_index] = boltzmann_distibution

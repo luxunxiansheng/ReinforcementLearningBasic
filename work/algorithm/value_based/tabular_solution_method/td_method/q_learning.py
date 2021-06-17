@@ -31,15 +31,16 @@
 #
 # /
 
-from algorithm.value_based.tabular_solution_method.td_method.td_common import TDExploitator
+
+from algorithm.value_based.tabular_solution_method.td_method.td_critic import TDCritic
 from tqdm import tqdm
 
-class QLearningExploitator(TDExploitator):
+class QLearningCritic(TDCritic):
     def __init__(self,value_function,step_size=0.1,discount = 1.0):
         super().__init__(value_function,step_size)
         self.discount = discount
     
-    def exploit(self, *args):
+    def evaluate(self, *args):
         current_state_index  = args[0]
         current_action_index = args[1]
         reward = args[2]
@@ -62,7 +63,7 @@ class QLearning:
         self.actor  = actor 
         self.statistics = statistics
 
-    def explore(self):
+    def learn(self):
         for episode in tqdm(range(0, self.episodes)):
             self._run_one_episode(episode)
 
@@ -85,7 +86,7 @@ class QLearning:
 
             # S'
             next_state_index = observation[0]
-            self.critic.exploit(current_state_index,current_action_index,reward,next_state_index)
+            self.critic.evaluate(current_state_index,current_action_index,reward,next_state_index)
             self.actor.explore(current_state_index)
 
             if done:

@@ -34,16 +34,16 @@
 # /
 
 
+from algorithm.value_based.tabular_solution_method.td_method.td_critic import TDCritic
 import numpy as np
-from algorithm.value_based.tabular_solution_method.td_method.common.td_exploitator import TDExploitator
 
-class TDNSARSAExploitator(TDExploitator):
+class TDNSARSACritic(TDCritic):
     def __init__(self,value_function,steps,step_size=0.1,discount=1.0):
         super().__init__(value_function, step_size=step_size)
         self.steps = steps
         self.discount = discount
     
-    def exploit(self,*args):
+    def evaluate(self,*args):
         '''
         For sarsa-like algorithms, the given trajectory is implicitly 
         regarded as a nearly optimal sample batch.  
@@ -60,7 +60,6 @@ class TDNSARSAExploitator(TDExploitator):
                 G += np.power(self.discount, i - updated_timestamp ) * trajectory[i][1]
                 if updated_timestamp + self.steps < final_timestamp:
                     G += np.power(self.discount, self.steps) * self.get_value_function()[trajectory[current_timestamp][0]]
-
             self.update(trajectory[updated_timestamp][0],G)
         else:
             G = 0

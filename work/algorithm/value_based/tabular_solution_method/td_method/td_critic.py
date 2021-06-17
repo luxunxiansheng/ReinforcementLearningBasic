@@ -34,9 +34,9 @@
 # /
 
 
-from common import ExploitatorBase
+from common import CriticBase
 
-class TDExploitator(ExploitatorBase):
+class TDCritic(CriticBase):
     def __init__(self,value_function,step_size=0.1):
         self.value_function = value_function
         self.step_size = step_size

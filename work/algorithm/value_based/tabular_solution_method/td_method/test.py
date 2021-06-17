@@ -13,7 +13,7 @@ from algorithm.value_based.tabular_solution_method.td_method.n_steps_expected_sa
 from algorithm.value_based.tabular_solution_method.td_method.n_steps_sarsa import NStepsSARSA
 from algorithm.value_based.tabular_solution_method.td_method.off_policy_n_steps_sarsa import OffPolicyNStepsSARSA, TDNOffPolicySARSACritic
 from algorithm.value_based.tabular_solution_method.td_method.q_lambda import QLambda
-from algorithm.value_based.tabular_solution_method.td_method.q_learning import QLearning, QLearningExploitator
+from algorithm.value_based.tabular_solution_method.td_method.q_learning import QLearning, QLearningCritic
 from algorithm.value_based.tabular_solution_method.td_method.sarsa import SARSA,SARSACritic
 from algorithm.value_based.tabular_solution_method.td_method.sarsa_lambda import SARSALambda
 from algorithm.value_based.tabular_solution_method.td_method.td_lambda_evaluation import  TDLambdaEvalutaion
@@ -225,7 +225,7 @@ def test_qlearning_method(env):
 
     q_learning_statistics = EpisodeStats("Q_Learning", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
 
-    critic = QLearningExploitator(q_table)
+    critic = QLearningCritic(q_table)
     actor  = ESoftExplorator(b_policy,critic)
 
     qlearning_method = QLearning(critic,actor, env, q_learning_statistics, num_episodes)

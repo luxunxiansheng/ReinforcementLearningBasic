@@ -59,13 +59,13 @@ class PolicyBase(ABC):
         return action
 
 
-class ExploitatorBase(ABC):
+class CriticBase(ABC):
     """
-    The Exploitator calculates the value of state or value of (state,action) pair by following target policy. 
+    The critic calculates the value of state or value of (state,action) pair by following target policy. 
     This is essentially calculating the Bellman optimality equation approximately.
     """
     @abstractmethod
-    def exploit(self,*args):
+    def evaluate(self,*args):
         pass
     
     @abstractmethod
@@ -76,12 +76,12 @@ class ExploitatorBase(ABC):
     def get_optimal_policy(self):
         pass
 
-class ExploratorBase(ABC):
+class ActorBase(ABC):
     """
-    If the dynamics of the enviroment is hard to know, the explorator will define a behavior policy to sample data from the enviroment. 
-    Ideally, the behavior policy will be the same as the target policy. But in practise, it is a progressive process ,say, learning process.
-    With constrained computing resources, the explorator must learn a policy which can identify those states of high value instead of getting 
-    accurate value of those states. 
+    If the dynamics of the enviroment is hard to know, the actor will define a behavior policy to sample data from the enviroment. 
+    Ideally, the behavior policy will be the same as the target policy that is optimal,but in practise, it is asymptotical for a 
+    behavior policy to get closer and closer to the optimal target policy. Therefore,with constrained computing resources, the actor
+    's purpose is to learn a policy which can identify those states of high value rather than accuratly calculate value of those states. 
     """
     @abstractmethod
     def explore(self,*args): 
