@@ -14,20 +14,20 @@ We define the following three parts to construct the framework to solve a Bellma
 Exploitator calculates the optimal V or Q value. Once done,
 the optimal policy could be inferenced from the values  immediately.
 
-### 2.2 Explorator
+### 2.2 actor
 
-If we don't know the dynamics of the enviroment, that is, we have no idea on the state transition funciton and/or the rewards, we have to sample data from the enviroment and then give the data to exploitator to calculate the optimal values. Basically, the state and reward space will be very huge. Given limited computing resources, it is impossible for an agent to explore the whole state and reward spaces. Furthmore, it is not wise to take     identical efforts on all of the states when  calculating the values. For the sake of data efficiency, we will give those high value targets more attentions then those of low values. It is Explorator's responsibility to define the exploration policy and continue to enhance it.
+If we don't know the dynamics of the enviroment, that is, we have no idea on the state transition funciton and/or the rewards, we have to sample data from the enviroment and then give the data to exploitator to calculate the optimal values. Basically, the state and reward space will be very huge. Given limited computing resources, it is impossible for an agent to explore the whole state and reward spaces. Furthmore, it is not wise to take     identical efforts on all of the states when  calculating the values. For the sake of data efficiency, we will give those high value targets more attentions then those of low values. It is actor's responsibility to define the exploration policy and continue to enhance it.
 
 ### 2.3 Experiencer
 
-Experiencer will follow the policy defined by the explorator to take a tour. States and rewards will be sampled. 
+Experiencer will follow the policy defined by the actor to take a tour. States and rewards will be sampled. 
 
 ## 3. Off-Policy and On-Policy
 The final optimal policy will be inferenced from optimal values. We name this policy as target policy. Greedy policy will be the default policy for  exploritator to solve Bellman optimality equation.
 
-For off policy algorithms, the explorator will take so callled behavior policy that is different from target policy to find states and rewards of high values for exploritator.
+For off policy algorithms, the actor will take so callled behavior policy that is different from target policy to find states and rewards of high values for exploritator.
 
-For on policy algorithms, both the explorator and the exploritator will take the same policy.
+For on policy algorithms, both the actor and the exploritator will take the same policy.
 This policy will converge to the greedy policy in a long run. 
 
 ## 4. Policy and Optimal Policy

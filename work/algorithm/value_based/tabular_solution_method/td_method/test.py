@@ -5,7 +5,10 @@ sys.path.append(work_folder)
 
 import numpy as np
 
-from algorithm.value_based.tabular_solution_method.td_method.td_common import (BoltzmannExplorator, ESoftExplorator, OffPolicyGreedyActor, QLearningLambdaExploitator, TDLambdaExploitator, TDNSARSAExploitator,TDNExpectedSARSACritic)
+from algorithm.value_based.tabular_solution_method.td_method.td_actor import TDESoftActor
+from algorithm.value_based.tabular_solution_method.td_method.q_learning import QLearning, QLearningCritic
+
+""" from algorithm.value_based.approximate_solution_method.approximation_common import ESoftActor
 from algorithm.value_based.tabular_solution_method.td_method.double_q_learning import DoubleQLearning, DoubleQLearningCritic
 from algorithm.value_based.tabular_solution_method.td_method.dyna_q import (DynaQPriorityCritic, DynaQTrivalCritic,  PriorityModel,  DynaQ, TrivialModel)
 from algorithm.value_based.tabular_solution_method.td_method.expected_sarsa import ExpectedSARSA,ExpectedSARSACritic
@@ -17,7 +20,7 @@ from algorithm.value_based.tabular_solution_method.td_method.q_learning import Q
 from algorithm.value_based.tabular_solution_method.td_method.sarsa import SARSA,SARSACritic
 from algorithm.value_based.tabular_solution_method.td_method.sarsa_lambda import SARSALambda
 from algorithm.value_based.tabular_solution_method.td_method.td_lambda_evaluation import  TDLambdaEvalutaion
-from algorithm.value_based.tabular_solution_method.td_method.tdn_evaluation import TDNEvalutaion
+from algorithm.value_based.tabular_solution_method.td_method.tdn_evaluation import TDNEvalutaion """
 from env.blackjack import BlackjackEnv
 from lib.plotting import EpisodeStats, plot_episode_error, plot_episode_stats
 from policy.policy import DiscreteStateValueBasedPolicy
@@ -27,7 +30,7 @@ from tqdm import tqdm
 num_episodes = 200
 n_steps = 2
 
-def test_td0_evaluation_method_for_blackjack():
+""" def test_td0_evaluation_method_for_blackjack():
     env = BlackjackEnv(False)
     v_table = env.build_V_table()
 
@@ -138,7 +141,7 @@ def test_sarsa_method(env):
 
     sarsa_statistics = EpisodeStats("sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
     critic = SARSACritic(q_table)
-    actor  = ESoftExplorator(b_policy,critic)
+    actor  = ESoftactor(b_policy,critic)
     sarsa_method = SARSA(critic, actor, env,sarsa_statistics, num_episodes)
     sarsa_method.explore()
 
@@ -154,7 +157,7 @@ def test_b_sarsa_method(env):
 
     sarsa_statistics = EpisodeStats("b_sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
     critic = SARSACritic(q_table)
-    actor  = BoltzmannExplorator(b_policy,critic)
+    actor  = Boltzmannactor(b_policy,critic)
     sarsa_method = SARSA(critic, actor, env,sarsa_statistics, num_episodes)
     sarsa_method.explore()
 
@@ -167,7 +170,7 @@ def test_n_steps_sarsa_method(env):
     n_sarsa_statistics = EpisodeStats("N_Steps_Sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
 
     critic = TDNSARSAExploitator(q_table,n_steps)
-    actor  = ESoftExplorator(b_policy,critic)
+    actor  = ESoftactor(b_policy,critic)
     n_sarsa_method = NStepsSARSA(critic,actor,env,n_steps,n_sarsa_statistics, num_episodes)
     n_sarsa_method.explore()
     return n_sarsa_statistics
@@ -181,7 +184,7 @@ def test_b_n_steps_sarsa_method(env):
     n_sarsa_statistics = EpisodeStats("b_N_Steps_Sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
 
     critic = TDNSARSAExploitator(q_table,n_steps)
-    actor  = BoltzmannExplorator(b_policy,critic)
+    actor  = Boltzmannactor(b_policy,critic)
     n_sarsa_method = NStepsSARSA(critic,actor,env,n_steps,n_sarsa_statistics, num_episodes)
     n_sarsa_method.explore()
     return n_sarsa_statistics
@@ -195,7 +198,7 @@ def test_expected_sarsa_method(env):
     expectedsarsa_statistics = EpisodeStats("Expected_Sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
 
     critic = ExpectedSARSACritic(b_policy,q_table)
-    actor  = ESoftExplorator(b_policy,critic)
+    actor  = ESoftactor(b_policy,critic)
 
     expectedsarsa_method = ExpectedSARSA(critic,actor, env, expectedsarsa_statistics, num_episodes)
     expectedsarsa_method.explore()
@@ -211,13 +214,13 @@ def test_n_setps_expected_sarsa_method(env):
     n_steps_expectedsarsa_statistics = EpisodeStats("N_Steps_Expected_Sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
 
     critic = TDNExpectedSARSACritic(q_table,b_policy,n_steps)
-    actor  = ESoftExplorator(b_policy,critic) 
+    actor  = ESoftactor(b_policy,critic) 
 
     n_steps_expectedsarsa_method = NStepsExpectedSARSA(critic,actor, env, n_steps, n_steps_expectedsarsa_statistics, num_episodes)
     n_steps_expectedsarsa_method.explore()
 
     return n_steps_expectedsarsa_statistics
-
+ """
 def test_qlearning_method(env):
     q_table = env.build_Q_table()
     b_policy_table = env.build_policy_table()
@@ -226,13 +229,13 @@ def test_qlearning_method(env):
     q_learning_statistics = EpisodeStats("Q_Learning", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
 
     critic = QLearningCritic(q_table)
-    actor  = ESoftExplorator(b_policy,critic)
+    actor  = TDESoftActor(b_policy,critic)
 
     qlearning_method = QLearning(critic,actor, env, q_learning_statistics, num_episodes)
-    qlearning_method.explore()
+    qlearning_method.learn()
 
     return q_learning_statistics
-
+""" 
 def test_off_policy_n_steps_sarsa(env):
     q_table = env.build_Q_table()
     b_policy_table = env.build_policy_table()
@@ -258,7 +261,7 @@ def test_sarsa_lambda_method(env):
     sarsa_statistics = EpisodeStats("sarsa_labmda", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
     
     critic = TDLambdaExploitator(q_table)
-    actor  = ESoftExplorator(b_policy,critic)
+    actor  = ESoftactor(b_policy,critic)
 
     sarsa_method = SARSALambda(critic,actor,env,sarsa_statistics, num_episodes)
     sarsa_method.explore()
@@ -276,7 +279,7 @@ def test_q_lambda_method(env):
         num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
 
     critic = QLearningLambdaExploitator(q_table)
-    actor  = ESoftExplorator(b_policy,critic)    
+    actor  = ESoftactor(b_policy,critic)    
     q_lambda_method = QLambda(critic,actor,env,q_lambda_statistics, num_episodes)
     q_lambda_method.explore()
 
@@ -292,7 +295,7 @@ def test_double_q_learning_method(env):
         num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
 
     critic = DoubleQLearningCritic(q_table)
-    actor  = ESoftExplorator(b_policy,critic)
+    actor  = ESoftactor(b_policy,critic)
 
     double_qlearning_method = DoubleQLearning(critic,actor, env, double_q_learning_statistics, num_episodes)
     double_qlearning_method.explore()
@@ -308,7 +311,7 @@ def test_dynaQ_method_trival(env):
     model = TrivialModel()  
 
     critic = DynaQTrivalCritic(q_table,model)
-    actor  = ESoftExplorator(b_policy,critic)
+    actor  = ESoftActor(b_policy,critic)
 
     dyna_q_statistics = EpisodeStats("Dyna_Q", episode_lengths=np.zeros(
         num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
@@ -327,7 +330,7 @@ def test_dynaQ_method_priority(env):
     model  = PriorityModel()
 
     critic = DynaQPriorityCritic(q_table,model)
-    actor  = ESoftExplorator(b_policy,critic)
+    actor  = ESoftactor(b_policy,critic)
 
     dyna_q_statistics = EpisodeStats("Dyna_Q_PRIORITY", episode_lengths=np.zeros(
         num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
@@ -336,7 +339,7 @@ def test_dynaQ_method_priority(env):
     dyna_q_method.explore()
 
     return dyna_q_statistics
-
+ """
 
 
 def test_td_control_method(env):
@@ -345,8 +348,7 @@ def test_td_control_method(env):
                         test_n_steps_sarsa_method(env),test_qlearning_method(env),test_sarsa_lambda_method(env),test_q_lambda_method(env)])
     
     """
-    plot_episode_stats([test_qlearning_method(env),test_q_lambda_method(env),test_double_q_learning_method(env),test_dynaQ_method_trival(env),test_dynaQ_method_priority(env)])
+    plot_episode_stats([test_qlearning_method(env)])
 
-
-real_env = get_env("cliffwalking")
+real_env = get_env("GridworldEnv")
 test_td_control_method(real_env)

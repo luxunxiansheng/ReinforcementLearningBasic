@@ -50,6 +50,8 @@ class QLearningCritic(TDCritic):
         max_value = max(q_values_next_state.values())
         target = reward + max_value
         self.update(current_state_index,current_action_index,target)
+    
+
 
 class QLearning:
     """
