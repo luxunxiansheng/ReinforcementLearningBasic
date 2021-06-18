@@ -76,29 +76,26 @@ class SARSA:
             # S
             current_state_index = self.env.reset()
 
-            # A
-            current_action_index = self.actor.get_behavior_policy().get_action(current_state_index)
-
+            
             while True:
+                # A
+                current_action_index = self.actor.get_behavior_policy().get_action(current_state_index)
                 observation = self.env.step(current_action_index)
 
                 # R
                 reward = observation[1]
-
-                # S'
-                next_state_index = observation[0]
                 done = observation[2]
-
+                
                 self.statistics.episode_rewards[episode] += reward
                 self.statistics.episode_lengths[episode] += 1
 
+                # S'
+                next_state_index = observation[0]
                 self.critic.evaluate(current_state_index,current_action_index,reward,next_state_index)
-
                 self.actor.explore(current_state_index)
 
                 if done:
                     break
-            
-                current_action_index = self.actor.get_behavior_policy().get_action(next_state_index)
+                            
                 current_state_index = next_state_index
                 

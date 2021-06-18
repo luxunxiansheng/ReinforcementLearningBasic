@@ -51,7 +51,7 @@ class QLearningCritic(TDCritic):
         # The target policy is implictly greedy 
         q_values_next_state = self.value_function[next_state_index]
         max_value = max(q_values_next_state.values())
-        target = reward + max_value
+        target = reward + self.discount*max_value
         self.update(current_state_index,current_action_index,target)
 
 
@@ -114,7 +114,6 @@ class QLearning:
             print("current_state_index {} current_action_index {}".format(current_state_index,current_action_index))
             observation = self.env.step(current_action_index)
         
-
             # R
             reward = observation[1]
             done = observation[2]
@@ -130,6 +129,4 @@ class QLearning:
                 print("Total Rewards {} with {} steps!".format(returns,steps))
                 break
                 
-
-
             current_state_index = next_state_index

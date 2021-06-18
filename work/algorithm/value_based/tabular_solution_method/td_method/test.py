@@ -1,4 +1,3 @@
-
 import sys,os
 current_dir= os.path.dirname(os.path.realpath(__file__))
 work_folder=current_dir[:current_dir.find('algorithm')]
@@ -9,6 +8,7 @@ import numpy as np
 from algorithm.value_based.tabular_solution_method.td_method.sarsa import SARSA
 from algorithm.value_based.tabular_solution_method.td_method.q_learning import QLearning
 from algorithm.value_based.tabular_solution_method.td_method.expected_sarsa import ExpectedSARSA
+from algorithm.value_based.tabular_solution_method.td_method.double_q_learning import DoubleQLearning
 
 """ from algorithm.value_based.approximate_solution_method.approximation_common import ESoftActor
 from algorithm.value_based.tabular_solution_method.td_method.double_q_learning import DoubleQLearning, DoubleQLearningCritic
@@ -196,7 +196,7 @@ def test_n_setps_expected_sarsa_method(env):
     n_steps_expectedsarsa_method.learn()
 
     return n_steps_expectedsarsa_statistics
- """
+"""
 def test_qlearning_method(env):
     q_learning_statistics = EpisodeStats("Q_Learning", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
     qlearning_method = QLearning(env, q_learning_statistics, num_episodes)
@@ -218,6 +218,14 @@ def test_expected_sarsa_method(env):
     expectedsarsa_method.learn()
 
     return expectedsarsa_statistics
+
+def test_double_q_learning_method(env):
+    double_q_learning_statistics = EpisodeStats("Double_Q_Learning", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
+
+    double_qlearning_method = DoubleQLearning(env, double_q_learning_statistics, num_episodes)
+    double_qlearning_method.learn()
+
+    return double_q_learning_statistics
 
 
 """ 
@@ -271,23 +279,6 @@ def test_q_lambda_method(env):
     return q_lambda_statistics
 
 
-def test_double_q_learning_method(env):
-    q_table = env.build_Q_table()
-    b_policy_table = env.build_policy_table()
-    b_policy = DiscreteStateValueBasedPolicy(b_policy_table)
-
-    double_q_learning_statistics = EpisodeStats("Double_Q_Learning", episode_lengths=np.zeros(
-        num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
-
-    critic = DoubleQLearningCritic(q_table)
-    actor  = ESoftactor(b_policy,critic)
-
-    double_qlearning_method = DoubleQLearning(critic,actor, env, double_q_learning_statistics, num_episodes)
-    double_qlearning_method.learn()
-
-    return double_q_learning_statistics
-
-
 def test_dynaQ_method_trival(env):
     q_table = env.build_Q_table()
     b_policy_table = env.build_policy_table()
@@ -324,7 +315,7 @@ def test_dynaQ_method_priority(env):
     dyna_q_method.learn()
 
     return dyna_q_statistics
- """
+"""
 
 
 def test_td_control_method(env):
@@ -333,7 +324,7 @@ def test_td_control_method(env):
                         test_n_steps_sarsa_method(env),test_qlearning_method(env),test_sarsa_lambda_method(env),test_q_lambda_method(env)])
     
     """
-    plot_episode_stats([test_qlearning_method(env),test_sarsa_method(env),test_expected_sarsa_method(env)])
+    plot_episode_stats([test_qlearning_method(env),test_sarsa_method(env),test_expected_sarsa_method(env),test_double_q_learning_method(env)])
 
 real_env = get_env("CliffWalkingEnv")
 test_td_control_method(real_env)
