@@ -36,12 +36,12 @@
 from collections import defaultdict
 
 import numpy as np
-from common import ActorBase, CriticBase
+from common import ExplorerBase, CriticBase
 from lib.utility import create_distribution_greedily
 from tqdm import tqdm
 
 
-class MonteCarloActor(ActorBase):
+class MonteCarloActor(ExplorerBase):
     def __init__(self,behavior_policy,target_policy,critic):
         self.target_policy = target_policy
         self.behavior_policy = behavior_policy

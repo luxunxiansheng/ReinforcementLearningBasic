@@ -37,10 +37,10 @@
 from collections import defaultdict
 from tqdm import tqdm
 from lib.utility import create_distribution_greedily
-from common import ActorBase
+from common import ExplorerBase
 
 
-class MonteCarloESActor(ActorBase):
+class MonteCarloESActor(ExplorerBase):
     def __init__(self,policy,critic):
         self.policy = policy
         self.critic = critic

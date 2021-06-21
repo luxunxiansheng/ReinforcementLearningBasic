@@ -32,25 +32,44 @@
 # #### END LICENSE BLOCK #####
 #
 # /
-from algorithm.value_based.tabular_solution_method.td_method.td_common import TDExploitator
+
 import heapq
 from abc import abstractmethod
 
 import numpy as np
 from tqdm import tqdm
-from copy import deepcopy
+
+from algorithm.value_based.tabular_solution_method.td_method.td_critic import TDCritic
 
 TRIVAL = 1
 PRIORITY = 2
 
-class DynaQTrivalCritic(TDExploitator):
+class QLearningCritic(TDCritic):
+    def __init__(self,value_function,step_size=0.1,discount = 1.0):
+        super().__init__(value_function,step_size)
+        self.discount = discount
+    
+    def evaluate(self, *args):
+        current_state_index  = args[0]
+        current_action_index = args[1]
+        reward = args[2]
+        next_state_index = args[3]
+        
+        # The target policy is implictly greedy 
+        q_values_next_state = self.value_function[next_state_index]
+        max_value = max(q_values_next_state.values())
+        target = reward + self.discount*max_value
+        self.update(current_state_index,current_action_index,target)
+
+
+class DynaQTrivalCritic(TDCritic):
     def __init__(self, value_function, model, step_size=0.1, discount=1.0,iterations=5):
         super().__init__(value_function, step_size)
         self.model = model 
         self.iterations = iterations
         self.discount = discount
 
-    def exploit(self, *args):
+    def evaluate(self, *args):
         current_state_index  = args[0]
         current_action_index = args[1]
         reward = args[2]
@@ -58,7 +77,7 @@ class DynaQTrivalCritic(TDExploitator):
         
         q_values_next_state = self.value_function[next_state_index]
         max_value = max(q_values_next_state.values())
-        target = reward + max_value
+        target = reward + self.discount*max_value
         self.update(current_state_index,current_action_index,target)
 
         self.model.feed(current_state_index, current_action_index, next_state_index, reward)

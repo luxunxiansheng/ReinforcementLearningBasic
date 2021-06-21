@@ -43,7 +43,7 @@ import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
 
 from algorithm.policy_based.actor_critic.actor_critic_common import ValueEstimator
-from common import ActorBase,CriticBase
+from common import ExplorerBase,CriticBase
 
 class ValueEestimator(ValueEstimator):
     class Model(nn.Module):
@@ -137,7 +137,7 @@ class PolicyEsitmator:
         loss.backward()
         self.optimizer.step()
         
-class BatchActor(ActorBase):
+class BatchActor(ExplorerBase):
     ENTROY_BETA = 0.0
     
     def __init__(self,policy,discount=1.0):

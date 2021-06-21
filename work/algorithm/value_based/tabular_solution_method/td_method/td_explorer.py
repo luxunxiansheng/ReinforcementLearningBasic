@@ -11,12 +11,10 @@
 # for the specific language governing rights and limitations under the
 # License.
 #
-#
-# Contributor(s):
+## Contributor(s):
 #
 #    Bin.Li (ornot2008@yahoo.com)
-#
-#
+##
 # Alternatively, the contents of this file may be used under the terms of
 # either the GNU General Public License Version 2 or later (the "GPL"), or
 # the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
@@ -33,32 +31,55 @@
 #
 # /
 
-
-from common import ExplorerBase
+from common import ExplorerBase  
 from lib.utility import (create_distribution_epsilon_greedily,create_distribution_greedily,create_distribution_boltzmann)
 
-
-class ESoftActor(ExplorerBase):
-    def __init__(self, policy,critic,epsilon=0.1):
-        self.policy = policy
+class TDGreedyExplorer(ExplorerBase):
+    def __init__(self,behavior_policy,critic):
+        self.behavior_policy = behavior_policy
         self.critic = critic
-        self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(epsilon)
         self.create_distribution_greedily = create_distribution_greedily()
 
     def explore(self, *args):
         current_state_index = args[0]
-        action_space= args[1]
-        estimator = self.critic.get_value_function()
-        
-        q_values = {}
-        for action_index in range(action_space.n):
-            q_values[action_index] = estimator.predict(current_state_index,action_index)
-
-        soft_greedy_distibution = self.create_distribution_epsilon_greedily(q_values)
-        self.policy.instant_distribution = soft_greedy_distibution
+        q_value_function = self.critic.get_value_function()
+        for state_index, _ in q_value_function.items():
+            q_values = q_value_function[state_index]
+            greedy_distibution = self.create_distribution_greedily(q_values)
+            self.behavior_policy.policy_table[current_state_index] = greedy_distibution
 
     def get_behavior_policy(self):
-        return self.policy
+        return self.behavior_policy
 
-    def get_create_behavior_policy_fn(self):
-        return self.create_distribution_epsilon_greedily
+class TDESoftExplorer(ExplorerBase):
+    def __init__(self, behavior_policy,critic,epsilon=0.1):
+        self.behavior_policy = behavior_policy
+        self.critic = critic
+        self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(epsilon)
+
+    def explore(self, *args):
+        current_state_index = args[0]
+        q_value_function = self.critic.get_value_function()
+        q_values = q_value_function[current_state_index]
+        soft_greedy_distibution = self.create_distribution_epsilon_greedily(q_values)
+        self.behavior_policy.policy_table[current_state_index] = soft_greedy_distibution
+
+    def get_behavior_policy(self):
+        return self.behavior_policy
+
+
+class TDBoltzmannExplorer(ExplorerBase):
+    def __init__(self, behavior_policy,critic):
+        self.behavior_policy = behavior_policy
+        self.critic = critic
+        self.create_distribution_boltzmann = create_distribution_boltzmann()
+    
+    def explore(self, *args):
+        current_state_index = args[0]
+        q_value_function = self.critic.get_value_function()
+        q_values = q_value_function[current_state_index]
+        boltzmann_distibution = self.create_distribution_boltzmann(q_values)
+        self.behavior_policy.policy_table[current_state_index] = boltzmann_distibution
+
+    def get_behavior_policy(self):
+        return self.behavior_policy

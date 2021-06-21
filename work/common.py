@@ -76,12 +76,11 @@ class CriticBase(ABC):
     def get_optimal_policy(self):
         pass
 
-class ActorBase(ABC):
+class ExplorerBase(ABC):
     """
-    If the dynamics of the enviroment is hard to know, the actor will define a behavior policy to sample data from the enviroment. 
-    Ideally, the behavior policy will be the same as the target policy that is optimal,but in practise, it is asymptotical for a 
-    behavior policy to get closer and closer to the optimal target policy. Therefore,with constrained computing resources, the actor
-    's purpose is to learn a policy which can identify those states of high value rather than accuratly calculate value of those states. 
+    If the dynamics of the enviroment is hard to know, the explorer will define a behavior policy to sample data from the enviroment. 
+    With constrained computing resources, the explorer 's purpose is to learn a policy which can identify those states of high value 
+    rather than accuratly calculate value of those states. 
     """
     @abstractmethod
     def explore(self,*args): 
@@ -90,3 +89,8 @@ class ActorBase(ABC):
     @abstractmethod
     def get_behavior_policy(self):
         pass
+
+class ActorBase(ABC):
+    @abstractmethod
+    def act(self,*args):
+        pass 

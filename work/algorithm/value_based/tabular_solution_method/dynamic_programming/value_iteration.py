@@ -32,11 +32,11 @@
 # #### END LICENSE BLOCK #####
 #
 # /
-from common import ActorBase
+from common import ExplorerBase
 from lib.utility import create_distribution_greedily
 
 
-class ValueIterationActor(ActorBase):
+class ValueIterationActor(ExplorerBase):
     def __init__(self, value_function, policy,transition_table, delta=1e-8, discount=1.0):
         self.value_function = value_function
         self.policy = policy

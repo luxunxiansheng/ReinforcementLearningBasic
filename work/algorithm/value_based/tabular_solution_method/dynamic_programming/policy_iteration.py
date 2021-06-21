@@ -37,7 +37,7 @@
 import copy
 
 
-from common import ActorBase, CriticBase
+from common import ExplorerBase, CriticBase
 from lib.utility import create_distribution_greedily
 
 
@@ -87,7 +87,7 @@ class PoplicyIterationCritic(CriticBase):
             value_of_action += transition_prob * (self.discount*value_of_next_state+reward)
         return value_of_action
 
-class PolicyIterationActor(ActorBase):
+class PolicyIterationActor(ExplorerBase):
     """
     It is trival for the actor to explore the policy by sweeping the state space. 
     

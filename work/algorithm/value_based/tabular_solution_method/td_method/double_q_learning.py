@@ -35,7 +35,7 @@
 
 from algorithm.value_based.tabular_solution_method.td_method.td_critic import TDCritic
 from policy.policy import DiscreteStateValueBasedPolicy
-from algorithm.value_based.tabular_solution_method.td_method.td_actor import TDESoftActor
+from algorithm.value_based.tabular_solution_method.td_method.td_actor import TDESoftExplorer
 from copy import deepcopy
 
 import numpy as np
@@ -93,7 +93,7 @@ class DoubleQLearning:
         self.env = env
         self.episodes = episodes
         self.critic = DoubleQLearningCritic(self.env.build_Q_table())
-        self.actor  = TDESoftActor(DiscreteStateValueBasedPolicy(self.env.build_policy_table()),self.critic)  
+        self.actor  = TDESoftExplorer(DiscreteStateValueBasedPolicy(self.env.build_policy_table()),self.critic)  
         self.statistics = statistics
 
     def learn(self):

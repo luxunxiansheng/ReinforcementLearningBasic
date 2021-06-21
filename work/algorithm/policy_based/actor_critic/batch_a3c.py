@@ -45,7 +45,7 @@ import torch.multiprocessing as mp
 import torch.nn as nn
 import torch.nn.functional as F
 from algorithm.policy_based.actor_critic.actor_critic_common import ValueEstimator
-from common import ActorBase, CriticBase
+from common import ExplorerBase, CriticBase
 from lib.utility import SharedAdam
 from policy.policy import ParameterizedPolicy
 
@@ -157,7 +157,7 @@ class LocalPolicyEsitmator:
         actions_prob=self.model.forward(state)
         return actions_prob
 
-class LocalBatchActor(ActorBase):
+class LocalBatchActor(ExplorerBase):
     ENTROY_BETA = 0.0
     
     def __init__(self,local_policy,global_policy,discount=1.0):

@@ -36,12 +36,12 @@
 
 from collections import defaultdict
 
-from common import ActorBase
+from common import ExplorerBase
 from lib.utility import (create_distribution_epsilon_greedily,create_distribution_greedily)
 from policy.policy import DiscreteStateValueBasedPolicy
 from tqdm import tqdm
 
-class MonteCarloOnPolicyActor(ActorBase):
+class MonteCarloOnPolicyActor(ExplorerBase):
     def __init__(self,policy,critic,episilon=0.8):
         self.policy = policy
         self.critic = critic

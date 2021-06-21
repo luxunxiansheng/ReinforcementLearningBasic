@@ -33,7 +33,7 @@
 
 
 from policy.policy import DiscreteStateValueBasedPolicy
-from algorithm.value_based.tabular_solution_method.td_method.td_actor import TDESoftActor
+from algorithm.value_based.tabular_solution_method.td_method.td_actor import TDActor, TDESoftExplorer
 from algorithm.value_based.tabular_solution_method.td_method.td_critic import TDCritic
 from tqdm import tqdm
 
@@ -55,6 +55,7 @@ class QLearningCritic(TDCritic):
         self.update(current_state_index,current_action_index,target)
 
 
+
 class QLearning:
     """
     The reason that Q-learning is off-policy is that it updates its Q-values using the Q-value of the 
@@ -64,39 +65,15 @@ class QLearning:
         self.env = env
         self.episodes = episodes
         self.critic = QLearningCritic(self.env.build_Q_table()) 
-        self.actor  = TDESoftActor(DiscreteStateValueBasedPolicy(self.env.build_policy_table()),self.critic) 
-        self.statistics = statistics
+        self.explorer  = TDESoftExplorer(DiscreteStateValueBasedPolicy(self.env.build_policy_table()),self.critic) 
+        self.actor = TDActor(env,self.critic,self.explorer,statistics)
+
 
     def learn(self):
         for episode in tqdm(range(0, self.episodes)):
-            self._run_one_episode(episode)
+            self.actor.act(episode)
 
-    def _run_one_episode(self, episode):
-        # S
-        current_state_index = self.env.reset()
-
-        while True:
-            # A
-            current_action_index = self.actor.get_behavior_policy().get_action(current_state_index)
-            observation = self.env.step(current_action_index)
-
-            # R
-            reward = observation[1]
-            done = observation[2]
-
-            self.statistics.episode_rewards[episode] += reward
-            self.statistics.episode_lengths[episode] += 1
-
-            # S'
-            next_state_index = observation[0]
-            self.critic.evaluate(current_state_index,current_action_index,reward,next_state_index)
-            self.actor.explore(current_state_index)
-
-            if done:
-                break
-
-            current_state_index = next_state_index
-
+    
     def test(self):
         # S
         current_state_index = self.env.reset()

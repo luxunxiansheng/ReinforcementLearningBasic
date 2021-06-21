@@ -33,7 +33,7 @@
 #
 # /
 
-from algorithm.value_based.tabular_solution_method.td_method.td_actor import TDESoftActor
+from algorithm.value_based.tabular_solution_method.td_method.td_actor import TDESoftExplorer
 from algorithm.value_based.tabular_solution_method.td_method.td_critic import TDCritic
 from policy.policy import DiscreteStateValueBasedPolicy
 from tqdm import tqdm
@@ -67,7 +67,7 @@ class ExpectedSARSA:
         self.statistics=statistics
         self.policy = DiscreteStateValueBasedPolicy(self.env.build_policy_table())
         self.critic = ExpectedSARSACritic(self.env.build_Q_table(),self.policy)
-        self.actor  = TDESoftActor(self.policy,self.critic)
+        self.actor  = TDESoftExplorer(self.policy,self.critic)
 
     def learn(self):
         for episode in tqdm(range(0, self.episodes)):

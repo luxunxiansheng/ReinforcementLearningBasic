@@ -43,7 +43,7 @@ import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
 
 from algorithm.policy_based.actor_critic.actor_critic_common import ValueEstimator
-from common import ActorBase,CriticBase
+from common import ExplorerBase,CriticBase
 
 '''
 We take two networks in this case just for clarity but for 
@@ -137,7 +137,7 @@ class PolicyEsitmator:
         loss.backward()
         self.optimizer.step()
         
-class OnlineActor(ActorBase):
+class OnlineActor(ExplorerBase):
     def __init__(self,policy,critic,discount=1.0):
         self.policy = policy 
         self.discount = discount
