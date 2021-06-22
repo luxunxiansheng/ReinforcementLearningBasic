@@ -33,7 +33,9 @@
 #
 # /
 
-from algorithm.value_based.tabular_solution_method.td_method.td_actor import TDESoftExplorer
+from algorithm.value_based.approximate_solution_method.approximation_common import ESoftActor
+from algorithm.value_based.tabular_solution_method.td_method.td_actor import TDActor
+from algorithm.value_based.tabular_solution_method.td_method.td_explorer import TDESoftExplorer
 from algorithm.value_based.tabular_solution_method.td_method.td_critic import TDCritic
 from policy.policy import DiscreteStateValueBasedPolicy
 from tqdm import tqdm
@@ -65,36 +67,43 @@ class ExpectedSARSA:
         self.env = env
         self.episodes = episodes
         self.statistics=statistics
+        
         self.policy = DiscreteStateValueBasedPolicy(self.env.build_policy_table())
         self.critic = ExpectedSARSACritic(self.env.build_Q_table(),self.policy)
-        self.actor  = TDESoftExplorer(self.policy,self.critic)
+        explorer = TDESoftExplorer(self.policy,self.critic)
+        self.actor = TDActor(env,self.critic,explorer,statistics)
 
     def learn(self):
         for episode in tqdm(range(0, self.episodes)):
-            # S
-            current_state_index = self.env.reset()
+            self.actor.act(episode)
+
+    def test(self):
+        # S
+        current_state_index = self.env.reset()
+        
+        steps =  0
+        returns = 0 
+        
+        while True:
             # A
-            current_action_index = self.actor.get_behavior_policy().get_action(current_state_index)
+            current_action_index = self.policy.get_action(current_state_index)
 
-            while True:
-                observation = self.env.step(current_action_index)
+            print("current_state_index {} current_action_index {}".format(current_state_index,current_action_index))
+            observation = self.env.step(current_action_index)
+        
+            # R
+            reward = observation[1]
+            done = observation[2]
 
-                # R
-                reward = observation[1]
+            returns += reward
+            steps += 1
 
-                # S'
-                next_state_index = observation[0]
-                done = observation[2]
+            # S'
+            next_state_index = observation[0]
+            
 
-                self.statistics.episode_rewards[episode] += reward
-                self.statistics.episode_lengths[episode] += 1
-
-                self.critic.evaluate(current_state_index,current_action_index,reward,next_state_index)
-
-                self.actor.explore(current_state_index)
-
-                if done:
-                    break
-
-                current_action_index = self.actor.get_behavior_policy().get_action(next_state_index)
-                current_state_index = next_state_index
+            if done:
+                print("Total Rewards {} with {} steps!".format(returns,steps))
+                break
+                
+            current_state_index = next_state_index

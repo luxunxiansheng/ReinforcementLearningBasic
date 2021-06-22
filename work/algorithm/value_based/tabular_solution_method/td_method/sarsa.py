@@ -32,11 +32,13 @@
 # #### END LICENSE BLOCK #####
 #
 # /
+from tqdm import tqdm
 
-from algorithm.value_based.tabular_solution_method.td_method.td_actor import TDESoftExplorer
+from algorithm.value_based.tabular_solution_method.td_method.td_actor import TDActor
+from algorithm.value_based.tabular_solution_method.td_method.td_explorer import TDESoftExplorer
 from policy.policy import DiscreteStateValueBasedPolicy
 from algorithm.value_based.tabular_solution_method.td_method.td_critic import TDCritic
-from tqdm import tqdm
+
 
 """
 It is certainly ok to implement SRASA with N_Step_SARSA as long as to set the Setps to 1.  We keep sarsa just for tutorial 
@@ -62,40 +64,48 @@ class SARSA:
     SARSA algorithm: On-policy TD control. 
     """
 
-    def __init__(self,env, statistics, episodes,discount=1.0):
+    def __init__(self,env, statistics, episodes):
         self.env = env
         self.episodes = episodes
         self.statistics=statistics
-        self.discount = discount
+        
+        # critic and exploler share the same policy (on-policy)
         self.policy = DiscreteStateValueBasedPolicy(self.env.build_policy_table())
         self.critic = SARSACritic(self.env.build_Q_table(),self.policy)
-        self.actor  = TDESoftExplorer(self.policy,self.critic)
-
+        explorer = TDESoftExplorer(self.policy,self.critic)
+        self.actor = TDActor(env,self.critic,explorer,statistics)
+        
     def learn(self):
         for episode in tqdm(range(0, self.episodes)):
-            # S
-            current_state_index = self.env.reset()
+            self.actor.act(episode)
+    
+    def test(self):
+        # S
+        current_state_index = self.env.reset()
+        
+        steps =  0
+        returns = 0 
+        
+        while True:
+            # A
+            current_action_index = self.policy.get_action(current_state_index)
 
+            print("current_state_index {} current_action_index {}".format(current_state_index,current_action_index))
+            observation = self.env.step(current_action_index)
+        
+            # R
+            reward = observation[1]
+            done = observation[2]
+
+            returns += reward
+            steps += 1
+
+            # S'
+            next_state_index = observation[0]
             
-            while True:
-                # A
-                current_action_index = self.actor.get_behavior_policy().get_action(current_state_index)
-                observation = self.env.step(current_action_index)
 
-                # R
-                reward = observation[1]
-                done = observation[2]
+            if done:
+                print("Total Rewards {} with {} steps!".format(returns,steps))
+                break
                 
-                self.statistics.episode_rewards[episode] += reward
-                self.statistics.episode_lengths[episode] += 1
-
-                # S'
-                next_state_index = observation[0]
-                self.critic.evaluate(current_state_index,current_action_index,reward,next_state_index)
-                self.actor.explore(current_state_index)
-
-                if done:
-                    break
-                            
-                current_state_index = next_state_index
-                
+            current_state_index = next_state_index

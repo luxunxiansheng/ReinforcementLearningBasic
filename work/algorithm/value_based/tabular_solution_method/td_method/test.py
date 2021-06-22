@@ -201,7 +201,7 @@ def test_qlearning_method(env):
     q_learning_statistics = EpisodeStats("Q_Learning", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
     qlearning_method = QLearning(env, q_learning_statistics, num_episodes)
     qlearning_method.learn()
-    #qlearning_method.test()
+    qlearning_method.test()
 
     return q_learning_statistics
 
@@ -209,13 +209,14 @@ def test_sarsa_method(env):
     sarsa_statistics = EpisodeStats("sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
     sarsa_method = SARSA(env,sarsa_statistics, num_episodes)
     sarsa_method.learn()
-
+    sarsa_method.test()
     return sarsa_statistics
 
 def test_expected_sarsa_method(env):
     expectedsarsa_statistics = EpisodeStats("Expected_Sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
     expectedsarsa_method = ExpectedSARSA(env, expectedsarsa_statistics, num_episodes)
     expectedsarsa_method.learn()
+    expectedsarsa_method.test()
 
     return expectedsarsa_statistics
 
@@ -224,6 +225,7 @@ def test_double_q_learning_method(env):
 
     double_qlearning_method = DoubleQLearning(env, double_q_learning_statistics, num_episodes)
     double_qlearning_method.learn()
+    double_qlearning_method.test()
 
     return double_q_learning_statistics
 
@@ -317,14 +319,13 @@ def test_dynaQ_method_priority(env):
     return dyna_q_statistics
 """
 
-
 def test_td_control_method(env):
     """
     plot_episode_stats([test_expected_sarsa_method(env),test_n_setps_expected_sarsa_method(env),test_off_policy_n_steps_sarsa(env),
                         test_n_steps_sarsa_method(env),test_qlearning_method(env),test_sarsa_lambda_method(env),test_q_lambda_method(env)])
     
     """
-    plot_episode_stats([test_qlearning_method(env),test_sarsa_method(env),test_expected_sarsa_method(env),test_double_q_learning_method(env)])
+    plot_episode_stats([test_qlearning_method(env),test_double_q_learning_method(env)])
 
 real_env = get_env("CliffWalkingEnv")
 test_td_control_method(real_env)

@@ -31,11 +31,13 @@
 #
 # /
 
-
-from policy.policy import DiscreteStateValueBasedPolicy
-from algorithm.value_based.tabular_solution_method.td_method.td_actor import TDActor, TDESoftExplorer
-from algorithm.value_based.tabular_solution_method.td_method.td_critic import TDCritic
 from tqdm import tqdm
+
+from algorithm.value_based.tabular_solution_method.td_method.td_explorer import TDESoftExplorer
+from policy.policy import DiscreteStateValueBasedPolicy
+from algorithm.value_based.tabular_solution_method.td_method.td_actor import TDActor
+from algorithm.value_based.tabular_solution_method.td_method.td_critic import TDCritic
+
 
 class QLearningCritic(TDCritic):
     def __init__(self,value_function,step_size=0.1,discount = 1.0):
@@ -65,21 +67,18 @@ class QLearning:
         self.env = env
         self.episodes = episodes
         self.critic = QLearningCritic(self.env.build_Q_table()) 
-        self.explorer  = TDESoftExplorer(DiscreteStateValueBasedPolicy(self.env.build_policy_table()),self.critic) 
-        self.actor = TDActor(env,self.critic,self.explorer,statistics)
+        explorer  = TDESoftExplorer(DiscreteStateValueBasedPolicy(self.env.build_policy_table()),self.critic) 
+        self.actor = TDActor(env,self.critic,explorer,statistics)
 
 
     def learn(self):
         for episode in tqdm(range(0, self.episodes)):
             self.actor.act(episode)
 
-    
     def test(self):
         # S
         current_state_index = self.env.reset()
         optimal_policy = self.critic.get_optimal_policy()
-
-        self.env.show_policy(optimal_policy)
 
         steps =  0
         returns = 0 
