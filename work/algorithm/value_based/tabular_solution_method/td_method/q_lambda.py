@@ -31,8 +31,34 @@
 #
 # /
 
+
 from copy import deepcopy
 from tqdm import tqdm
+
+from algorithm.value_based.tabular_solution_method.td_method.td_actor import  TDActor
+from algorithm.value_based.tabular_solution_method.td_method.td_explorer import TDESoftExplorer
+from algorithm.value_based.tabular_solution_method.td_method.td_lambda_critic import TDLambdaCritic
+from policy.policy import DiscreteStateValueBasedPolicy
+
+
+class QLearningLambdaCritic(TDLambdaCritic):
+    def __init__(self,value_function,step_size=0.1,discount=1.0,lamb=0.5):
+        super().__init__(value_function,step_size=step_size,discount=discount,lamb=lamb)
+        
+    def evaluate(self,*args):
+        current_state_index = args[0]
+        current_action_index = args[1]
+        reward = args[2]
+        next_state_index = args[3]    
+        
+
+        q_values_next_state = self.get_value_function()[next_state_index]
+        best_action_next_state = max(q_values_next_state, key=q_values_next_state.get)
+    
+        # Q*(s',A*)
+        max_value = q_values_next_state[best_action_next_state]
+        target = reward + self.discount*max_value
+        self.update(current_state_index,current_action_index,target)  
 
 
 class QLambda:
@@ -40,50 +66,46 @@ class QLambda:
     Q-Learning algorithm with backward view : Off-policy TD control. Finds the optimal greedy policy
     while following an epsilon-greedy policy
     """
-    def __init__(self,critic,actor, env, statistics, episodes):
+    def __init__(self, env, statistics, episodes):
         self.env = env
         self.episodes = episodes
             
-        self.statistics = statistics
+        self.critic = QLearningLambdaCritic(self.env.build_Q_table())
+        explorer  = TDESoftExplorer(DiscreteStateValueBasedPolicy(self.env.build_policy_table()),self.critic) 
+        self.actor = TDActor(env,self.critic,explorer,statistics) 
 
-        self.critic = critic
-        self.actor  = actor 
-
-    def explore(self):
+    def learn(self):
         for episode in tqdm(range(0, self.episodes)):
-            self._run_one_episode(episode)
+            self.actor.act(episode)
 
-    def _run_one_episode(self, episode):
+    def test(self):
         # S
         current_state_index = self.env.reset()
-        current_action_index = self.actor.get_behavior_policy().get_action(current_state_index)
+        optimal_policy = self.critic.get_optimal_policy()
 
+        steps =  0
+        returns = 0 
+        
         while True:
-
             # A
-            
-            observation = self.env.step(current_action_index)
+            current_action_index = optimal_policy.get_action(current_state_index)
 
+            print("current_state_index {} current_action_index {}".format(current_state_index,current_action_index))
+            observation = self.env.step(current_action_index)
+        
             # R
             reward = observation[1]
             done = observation[2]
 
-            self.statistics.episode_rewards[episode] += reward
-            self.statistics.episode_lengths[episode] += 1
+            returns += reward
+            steps += 1
 
             # S'
             next_state_index = observation[0]
-
-            # A'
-            next_action_index = self.actor.get_behavior_policy().get_action(next_state_index) 
-        
-
-            self.critic.exploit(current_state_index,current_action_index,reward,next_state_index)
-            self.actor.explore(current_state_index,current_action_index)
-        
+            
 
             if done:
+                print("Total Rewards {} with {} steps!".format(returns,steps))
                 break
-
-            current_state_index  = next_state_index
-            current_action_index = next_action_index
+                
+            current_state_index = next_state_index

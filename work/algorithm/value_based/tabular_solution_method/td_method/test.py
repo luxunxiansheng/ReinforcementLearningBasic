@@ -9,6 +9,7 @@ from algorithm.value_based.tabular_solution_method.td_method.sarsa import SARSA
 from algorithm.value_based.tabular_solution_method.td_method.q_learning import QLearning
 from algorithm.value_based.tabular_solution_method.td_method.expected_sarsa import ExpectedSARSA
 from algorithm.value_based.tabular_solution_method.td_method.double_q_learning import DoubleQLearning
+from algorithm.value_based.tabular_solution_method.td_method.q_lambda import QLambda
 
 """ from algorithm.value_based.approximate_solution_method.approximation_common import ESoftActor
 from algorithm.value_based.tabular_solution_method.td_method.double_q_learning import DoubleQLearning, DoubleQLearningCritic
@@ -229,6 +230,17 @@ def test_double_q_learning_method(env):
 
     return double_q_learning_statistics
 
+def test_q_lambda_method(env):
+
+    q_lambda_statistics = EpisodeStats("Q_labmda", episode_lengths=np.zeros(
+        num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
+
+
+    q_lambda_method = QLambda(env,q_lambda_statistics, num_episodes)
+    q_lambda_method.learn()
+
+    return q_lambda_statistics
+
 
 """ 
 def test_off_policy_n_steps_sarsa(env):
@@ -265,20 +277,6 @@ def test_sarsa_lambda_method(env):
 
 
 
-def test_q_lambda_method(env):
-    q_table = env.build_Q_table()
-    b_policy_table = env.build_policy_table()
-    b_policy = DiscreteStateValueBasedPolicy(b_policy_table)
-
-    q_lambda_statistics = EpisodeStats("Q_labmda", episode_lengths=np.zeros(
-        num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
-
-    critic = QLearningLambdaExploitator(q_table)
-    actor  = ESoftactor(b_policy,critic)    
-    q_lambda_method = QLambda(critic,actor,env,q_lambda_statistics, num_episodes)
-    q_lambda_method.learn()
-
-    return q_lambda_statistics
 
 
 def test_dynaQ_method_trival(env):
@@ -325,7 +323,7 @@ def test_td_control_method(env):
                         test_n_steps_sarsa_method(env),test_qlearning_method(env),test_sarsa_lambda_method(env),test_q_lambda_method(env)])
     
     """
-    plot_episode_stats([test_qlearning_method(env),test_double_q_learning_method(env)])
+    plot_episode_stats([test_qlearning_method(env),test_double_q_learning_method(env),test_q_lambda_method(env)])
 
 real_env = get_env("CliffWalkingEnv")
 test_td_control_method(real_env)
