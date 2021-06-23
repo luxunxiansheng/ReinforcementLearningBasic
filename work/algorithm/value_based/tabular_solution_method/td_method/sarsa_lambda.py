@@ -42,7 +42,7 @@ from algorithm.value_based.tabular_solution_method.td_method.td_lambda_critic im
 
 
 class SARSALambdaCritic(TDLambdaCritic):
-    def __init__(self,value_function,policy,step_size=0.1,discount=1.0,lamb=0):
+    def __init__(self,value_function,policy,step_size=0.1,discount=1.0,lamb=0.0):
         super().__init__(value_function,step_size,discount=discount,lamb=lamb)
         self.discount = discount 
         self.target_policy = policy

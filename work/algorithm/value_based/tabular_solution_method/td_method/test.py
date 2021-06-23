@@ -31,7 +31,7 @@ from policy.policy import DiscreteStateValueBasedPolicy
 from test_setup import get_env
 from tqdm import tqdm
 
-num_episodes = 2000
+num_episodes = 20000
 n_steps = 2
 
 """ def test_td0_evaluation_method_for_blackjack():
@@ -139,21 +139,6 @@ def test_td_lambda_evalution_method_for_blackjack():
 
 
 
-
-def test_b_sarsa_method(env):
-    q_table = env.build_Q_table()
-    b_policy_table = env.build_policy_table()
-    b_policy = DiscreteStateValueBasedPolicy(b_policy_table)
-
-
-    sarsa_statistics = EpisodeStats("b_sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
-    critic = SARSACritic(q_table)
-    actor  = Boltzmannactor(b_policy,critic)
-    sarsa_method = SARSA(critic, actor, env,sarsa_statistics, num_episodes)
-    sarsa_method.learn()
-
-    return sarsa_statistics
-
 def test_n_steps_sarsa_method(env):
     q_table = env.build_Q_table()
     b_policy_table = env.build_policy_table()
@@ -165,21 +150,6 @@ def test_n_steps_sarsa_method(env):
     n_sarsa_method = NStepsSARSA(critic,actor,env,n_steps,n_sarsa_statistics, num_episodes)
     n_sarsa_method.learn()
     return n_sarsa_statistics
-
-
-
-def test_b_n_steps_sarsa_method(env):
-    q_table = env.build_Q_table()
-    b_policy_table = env.build_policy_table()
-    b_policy = DiscreteStateValueBasedPolicy(b_policy_table)
-    n_sarsa_statistics = EpisodeStats("b_N_Steps_Sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
-
-    critic = TDNSARSAExploitator(q_table,n_steps)
-    actor  = Boltzmannactor(b_policy,critic)
-    n_sarsa_method = NStepsSARSA(critic,actor,env,n_steps,n_sarsa_statistics, num_episodes)
-    n_sarsa_method.learn()
-    return n_sarsa_statistics
-
 
 
 
@@ -311,7 +281,7 @@ def test_td_control_method(env):
                         test_n_steps_sarsa_method(env),test_qlearning_method(env),test_sarsa_lambda_method(env),test_q_lambda_method(env)])
     
     """
-    plot_episode_stats([test_qlearning_method(env),test_double_q_learning_method(env),test_q_lambda_method(env),test_sarsa_lambda_method(env)])
+    plot_episode_stats([test_sarsa_method(env),test_sarsa_lambda_method(env)])
 
 real_env = get_env("CliffWalkingEnv")
 test_td_control_method(real_env)
