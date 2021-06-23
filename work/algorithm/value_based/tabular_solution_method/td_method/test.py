@@ -10,6 +10,7 @@ from algorithm.value_based.tabular_solution_method.td_method.q_learning import Q
 from algorithm.value_based.tabular_solution_method.td_method.expected_sarsa import ExpectedSARSA
 from algorithm.value_based.tabular_solution_method.td_method.double_q_learning import DoubleQLearning
 from algorithm.value_based.tabular_solution_method.td_method.q_lambda import QLambda
+from algorithm.value_based.tabular_solution_method.td_method.sarsa_lambda import SARSALambda
 
 """ from algorithm.value_based.approximate_solution_method.approximation_common import ESoftActor
 from algorithm.value_based.tabular_solution_method.td_method.double_q_learning import DoubleQLearning, DoubleQLearningCritic
@@ -30,7 +31,7 @@ from policy.policy import DiscreteStateValueBasedPolicy
 from test_setup import get_env
 from tqdm import tqdm
 
-num_episodes = 20000
+num_episodes = 2000
 n_steps = 2
 
 """ def test_td0_evaluation_method_for_blackjack():
@@ -241,6 +242,11 @@ def test_q_lambda_method(env):
 
     return q_lambda_statistics
 
+def test_sarsa_lambda_method(env):
+    sarsa_statistics = EpisodeStats("sarsa_labmda", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
+    sarsa_method = SARSALambda(env,sarsa_statistics, num_episodes)
+    sarsa_method.learn()
+    return sarsa_statistics
 
 """ 
 def test_off_policy_n_steps_sarsa(env):
@@ -258,24 +264,6 @@ def test_off_policy_n_steps_sarsa(env):
     n_steps_offpolicy_sarsa_method.learn()
 
     return n_steps_off_policy_sarsa_statistics
-
-
-def test_sarsa_lambda_method(env):
-    q_table = env.build_Q_table()
-    b_policy_table = env.build_policy_table()
-    b_policy = DiscreteStateValueBasedPolicy(b_policy_table)
-
-    sarsa_statistics = EpisodeStats("sarsa_labmda", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
-    
-    critic = TDLambdaExploitator(q_table)
-    actor  = ESoftactor(b_policy,critic)
-
-    sarsa_method = SARSALambda(critic,actor,env,sarsa_statistics, num_episodes)
-    sarsa_method.learn()
-
-    return sarsa_statistics
-
-
 
 
 
@@ -323,7 +311,7 @@ def test_td_control_method(env):
                         test_n_steps_sarsa_method(env),test_qlearning_method(env),test_sarsa_lambda_method(env),test_q_lambda_method(env)])
     
     """
-    plot_episode_stats([test_qlearning_method(env),test_double_q_learning_method(env),test_q_lambda_method(env)])
+    plot_episode_stats([test_qlearning_method(env),test_double_q_learning_method(env),test_q_lambda_method(env),test_sarsa_lambda_method(env)])
 
 real_env = get_env("CliffWalkingEnv")
 test_td_control_method(real_env)

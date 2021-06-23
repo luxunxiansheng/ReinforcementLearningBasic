@@ -67,8 +67,7 @@ class SARSA:
     def __init__(self,env, statistics, episodes):
         self.env = env
         self.episodes = episodes
-        self.statistics=statistics
-        
+    
         # critic and exploler share the same policy (on-policy)
         self.policy = DiscreteStateValueBasedPolicy(self.env.build_policy_table())
         self.critic = SARSACritic(self.env.build_Q_table(),self.policy)

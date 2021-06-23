@@ -33,58 +33,45 @@
 #
 # /
 
+
 from tqdm import tqdm
+from algorithm.value_based.tabular_solution_method.td_method.td_actor import TDActor
+from algorithm.value_based.tabular_solution_method.td_method.td_explorer import TDESoftExplorer
+from policy.policy import DiscreteStateValueBasedPolicy
+from algorithm.value_based.tabular_solution_method.td_method.td_lambda_critic import TDLambdaCritic
+
+
+class SARSALambdaCritic(TDLambdaCritic):
+    def __init__(self,value_function,policy,step_size=0.1,discount=1.0,lamb=0):
+        super().__init__(value_function,step_size,discount=discount,lamb=lamb)
+        self.discount = discount 
+        self.target_policy = policy
+
+    def evaluate(self,*args):
+        current_state_index = args[0]
+        current_action_index =args[1]
+        reward = args[2]
+        next_state_index = args[3]
+        next_action_index = self.target_policy.get_action(next_state_index)
+        
+        # To calculate the target, it is necessary to know what is the next action for the next state according to current policy (On Policy)
+        target = reward + self.discount * self.get_value_function()[next_state_index][next_action_index]
+        self.update(current_state_index,current_action_index,target)
 
 class SARSALambda:
     """
     SARSA algorithm with backward view: On-policy TD control. Finds the optimal epsilon-greedy policy
     """
-    def __init__(self, critic,actor, env, statistics,episodes,discount=1.0):
+    def __init__(self,env,statistics,episodes):
         self.env = env
-        
         self.episodes = episodes
-        self.discount = discount
-    
-        self.statistics = statistics
 
-        self.critic = critic
-        self.actor  = actor 
+        # critic and exploler share the same policy (on-policy)
+        self.policy = DiscreteStateValueBasedPolicy(self.env.build_policy_table())    
+        self.critic = SARSALambdaCritic(self.env.build_Q_table(),self.policy)
+        explorer  = TDESoftExplorer(self.policy,self.critic) 
+        self.actor = TDActor(env,self.critic,explorer,statistics) 
 
-
-    def explore(self):
+    def learn(self):
         for episode in tqdm(range(0, self.episodes)):
-            self._run_one_episode(episode)
-
-    def _run_one_episode(self,episode):
-        # S
-        current_state_index = self.env.reset()
-
-        # A
-        current_action_index = self.actor.get_behavior_policy().get_action(current_state_index)
-
-        while True:
-            observation = self.env.step(current_action_index)
-            # R
-            reward = observation[1]
-            done = observation[2]
-
-            self.statistics.episode_rewards[episode] += reward
-            self.statistics.episode_lengths[episode] += 1
-
-            # S'
-            next_state_index = observation[0]
-
-            # A'
-            next_action_index = self.actor.get_behavior_policy().get_action(next_state_index)
-
-            self.critic.exploit(current_state_index,current_action_index,reward,next_state_index,next_action_index)
-            self.actor.explore(current_state_index,current_action_index)
-        
-
-            if done:
-                break
-
-            current_state_index = next_state_index
-            current_action_index = next_action_index
-
-
+            self.actor.act(episode)
