@@ -33,70 +33,62 @@
 #
 # /
 
+
 import numpy as np
 from tqdm import tqdm
 
+from algorithm.value_based.tabular_solution_method.td_method.td_critic import TDCritic
+from algorithm.value_based.tabular_solution_method.td_method.td_explorer import TDESoftExplorer
+from algorithm.value_based.tabular_solution_method.td_method.td_n_steps_actor import TDNStepsActor
+from policy.policy import DiscreteStateValueBasedPolicy
+
+class TDNSARSACritic(TDCritic):
+    def __init__(self,steps,value_function,step_size=0.1,discount=1.0):
+        super().__init__(value_function, step_size=step_size)
+        self.steps = steps
+        self.discount = discount
+
+    def evaluate(self,*args):
+        '''
+        For sarsa-like algorithms, the given trajectory is implicitly 
+        regarded as a nearly optimal sample batch.  
+        '''
+        trajectory = args[0]
+        current_timestamp = args[1]
+        updated_timestamp = args[2]
+        final_timestamp   = args[3]
+        
+        # V function
+        if len(trajectory[0])==2:
+            G = 0
+            for i in range(updated_timestamp , min(updated_timestamp + self.steps , final_timestamp)):
+                G += np.power(self.discount, i - updated_timestamp ) * trajectory[i][1]
+                if updated_timestamp + self.steps < final_timestamp:
+                    G += np.power(self.discount, self.steps) * self.get_value_function()[trajectory[current_timestamp][0]]
+            self.update(trajectory[updated_timestamp][0],G)
+        else:
+            G = 0
+            for i in range(updated_timestamp, min(updated_timestamp + self.steps, final_timestamp)):
+                G += np.power(self.discount, i - updated_timestamp) * trajectory[i][2]
+            if updated_timestamp + self.steps < final_timestamp:
+                G += np.power(self.discount, self.steps) *  self.get_value_function()[trajectory[current_timestamp][0]][trajectory[current_timestamp][1]]
+            self.update(trajectory[updated_timestamp][0],trajectory[updated_timestamp][1],G)
 
 class NStepsSARSA:
-    def __init__(self, critic,actor,env,steps, statistics, episodes):
+    def __init__(self,env,steps, statistics, episodes):
         self.env = env
-        self.steps = steps
-        self.statistics = statistics
         self.episodes = episodes
-        self.critic = critic
-        self.actor  = actor
-
-    def explore(self):
-        for episode in tqdm(range(0, self.episodes)):
-            self._run_one_episode(episode)
     
-    def _run_one_episode(self, episode):
+        
+        self.policy = DiscreteStateValueBasedPolicy(self.env.build_policy_table())
+        self.critic = TDNSARSACritic(steps,self.env.build_Q_table())
+        exloper = TDESoftExplorer(self.policy,self.critic)
+        self.actor  = TDNStepsActor(env,steps,self.critic,exloper,statistics)
 
-        current_timestamp = 0
-        final_timestamp = np.inf
+    def learn(self):
+        for episode in tqdm(range(0, self.episodes)):
+            self.actor.act(episode)
+    
+    
 
-        trajectory = []
-        # S
-        current_state_index = self.env.reset()
-        # A
-        current_action_index = self.actor.get_behavior_policy().get_action(current_state_index)
-
-        while True:
-            if current_timestamp < final_timestamp:
-                observation = self.env.step(current_action_index)
-                # R
-                reward = observation[1]
-                done = observation[2]
-
-                self.statistics.episode_rewards[episode] += reward
-                self.statistics.episode_lengths[episode] += 1
-
-                # S'
-                next_state_index = observation[0]
-
-                # A'
-                next_action_index = self.actor.get_behavior_policy().get_action(next_state_index)
-
-                trajectory.append((current_state_index,current_action_index,reward))
-
-                if done:
-                    final_timestamp = current_timestamp + 1
-
-            updated_timestamp = current_timestamp - self.steps
-
-            if updated_timestamp >= 0:
-                self.critic.exploit(trajectory,current_timestamp,updated_timestamp,final_timestamp)
-
-                self.actor.explore(trajectory[updated_timestamp][0])
-
-                if updated_timestamp == final_timestamp - 1:
-                    break
-
-            current_timestamp += 1
-            current_state_index = next_state_index
-            current_action_index = next_action_index
-
-
-    def get_optimal_policy(self):
-        return self.policy
 
