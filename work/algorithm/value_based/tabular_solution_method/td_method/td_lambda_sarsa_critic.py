@@ -34,13 +34,14 @@
 # /
 
 
-from algorithm.value_based.tabular_solution_method.td_method.td_lambda_exploitator import LambdaExploitator
+from algorithm.value_based.tabular_solution_method.td_method.td_lambda_critic import TDLambdaCritic
 
-class TDLambdaSARSAExploitator(LambdaExploitator):
+
+class TDLambdaSARSAExploitator(TDLambdaCritic):
     def __init__(self,value_function,step_size=0.1,discount=1.0,lamb=0):
         super().__init__(value_function,step_size=step_size,discount=discount,lamb=lamb)
     
-    def exploit(self,*args):
+    def evaluate(self,*args):
         if self._is_q_function(self.value_function):
             current_state_index = args[0]
             current_action_index = args[1]
