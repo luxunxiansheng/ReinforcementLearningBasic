@@ -43,7 +43,7 @@ from algorithm.value_based.tabular_solution_method.td_method.td_n_steps_actor im
 from policy.policy import DiscreteStateValueBasedPolicy
 
 class TDNSARSACritic(TDCritic):
-    def __init__(self,steps,value_function,step_size=0.1,discount=1.0):
+    def __init__(self,value_function,steps=1,step_size=0.1,discount=1.0):
         super().__init__(value_function, step_size=step_size)
         self.steps = steps
         self.discount = discount
@@ -74,14 +74,13 @@ class TDNSARSACritic(TDCritic):
                 G += np.power(self.discount, self.steps) *  self.get_value_function()[trajectory[current_timestamp][0]][trajectory[current_timestamp][1]]
             self.update(trajectory[updated_timestamp][0],trajectory[updated_timestamp][1],G)
 
-class NStepsSARSA:
+class TDNStepsSARSA:
     def __init__(self,env,steps, statistics, episodes):
         self.env = env
         self.episodes = episodes
-    
         
         self.policy = DiscreteStateValueBasedPolicy(self.env.build_policy_table())
-        self.critic = TDNSARSACritic(steps,self.env.build_Q_table())
+        self.critic = TDNSARSACritic(self.env.build_Q_table(),steps)
         exloper = TDESoftExplorer(self.policy,self.critic)
         self.actor  = TDNStepsActor(env,steps,self.critic,exloper,statistics)
 

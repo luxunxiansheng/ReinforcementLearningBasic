@@ -1,3 +1,4 @@
 {
-    "markdown.preview.fontSize": 20
+    "markdown.preview.fontSize": 20,
+    "python.pythonPath": "/opt/anaconda3/bin/python"
 }

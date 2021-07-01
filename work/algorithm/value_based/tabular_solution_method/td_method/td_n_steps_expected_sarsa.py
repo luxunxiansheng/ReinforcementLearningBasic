@@ -33,17 +33,21 @@
 #
 # /
 
-import numpy as np
-from algorithm.value_based.tabular_solution_method.td_method.td_exploitator import TDCritic
+import numpy as np 
+from tqdm import tqdm
+from algorithm.value_based.tabular_solution_method.td_method.td_critic import TDCritic
+from algorithm.value_based.tabular_solution_method.td_method.td_explorer import TDESoftExplorer
+from algorithm.value_based.tabular_solution_method.td_method.td_n_steps_actor import TDNStepsActor
+from policy.policy import DiscreteStateValueBasedPolicy
 
-class TDNExpectedSARSAExploitator(TDCritic):
+class TDNExpectedSARSACritic(TDCritic):
     def __init__(self,value_function,policy,steps=1,step_size=0.1,discount=1.0):
         super().__init__(value_function, step_size=step_size)
         self.steps = steps
         self.discount = discount
         self.policy = policy 
     
-    def exploit(self,*args):
+    def evaluate(self,*args):
         '''
         Obviously, it will be very slow for expected Sarsa asymptotical to converge to the optimal values 
         '''
@@ -60,9 +64,23 @@ class TDNExpectedSARSAExploitator(TDCritic):
             expected_next_q = 0
             next_actions = self.policy.policy_table[trajectory[current_timestamp][0]]
             for action, action_prob in next_actions.items():
-                expected_next_q += action_prob * self.get_value_function()[trajectory[current_timestamp][0]][action]
+                expected_next_q += action_prob * self.value_function[trajectory[current_timestamp][0]][action]
             G += np.power(self.discount, self.steps) * expected_next_q
             
+        self.update(trajectory[updated_timestamp][0],trajectory[updated_timestamp][1],G) 
 
-        self.update(trajectory[updated_timestamp][0],trajectory[updated_timestamp][1],G)      
 
+
+class TDNStepsExpectedSARSA:
+    def __init__(self,env,steps, statistics, episodes):
+        self.env = env
+        self.episodes = episodes
+
+        self.policy = DiscreteStateValueBasedPolicy(self.env.build_policy_table())
+        self.critic = TDNExpectedSARSACritic(self.env.build_Q_table(),self.policy,steps)
+        exloper = TDESoftExplorer(self.policy,self.critic)
+        self.actor  = TDNStepsActor(env,steps,self.critic,exloper,statistics)
+
+    def learn(self):
+        for episode in tqdm(range(0, self.episodes)):
+            self.actor.act(episode)
