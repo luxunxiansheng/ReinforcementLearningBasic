@@ -25,3 +25,6 @@ def get_env(env):
 
     if env == MountainCarEnv.__name__:
         return MountainCarEnv()
+
+    if env == GridWorldWithWallsBlockEnv.__name__:
+        return GridWorldWithWallsBlockEnv()

@@ -200,4 +200,9 @@ class GridWorldWithWallsBlockEnv(PureDiscreteEnv):
                  }
         }
         return pi_table
+    
+    def reset(self, randomly=True):
+        # hard coded , the index is (3,0)
+        self.s = 0
+        return self.s
 

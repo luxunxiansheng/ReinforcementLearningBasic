@@ -14,11 +14,12 @@ from algorithm.value_based.tabular_solution_method.td_method.sarsa_lambda import
 from algorithm.value_based.tabular_solution_method.td_method.td_n_steps_sarsa import TDNStepsSARSA
 from algorithm.value_based.tabular_solution_method.td_method.td_n_steps_expected_sarsa import TDNStepsExpectedSARSA
 from algorithm.value_based.tabular_solution_method.td_method.double_q_learning import DoubleQLearning
+from algorithm.value_based.tabular_solution_method.td_method.dyna_q import DynaQ
 from lib.plotting import EpisodeStats, plot_episode_stats
 from test_setup import get_env
 
 
-num_episodes = 20000
+num_episodes = 2000
 n_steps = 2
 
 
@@ -86,6 +87,28 @@ def test_sarsa_lambda_method(env):
     sarsa_method.learn()
     return sarsa_statistics
 
+
+def test_dynaQ_method_trival(env):
+
+
+    dyna_q_statistics = EpisodeStats("Dyna_Q_trival", episode_lengths=np.zeros(
+        num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
+
+    dyna_q_method = DynaQ(env,dyna_q_statistics,num_episodes)
+    dyna_q_method.learn()
+
+    return dyna_q_statistics
+
+def test_dynaQ_method_priority(env):
+
+    dyna_q_statistics = EpisodeStats("Dyna_Q_priority", episode_lengths=np.zeros(
+        num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
+
+    dyna_q_method = DynaQ(env,dyna_q_statistics,num_episodes,model_type=DynaQ.PRIORITY)
+    dyna_q_method.learn()
+
+    return dyna_q_statistics
+
 """ 
 def test_off_policy_n_steps_sarsa(env):
     q_table = env.build_Q_table()
@@ -105,23 +128,6 @@ def test_off_policy_n_steps_sarsa(env):
 
 
 
-def test_dynaQ_method_trival(env):
-    q_table = env.build_Q_table()
-    b_policy_table = env.build_policy_table()
-    b_policy = DiscreteStateValueBasedPolicy(b_policy_table)
-
-    model = TrivialModel()  
-
-    critic = DynaQTrivalCritic(q_table,model)
-    actor  = ESoftActor(b_policy,critic)
-
-    dyna_q_statistics = EpisodeStats("Dyna_Q", episode_lengths=np.zeros(
-        num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
-
-    dyna_q_method = DynaQ(critic,actor,env,dyna_q_statistics,num_episodes)
-    dyna_q_method.learn()
-
-    return dyna_q_statistics
 
 
 def test_dynaQ_method_priority(env):
@@ -149,7 +155,7 @@ def test_td_control_method(env):
                         test_n_steps_sarsa_method(env),test_qlearning_method(env),test_sarsa_lambda_method(env),test_q_lambda_method(env)])
     
     """
-    plot_episode_stats([test_n_setps_expected_sarsa_method(env),test_sarsa_method(env),test_n_steps_sarsa_method(env)])
+    plot_episode_stats([test_qlearning_method(env),test_dynaQ_method_trival(env),test_dynaQ_method_priority(env)])
 
 real_env = get_env("CliffWalkingEnv")
 test_td_control_method(real_env)

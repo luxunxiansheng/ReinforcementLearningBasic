@@ -65,7 +65,6 @@
 
 from common import ActorBase
 
-
 class TDActor(ActorBase):
     def __init__(self,env,critic,explorer,statistics):
         self.env = env

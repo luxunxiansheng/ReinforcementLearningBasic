@@ -85,13 +85,3 @@ class RoomEnv(PureDiscreteEnv):
         return Q_table
 
     
-    def show_optimal_value_of_action(self,policy):
-        outfile = sys.stdout
-        for state_index in range(self.nS):
-            for action_index in range(self.nA):
-                optimal_value_of_action = dynamic_programming.get_value_of_action(policy,self,state_index,action_index)
-                output = "{0:.2f} ******".format(optimal_value_of_action) 
-                outfile.write(output)
-            outfile.write("\n")
-
-        outfile.write('----------------------------------------------\n')
