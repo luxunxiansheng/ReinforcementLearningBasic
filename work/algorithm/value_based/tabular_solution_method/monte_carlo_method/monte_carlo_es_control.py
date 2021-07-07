@@ -32,70 +32,27 @@
 # #### END LICENSE BLOCK #####
 #
 # /
-
-
+from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_actor import MonteCarloActor
 from collections import defaultdict
 from tqdm import tqdm
-from lib.utility import create_distribution_greedily
-from common import ExplorerBase
 
 
-class MonteCarloESActor(ExplorerBase):
-    def __init__(self,policy,critic):
-        self.policy = policy
-        self.critic = critic
-        self.create_distribution_greedily = create_distribution_greedily()
-    
-    def explore(self,*args): 
-        state_index = args[0]
-        
-        q_value_function = self.critic.get_value_function()
-        greedy_distibution = self.create_distribution_greedily(q_value_function[state_index])
-        self.policy.policy_table[state_index] = greedy_distibution       
-    
-    def get_optimal_policy(self):
-        return self.policy
-    
-    def get_behavior_policy(self):
-        return self.policy
-
+from policy.policy import DiscreteStateValueBasedPolicy
+from algorithm.value_based.tabular_solution_method.explorer import GreedyExplorer
+from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_critic import MonteCarloAverageCritic, MonteCarloIncrementalCritic
 
 class MonteCarloESControl:
-    def __init__(self, critic, actor, env,episodes=10000, discount=1.0):
+    def __init__(self,env,statistics,episodes=10000, discount=1.0):
         self.env = env
         self.episodes = episodes
-        self.discount = discount
-        self.critic = critic
-        self.actor = actor
+        self.critic =   MonteCarloAverageCritic(self.env.build_Q_table())
+        explorer    =   GreedyExplorer(DiscreteStateValueBasedPolicy(self.env.build_policy_table()),self.critic) 
+        self.actor  =   MonteCarloActor(env,self.critic,explorer,statistics,discount)
 
-    def explore(self, *args):
-        for _ in tqdm(range(0, self.episodes)):
-            trajectory = self._run_one_episode()
-            R = 0.0
-            for state_index, action_index, reward in trajectory[::-1]:
-                R = reward+self.discount*R
-                self.critic.exploit(state_index,action_index,R)
-                self.actor.explore(state_index)
-        return self.actor.get_optimal_policy()
+    def learn(self):
+        for episode in tqdm(range(0, self.episodes)):
+            self.actor.act(episode)
     
-    def _run_one_episode(self):
-        trajectory = []
-        current_state_index = self.env.reset()
-        while True:
-            action_index = self.actor.get_behavior_policy().get_action(current_state_index)
-            observation = self.env.step(action_index)
-            reward = observation[1]
-            trajectory.append((current_state_index, action_index, reward))
-            done = observation[2]
-            if done:
-                break
-            current_state_index = observation[0]
-        return trajectory
-    
-    def _init_state_count(self):
-        state_count = defaultdict(lambda: {})
-        for state_index, action_values in self.q_value_function.items():
-            for action_index, _ in action_values.items():
-                state_count[state_index][action_index] = (0, 0.0)
-        return state_count
+
+
     

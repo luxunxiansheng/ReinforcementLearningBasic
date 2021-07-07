@@ -33,8 +33,6 @@
 #
 # /
 
-
-
 import heapq
 from abc import abstractmethod
 
@@ -42,13 +40,10 @@ import numpy as np
 from tqdm import tqdm
 
 from common import ActorBase
+
+from algorithm.value_based.tabular_solution_method.explorer import ESoftExplorer
 from algorithm.value_based.tabular_solution_method.td_method.q_learning import QLearningCritic
-from algorithm.value_based.tabular_solution_method.td_method.td_explorer import  TDESoftExplorer
 from policy.policy import DiscreteStateValueBasedPolicy
-
-
-
-
 
 #######################################################################
 # Copyright (C)                                                       #
@@ -268,7 +263,7 @@ class DynaQ:
         self.env = env
         self.episodes = episodes
         self.critic = QLearningCritic(self.env.build_Q_table()) 
-        explorer  = TDESoftExplorer(DiscreteStateValueBasedPolicy(self.env.build_policy_table()),self.critic) 
+        explorer  = ESoftExplorer(DiscreteStateValueBasedPolicy(self.env.build_policy_table()),self.critic) 
     
         if model_type == DynaQ.TRIVAL:
             self.actor = TrivalModelActor(env,self.critic,explorer,statistics)

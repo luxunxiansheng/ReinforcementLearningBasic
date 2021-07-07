@@ -34,9 +34,10 @@
 # /
 
 
-from policy.policy import DiscreteStateValueBasedPolicy
-from lib.utility import create_distribution_greedily
 from common import CriticBase
+from lib.utility import create_distribution_greedily
+from policy.policy import DiscreteStateValueBasedPolicy
+
 
 class TDCritic(CriticBase):
     def __init__(self,value_function,step_size=0.1):

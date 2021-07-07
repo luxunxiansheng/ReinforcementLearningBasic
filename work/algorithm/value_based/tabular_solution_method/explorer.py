@@ -34,7 +34,7 @@
 from common import ExplorerBase  
 from lib.utility import (create_distribution_epsilon_greedily,create_distribution_greedily,create_distribution_boltzmann)
 
-class TDGreedyExplorer(ExplorerBase):
+class GreedyExplorer(ExplorerBase):
     def __init__(self,behavior_policy,critic):
         self.behavior_policy = behavior_policy
         self.critic = critic
@@ -51,7 +51,7 @@ class TDGreedyExplorer(ExplorerBase):
     def get_behavior_policy(self):
         return self.behavior_policy
 
-class TDESoftExplorer(ExplorerBase):
+class ESoftExplorer(ExplorerBase):
     def __init__(self, behavior_policy,critic,epsilon=0.1):
         self.behavior_policy = behavior_policy
         self.critic = critic
@@ -68,7 +68,7 @@ class TDESoftExplorer(ExplorerBase):
         return self.behavior_policy
 
 
-class TDBoltzmannExplorer(ExplorerBase):
+class BoltzmannExplorer(ExplorerBase):
     def __init__(self, behavior_policy,critic):
         self.behavior_policy = behavior_policy
         self.critic = critic

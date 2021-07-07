@@ -33,9 +33,8 @@
 #
 # /
 
-from algorithm.value_based.approximate_solution_method.approximation_common import ESoftActor
+from algorithm.value_based.tabular_solution_method.explorer import ESoftExplorer
 from algorithm.value_based.tabular_solution_method.td_method.td_actor import TDActor
-from algorithm.value_based.tabular_solution_method.td_method.td_explorer import TDESoftExplorer
 from algorithm.value_based.tabular_solution_method.td_method.td_critic import TDCritic
 from policy.policy import DiscreteStateValueBasedPolicy
 from tqdm import tqdm
@@ -70,7 +69,7 @@ class ExpectedSARSA:
         
         self.policy = DiscreteStateValueBasedPolicy(self.env.build_policy_table())
         self.critic = ExpectedSARSACritic(self.env.build_Q_table(),self.policy)
-        explorer = TDESoftExplorer(self.policy,self.critic)
+        explorer = ESoftExplorer(self.policy,self.critic)
         self.actor = TDActor(env,self.critic,explorer,statistics)
 
     def learn(self):

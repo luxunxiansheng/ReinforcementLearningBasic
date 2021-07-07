@@ -44,7 +44,6 @@ class TDNStepsActor(ActorBase):
         self.steps = nsteps
 
     def act(self, *args):  
-        
         episode = args[0]      
         current_timestamp = 0
         final_timestamp = np.inf

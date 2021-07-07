@@ -125,28 +125,6 @@ def test_off_policy_n_steps_sarsa(env):
     n_steps_offpolicy_sarsa_method.learn()
 
     return n_steps_off_policy_sarsa_statistics
-
-
-
-
-
-def test_dynaQ_method_priority(env):
-    q_table = env.build_Q_table()
-    b_policy_table = env.build_policy_table()
-    b_policy = DiscreteStateValueBasedPolicy(b_policy_table)
-
-    model  = PriorityModel()
-
-    critic = DynaQPriorityCritic(q_table,model)
-    actor  = ESoftactor(b_policy,critic)
-
-    dyna_q_statistics = EpisodeStats("Dyna_Q_PRIORITY", episode_lengths=np.zeros(
-        num_episodes), episode_rewards=np.zeros(num_episodes), q_value=None)
-
-    dyna_q_method = DynaQ(critic,actor,env,dyna_q_statistics,num_episodes)
-    dyna_q_method.learn()
-
-    return dyna_q_statistics
 """
 
 def test_td_control_method(env):

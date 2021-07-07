@@ -33,12 +33,14 @@
 #
 # /
 
+
 import numpy as np 
 from tqdm import tqdm
-from algorithm.value_based.tabular_solution_method.td_method.td_critic import TDCritic
-from algorithm.value_based.tabular_solution_method.td_method.td_explorer import TDESoftExplorer
-from algorithm.value_based.tabular_solution_method.td_method.td_n_steps_actor import TDNStepsActor
 from policy.policy import DiscreteStateValueBasedPolicy
+
+from algorithm.value_based.tabular_solution_method.explorer import ESoftExplorer
+from algorithm.value_based.tabular_solution_method.td_method.td_critic import TDCritic
+from algorithm.value_based.tabular_solution_method.td_method.td_n_steps_actor import TDNStepsActor
 
 class TDNExpectedSARSACritic(TDCritic):
     def __init__(self,value_function,policy,steps=1,step_size=0.1,discount=1.0):
@@ -70,7 +72,6 @@ class TDNExpectedSARSACritic(TDCritic):
         self.update(trajectory[updated_timestamp][0],trajectory[updated_timestamp][1],G) 
 
 
-
 class TDNStepsExpectedSARSA:
     def __init__(self,env,steps, statistics, episodes):
         self.env = env
@@ -78,7 +79,7 @@ class TDNStepsExpectedSARSA:
 
         self.policy = DiscreteStateValueBasedPolicy(self.env.build_policy_table())
         self.critic = TDNExpectedSARSACritic(self.env.build_Q_table(),self.policy,steps)
-        exloper = TDESoftExplorer(self.policy,self.critic)
+        exloper = ESoftExplorer(self.policy,self.critic)
         self.actor  = TDNStepsActor(env,steps,self.critic,exloper,statistics)
 
     def learn(self):

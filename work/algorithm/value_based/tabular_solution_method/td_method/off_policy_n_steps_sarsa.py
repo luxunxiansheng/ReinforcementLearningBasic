@@ -35,7 +35,7 @@
 
 import numpy as np
 from tqdm import tqdm
-from algorithm.value_based.tabular_solution_method.td_method.td_common import TDExploitator
+
 
 class TDNOffPolicySARSACritic(TDExploitator):
     def __init__(self,value_function,behavior_policy,target_policy,steps=1,step_size=0.1,discount=1.0):
@@ -46,7 +46,7 @@ class TDNOffPolicySARSACritic(TDExploitator):
         self.behavior_policy = behavior_policy
         self.target_policy =  target_policy
 
-    def exploit(self,*args):
+    def evaluate(self,*args):
         trajectory = args[0]
         current_timestamp = args[1]
         updated_timestamp = args[2]

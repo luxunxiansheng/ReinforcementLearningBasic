@@ -33,10 +33,10 @@
 #
 # /
 from tqdm import tqdm
-
-from algorithm.value_based.tabular_solution_method.td_method.td_actor import TDActor
-from algorithm.value_based.tabular_solution_method.td_method.td_explorer import TDBoltzmannExplorer, TDESoftExplorer
 from policy.policy import DiscreteStateValueBasedPolicy
+
+from algorithm.value_based.tabular_solution_method.explorer import ESoftExplorer
+from algorithm.value_based.tabular_solution_method.td_method.td_actor import TDActor
 from algorithm.value_based.tabular_solution_method.td_method.td_critic import TDCritic
 
 
@@ -71,8 +71,8 @@ class SARSA:
         # critic and exploler share the same policy (on-policy)
         self.policy = DiscreteStateValueBasedPolicy(self.env.build_policy_table())
         self.critic = SARSACritic(self.env.build_Q_table(),self.policy)
-        explorer = TDESoftExplorer(self.policy,self.critic)
-        #explorer = TDBoltzmannExplorer(self.policy,self.critic)
+        explorer = ESoftExplorer(self.policy,self.critic)
+        #explorer = BoltzmannExplorer(self.policy,self.critic)
         self.actor = TDActor(env,self.critic,explorer,statistics)
         
     def learn(self):

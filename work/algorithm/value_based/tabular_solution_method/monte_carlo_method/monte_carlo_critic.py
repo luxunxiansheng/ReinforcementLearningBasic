@@ -34,9 +34,10 @@
 # /
 
 
-
 from collections import defaultdict
 from common import CriticBase
+
+from policy.policy import DiscreteStateValueBasedPolicy
 
 class MonteCarloIncrementalCritic(CriticBase):
     def __init__(self, q_value_function):
@@ -45,7 +46,7 @@ class MonteCarloIncrementalCritic(CriticBase):
         # it is necessary to keep the weight total for every state_action pair
         self.C = self._init_weight_total()
 
-    def exploit(self, *args):
+    def evaluate(self, *args):
         state_index  = args[0]
         action_index = args[1]
         G = args[2]
@@ -67,13 +68,22 @@ class MonteCarloIncrementalCritic(CriticBase):
 
     def get_value_function(self):
         return self.q_value_function
+
+    def get_optimal_policy(self):
+        policy_table = {}
+        for state_index, _ in self.value_function.items():
+            q_values = self.value_function[state_index]
+            greedy_distibution = self.create_distribution_greedily(q_values)
+            policy_table[state_index] = greedy_distibution
+        table_policy = DiscreteStateValueBasedPolicy(policy_table)
+        return table_policy
     
 class MonteCarloAverageCritic(CriticBase):
     def __init__(self, q_value_function):
         self.q_value_function= q_value_function
         self.state_count=self._init_state_count()
         
-    def exploit(self,*args):
+    def evaluate(self,*args):
         state_index= args[0]
         action_index = args[1]
         R= args[2]
@@ -90,3 +100,12 @@ class MonteCarloAverageCritic(CriticBase):
             for action_index, _ in action_values.items():
                 state_count[state_index][action_index] = (0, 0.0)
         return state_count
+
+    def get_optimal_policy(self):
+        policy_table = {}
+        for state_index, _ in self.value_function.items():
+            q_values = self.value_function[state_index]
+            greedy_distibution = self.create_distribution_greedily(q_values)
+            policy_table[state_index] = greedy_distibution
+        table_policy = DiscreteStateValueBasedPolicy(policy_table)
+        return table_policy
