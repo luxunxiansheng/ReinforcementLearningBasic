@@ -33,79 +33,23 @@
 #
 # /
 
-
-from collections import defaultdict
-
-from common import ExplorerBase
-from lib.utility import (create_distribution_epsilon_greedily,create_distribution_greedily)
-from policy.policy import DiscreteStateValueBasedPolicy
 from tqdm import tqdm
 
-class MonteCarloOnPolicyActor(ExplorerBase):
-    def __init__(self,policy,critic,episilon=0.8):
-        self.policy = policy
-        self.critic = critic
-        self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(episilon)
-        self.create_distribution_greedily = create_distribution_greedily()
-    
-    def explore(self,*args): 
-        state_index = args[0]
-        
-        q_value_function = self.critic.get_value_function()
-        soft_greedy_distibution = self.create_distribution_epsilon_greedily(q_value_function[state_index])
-        self.policy.policy_table[state_index] = soft_greedy_distibution    
-
-    def get_behavior_policy(self):
-        return self.policy   
-    
-    def get_optimal_policy(self):
-        policy_table = {}
-        q_value_function = self.critic.get_value_function()
-        for state_index, _ in q_value_function.items():
-            q_values = q_value_function[state_index]
-            greedy_distibution = self.create_distribution_greedily(q_values)
-            policy_table[state_index] = greedy_distibution
-        table_policy = DiscreteStateValueBasedPolicy(policy_table)
-        return table_policy
-
+from policy.policy import DiscreteStateValueBasedPolicy
+from algorithm.value_based.tabular_solution_method.explorer import ESoftExplorer
+from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_critic import MonteCarloAverageCritic
+from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_actor import MonteCarloActor
 
 class MonteCarloOnPolicyControl:
-    def __init__(self, critic, actor, env,episodes=10000, discount=1.0):
+    def __init__(self,env,statistics,episodes=10000, discount=1.0):
         self.env = env
         self.episodes = episodes
-        self.discount = discount
-        self.critic = critic 
-        self.actor = actor
+        self.critic =   MonteCarloAverageCritic(self.env.build_Q_table())
+        explorer    =   ESoftExplorer(DiscreteStateValueBasedPolicy(self.env.build_policy_table()),self.critic) 
+        self.actor  =   MonteCarloActor(env,self.critic,explorer,statistics,discount)
 
-    def explore(self, *args):
-        for _ in tqdm(range(0, self.episodes)):
-            trajectory = self._run_one_episode()
-            R = 0.0
-            for state_index, action_index, reward in trajectory[::-1]:
-                R = reward+self.discount*R
-                self.critic.exploit(state_index,action_index,R)
-                self.actor.explore(state_index)
-                
-        return self.actor.get_optimal_policy()
+    def learn(self):
+        for episode in tqdm(range(0, self.episodes)):
+            self.actor.act(episode)
 
-    def _run_one_episode(self):
-        trajectory = []
-        current_state_index = self.env.reset()
-        while True:
-            action_index = self.actor.get_behavior_policy().get_action(current_state_index)
-            observation = self.env.step(action_index)
-            reward = observation[1]
-            trajectory.append((current_state_index, action_index, reward))
-            done = observation[2]
-            if done:
-                break
-            current_state_index = observation[0]
-        return trajectory
-    
-    def _init_state_count(self):
-        state_count = defaultdict(lambda: {})
-        for state_index, action_values in self.q_value_function.items():
-            for action_index, _ in action_values.items():
-                state_count[state_index][action_index] = (0, 0.0)
-        return state_count
-
+        self.env.show_policy(self.critic.get_optimal_policy())

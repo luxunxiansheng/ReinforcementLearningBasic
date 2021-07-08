@@ -35,6 +35,7 @@
 
 
 from collections import defaultdict
+from lib.utility import create_distribution_greedily
 from common import CriticBase
 
 from policy.policy import DiscreteStateValueBasedPolicy
@@ -82,6 +83,7 @@ class MonteCarloAverageCritic(CriticBase):
     def __init__(self, q_value_function):
         self.q_value_function= q_value_function
         self.state_count=self._init_state_count()
+        self.create_distribution_greedily = create_distribution_greedily()
         
     def evaluate(self,*args):
         state_index= args[0]
@@ -90,6 +92,7 @@ class MonteCarloAverageCritic(CriticBase):
 
         self.state_count[state_index][action_index] = (self.state_count[state_index][action_index][0] + 1, self.state_count[state_index][action_index][1] + R)
         self.q_value_function[state_index][action_index] = self.state_count[state_index][action_index][1] / self.state_count[state_index][action_index][0]
+        
     
     def get_value_function(self):
         return self.q_value_function
@@ -103,8 +106,8 @@ class MonteCarloAverageCritic(CriticBase):
 
     def get_optimal_policy(self):
         policy_table = {}
-        for state_index, _ in self.value_function.items():
-            q_values = self.value_function[state_index]
+        for state_index, _ in self.get_value_function().items():
+            q_values = self.get_value_function()[state_index]
             greedy_distibution = self.create_distribution_greedily(q_values)
             policy_table[state_index] = greedy_distibution
         table_policy = DiscreteStateValueBasedPolicy(policy_table)

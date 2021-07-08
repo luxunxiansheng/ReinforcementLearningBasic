@@ -32,14 +32,13 @@
 # #### END LICENSE BLOCK #####
 #
 # /
-from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_actor import MonteCarloActor
-from collections import defaultdict
-from tqdm import tqdm
 
+from tqdm import tqdm
 
 from policy.policy import DiscreteStateValueBasedPolicy
 from algorithm.value_based.tabular_solution_method.explorer import GreedyExplorer
-from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_critic import MonteCarloAverageCritic, MonteCarloIncrementalCritic
+from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_critic import MonteCarloAverageCritic
+from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_actor import MonteCarloActor
 
 class MonteCarloESControl:
     def __init__(self,env,statistics,episodes=10000, discount=1.0):
@@ -52,7 +51,8 @@ class MonteCarloESControl:
     def learn(self):
         for episode in tqdm(range(0, self.episodes)):
             self.actor.act(episode)
-    
+        
+        self.env.show_policy(self.critic.get_optimal_policy())
 
 
-    
+

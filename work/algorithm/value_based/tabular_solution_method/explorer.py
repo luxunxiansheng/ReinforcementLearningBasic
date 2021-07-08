@@ -52,7 +52,7 @@ class GreedyExplorer(ExplorerBase):
         return self.behavior_policy
 
 class ESoftExplorer(ExplorerBase):
-    def __init__(self, behavior_policy,critic,epsilon=0.1):
+    def __init__(self, behavior_policy,critic,epsilon=0.01):
         self.behavior_policy = behavior_policy
         self.critic = critic
         self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(epsilon)

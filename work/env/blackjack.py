@@ -35,11 +35,13 @@
 
 from collections import defaultdict
 
+from gym import spaces
+from gym.utils import seeding
+
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-from gym import Env, spaces
-from gym.utils import seeding
+
 
 from env.base_discrete_env import PureDiscreteEnv
 
@@ -90,6 +92,7 @@ class BlackjackEnv(PureDiscreteEnv):
     dealer.
     Face cards (Jack, Queen, King) have point value 10.
     Aces can either count as 11 or 1, and it's called 'usable' at 11.
+
     This game is placed with an infinite deck (or with replacement).
     The game starts with each (player and dealer) having one face up and one
     face down card.
@@ -138,27 +141,27 @@ class BlackjackEnv(PureDiscreteEnv):
 
     def build_V_table(self):
         v_table = {}
-        for sum_index in range(self.observation_space[0].n):
-            for showcard_index in range(self.observation_space[1].n):
-                for usable_ace_index in range(self.observation_space[2].n):
+        for sum_index in range(self.observation_space.spaces[0].n):
+            for showcard_index in range(self.observation_space.spaces[1].n):
+                for usable_ace_index in range(self.observation_space.spaces[2].n):
                     v_table[(sum_index, showcard_index, usable_ace_index)] = 0.0
 
         return v_table
 
     def build_Q_table(self):
         q_table = defaultdict(lambda: {})
-        for sum_index in range(self.observation_space[0].n):
-            for showcard_index in range(self.observation_space[1].n):
-                for usable_ace_index in range(self.observation_space[2].n):
+        for sum_index in range(self.observation_space.spaces[0].n):
+            for showcard_index in range(self.observation_space.spaces[1].n):
+                for usable_ace_index in range(self.observation_space.spaces[2].n):
                     for action_index in range(self.action_space.n):
                         q_table[((sum_index, showcard_index,usable_ace_index))][action_index] = 0.0
         return q_table
 
     def build_policy_table(self):
         policy_table = defaultdict(lambda: {})
-        for sum_index in range(self.observation_space[0].n):
-            for showcard_index in range(self.observation_space[1].n):
-                for usable_ace_index in range(self.observation_space[2].n):
+        for sum_index in range(self.observation_space.spaces[0].n):
+            for showcard_index in range(self.observation_space.spaces[1].n):
+                for usable_ace_index in range(self.observation_space.spaces[2].n):
                     for action_index in range(self.action_space.n):
                         policy_table[((sum_index, showcard_index, usable_ace_index))][action_index] = 1.0/self.action_space.n
 
@@ -199,37 +202,6 @@ class BlackjackEnv(PureDiscreteEnv):
             self.dealer = [2, draw_card(self.np_random)]
             self.player = [1, 2]
         return self._get_obs(False)
-
-    def show_v_table(self, v_table):
-
-        ace_usable = np.zeros([33, 11])
-        ace_no_usable = np.zeros([33, 11])
-
-        for obs, value in v_table.items():
-            sumary = obs[0]
-            showcard = obs[1]
-            ace = obs[2]
-
-            if ace:
-                ace_usable[sumary][showcard] = value
-            else:
-                ace_no_usable[sumary][showcard] = value
-
-        fig, axes = plt.subplots(1, 2, figsize=(16, 12))
-        plt.subplots_adjust(wspace=0.1, hspace=0.2)
-        axes = axes.flatten()
-
-        fig = sns.heatmap(np.flipud(ace_usable), cmap="YlGnBu", ax=axes[0], xticklabels=range(1, 11),yticklabels=list(reversed(range(1, 33))))
-        fig.set_ylabel('player sum', fontsize=30)
-        fig.set_xlabel('dealer showing', fontsize=30)
-        fig.set_title('Usable Ace', fontsize=30)
-
-        fig = sns.heatmap(np.flipud(ace_no_usable), cmap="YlGnBu", ax=axes[1], xticklabels=range(1, 11), yticklabels=list(reversed(range(1, 33))))
-        fig.set_ylabel('player sum', fontsize=30)
-        fig.set_xlabel('dealer showing', fontsize=30)
-        fig.set_title('No Usable ace', fontsize=30)
-
-        plt.show()
 
     def show_policy(self, table_policy):
         ace_usable = np.zeros([33, 11])

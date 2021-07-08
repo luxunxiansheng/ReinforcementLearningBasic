@@ -83,6 +83,7 @@ class MonteCarloActor(ActorBase):
             action_index = self.explorer.get_behavior_policy().get_action(current_state_index)
             observation = self.env.step(action_index)
             reward = observation[1]
+            
             trajectory.append((current_state_index, action_index, reward))
             done = observation[2]
 
@@ -90,15 +91,15 @@ class MonteCarloActor(ActorBase):
                 break
             current_state_index = observation[0]  
             
-            R = 0.0
-            for state_index, action_index, reward in trajectory[::-1]:
-                R = reward+self.discount*R
+        R = 0.0
+        for state_index, action_index, reward in trajectory[::-1]:
+            R = reward+self.discount*R
                 
-                self.statistics.episode_rewards[episode] = R
-                self.statistics.episode_lengths[episode] += 1
+            self.statistics.episode_rewards[episode] = R
+            self.statistics.episode_lengths[episode] += 1
 
-                self.critic.evaluate(state_index,action_index,R)
-                self.explorer.explore(state_index)
+            self.critic.evaluate(state_index,action_index,R)
+            self.explorer.explore(state_index)
             
             
             

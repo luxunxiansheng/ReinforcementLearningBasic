@@ -1,3 +1,4 @@
+from env.gamblers_problem import GamblersProblemEnv
 from env.blackjack import BlackjackEnv
 from env.cliff_walking import CliffWalkingEnv
 from env.grid_world import GridworldEnv
@@ -28,3 +29,6 @@ def get_env(env):
 
     if env == GridWorldWithWallsBlockEnv.__name__:
         return GridWorldWithWallsBlockEnv()
+    
+    if env == GamblersProblemEnv.__name__:
+        return GamblersProblemEnv()
