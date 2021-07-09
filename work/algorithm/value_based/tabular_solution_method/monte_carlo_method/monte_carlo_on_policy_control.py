@@ -33,20 +33,57 @@
 #
 # /
 
+
 from tqdm import tqdm
 
+from common import ActorBase
 from policy.policy import DiscreteStateValueBasedPolicy
 from algorithm.value_based.tabular_solution_method.explorer import ESoftExplorer
 from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_critic import MonteCarloAverageCritic
-from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_actor import MonteCarloActor
+
 
 class MonteCarloOnPolicyControl:
+    class MonteCarloActor(ActorBase):
+        def __init__(self,env,critic,explorer,statistics,discount):
+            self.env = env 
+            self.explorer =  explorer
+            self.critic =  critic
+            self.discount = discount
+            self.statistics = statistics
+
+        def act(self,*args):
+            episode = args[0]
+
+            trajectory = []
+            current_state_index = self.env.reset()
+            while True:
+                action_index = self.explorer.get_behavior_policy().get_action(current_state_index)
+                observation = self.env.step(action_index)
+                reward = observation[1]
+            
+                trajectory.append((current_state_index, action_index, reward))
+                done = observation[2]
+
+                if done:
+                    break
+                current_state_index = observation[0]  
+            
+            G = 0.0
+            for state_index, action_index, reward in trajectory[::-1]:
+                G = reward+self.discount*G
+                
+                self.statistics.episode_rewards[episode] = G
+                self.statistics.episode_lengths[episode] += 1
+
+                self.critic.evaluate(state_index,action_index,G)
+                self.explorer.explore(state_index)
+
     def __init__(self,env,statistics,episodes=10000, discount=1.0):
         self.env = env
         self.episodes = episodes
         self.critic =   MonteCarloAverageCritic(self.env.build_Q_table())
         explorer    =   ESoftExplorer(DiscreteStateValueBasedPolicy(self.env.build_policy_table()),self.critic) 
-        self.actor  =   MonteCarloActor(env,self.critic,explorer,statistics,discount)
+        self.actor  =   MonteCarloOnPolicyControl.MonteCarloActor(env,self.critic,explorer,statistics,discount)
 
     def learn(self):
         for episode in tqdm(range(0, self.episodes)):

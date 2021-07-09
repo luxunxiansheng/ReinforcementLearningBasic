@@ -47,6 +47,8 @@ class MonteCarloIncrementalCritic(CriticBase):
         # it is necessary to keep the weight total for every state_action pair
         self.C = self._init_weight_total()
 
+        self.create_distribution_greedily = create_distribution_greedily()
+
     def evaluate(self, *args):
         state_index  = args[0]
         action_index = args[1]
@@ -72,8 +74,8 @@ class MonteCarloIncrementalCritic(CriticBase):
 
     def get_optimal_policy(self):
         policy_table = {}
-        for state_index, _ in self.value_function.items():
-            q_values = self.value_function[state_index]
+        for state_index, _ in self.get_value_function().items():
+            q_values = self.get_value_function()[state_index]
             greedy_distibution = self.create_distribution_greedily(q_values)
             policy_table[state_index] = greedy_distibution
         table_policy = DiscreteStateValueBasedPolicy(policy_table)

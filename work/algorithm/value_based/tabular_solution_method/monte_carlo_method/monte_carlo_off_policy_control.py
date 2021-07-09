@@ -33,35 +33,18 @@
 #
 # /
 
+
 from collections import defaultdict
 
 import numpy as np
-from common import ExplorerBase, CriticBase
-from lib.utility import create_distribution_greedily
 from tqdm import tqdm
 
 
-class MonteCarloActor(ExplorerBase):
-    def __init__(self,behavior_policy,target_policy,critic):
-        self.target_policy = target_policy
-        self.behavior_policy = behavior_policy
-        self.critic = critic
-        self.create_distribution_greedily = create_distribution_greedily()
+from common import ActorBase
+from policy.policy import DiscreteStateValueBasedPolicy
+from algorithm.value_based.tabular_solution_method.explorer import ESoftExplorer
+from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_critic import MonteCarloIncrementalCritic
 
-    def explore(self, *args):
-        state_index = args[0]
-        q_value_function = self.critic.get_value_function()
-        greedy_distibution = self.create_distribution_greedily(q_value_function[state_index])
-        self.target_policy.policy_table[state_index] = greedy_distibution
-
-    def get_behavior_policy(self):
-        return self.behavior_policy
-
-    def get_optimal_policy(self):
-        return self.target_policy
-
-    def get_action_distribution(self,state_index):
-        return self.target_policy.policy_table[state_index]
 
 class MonteCarloOffPolicyControl:
     """
@@ -69,57 +52,74 @@ class MonteCarloOffPolicyControl:
     1) Weighted importance sampling.
     2) Incremental implementation
     """
-    def __init__(self, critic, actor, env, episodes=500000, discount=1.0):
-        self.env = env
-        self.episodes = episodes
-        self.discount = discount
+    class MonteCarloActor(ActorBase):
+        def __init__(self,env,critic,explorer,statistics,discount):
+            self.env = env 
+            self.explorer =  explorer
+            self.critic =  critic
+            self.discount = discount
+            self.statistics = statistics
 
-        self.critic= critic
-        self.actor = actor
+        def act(self,*args):
+            episode = args[0]
 
-    def explore(self):
-        for _ in tqdm(range(0, self.episodes)):
-            trajectory = self._run_one_episode()
+            trajectory = []
+            current_state_index = self.env.reset()
+            while True:
+                action_index = self.explorer.get_behavior_policy().get_action(current_state_index)
+                observation = self.env.step(action_index)
+                reward = observation[1]
+            
+                trajectory.append((current_state_index, action_index, reward))
+                done = observation[2]
+
+                if done:
+                    break
+                current_state_index = observation[0]  
+            
             G = 0.0
             W = 1
             for state_index, action_index, reward in trajectory[::-1]:
                 # The return for current state_action pair
                 G = reward + self.discount*G
+
+                self.statistics.episode_rewards[episode] = G
+                self.statistics.episode_lengths[episode] += 1
                 
                 # The return for current state_action pair
-                self.critic.exploit(state_index, action_index, G, W)
-                self.actor.explore(state_index)
+                self.critic.evaluate(state_index, action_index, G, W)
+                self.explorer.explore(state_index)
             
                 # If the action taken by the behavior policy is not the action taken by the target policy,the probability will be 0 and we can break
-                if action_index != np.argmax(self.actor.get_action_distribution(state_index)):
+                if action_index != np.argmax(self.explorer.get_behavior_policy().policy_table[current_state_index]):
                     break
 
                 # probability product
-                W = W * 1. / self.actor.get_behavior_policy().policy_table[state_index][action_index]
+                W = W * 1. / self.explorer.get_behavior_policy().policy_table[state_index][action_index]
         
-        return self.actor.get_optimal_policy()
+        def _init_weight_total(self):
+            weight_total = defaultdict(lambda: {})
+            for state_index, action_values in self.q_value_function.items():
+                for action_index, _ in action_values.items():
+                    weight_total[state_index][action_index] = 0.0
+            return weight_total
+            
+    def __init__(self,env,statistics,episodes=500000,discount=1.0):
+        self.env = env 
+        self.episodes =episodes
+
+        self.critic = MonteCarloIncrementalCritic(self.env.build_Q_table())
+        explorer    = ESoftExplorer(DiscreteStateValueBasedPolicy(self.env.build_policy_table()),self.critic) 
+        self.actor  = MonteCarloOffPolicyControl.MonteCarloActor(self.env,self.critic,explorer,statistics,discount)
+
+    def learn(self):
+        for episode in tqdm(range(0, self.episodes)):
+            self.actor.act(episode)
+
+        self.env.show_policy(self.critic.get_optimal_policy())
 
 
-    def _init_weight_total(self):
-        weight_total = defaultdict(lambda: {})
-        for state_index, action_values in self.q_value_function.items():
-            for action_index, _ in action_values.items():
-                weight_total[state_index][action_index] = 0.0
-        return weight_total
 
-    def _run_one_episode(self):
-        trajectory = []
-        current_state_index = self.env.reset()
-        while True:
-            action_index = self.actor.get_behavior_policy().get_action(current_state_index)
-            observation = self.env.step(action_index)
-            reward = observation[1]
-            trajectory.append((current_state_index, action_index, reward))
-            done = observation[2]
-            if done:
-                break
-            current_state_index = observation[0]
-        return trajectory
 
 
 
