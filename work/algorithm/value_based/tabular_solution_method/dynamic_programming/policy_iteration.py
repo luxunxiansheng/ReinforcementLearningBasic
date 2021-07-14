@@ -32,106 +32,103 @@
 # #### END LICENSE BLOCK #####
 #
 # /
-
-
 import copy
 
-
-from common import ExplorerBase, CriticBase
+from numpy.lib.function_base import piecewise
+from common import ActorBase, CriticBase
 from lib.utility import create_distribution_greedily
+from policy.policy import DiscreteStateValueBasedPolicy
+from algorithm.value_based.tabular_solution_method.explorer import GreedyExplorer
 
-
-
-class PoplicyIterationCritic(CriticBase):
+class BellmanCritic(CriticBase):
     """
     Given a policy, calculate the value of state with Jacobi-like itration method. The calculated value of state may not be 
     very accurate, but it doesn't mattter since our goal is to find the optimal policy after all. 
     """
-    def __init__(self,policy,value_function,transition_table,delta,discount):
-        self.policy = policy
+    def __init__(self,policy,value_function,transition_table,discount):
+        self.target_policy = policy
         self.value_function = value_function
-        self.model = transition_table
-        self.delta = delta
+        self.transition_model = transition_table
         self.discount = discount
+        self.create_distribution_greedily = create_distribution_greedily()
         
-    def exploit(self,*args):
-        while True:
-            delta = self._exploit_once()
-            if delta < self.delta:
-                break
-        
+    def evaluate(self,*args):
+        current_state_index = args[0]
+        current_action_index = args[1]
+        value_of_action = self._calculate_action_value(current_state_index, current_action_index)
+        delta = self.value_function[current_state_index][current_action_index]-value_of_action
+        self.value_function[current_state_index][current_action_index] = value_of_action
+        return delta
+
+    def _calculate_action_value(self, state_index, action_index):
+        value_of_action = 0.0
+        transitions = self.transition_model[state_index][action_index]
+        for transition_prob, next_state_index, reward, done in transitions:  # For each next state
+            # the reward is also related to the next state
+            if done:
+                value_of_next_state = 0
+            else:
+                value_of_next_state = self._calculate_value_of_state(next_state_index)            
+            value_of_action += transition_prob * (self.discount*value_of_next_state+reward)
+        return value_of_action
+
+    def _calculate_value_of_state(self, state_index):
+        value_of_state = 0.0 
+        for action_index, action_probability in self.target_policy.policy_table[state_index].items():
+            value_of_state += action_probability*self.value_function[state_index][action_index]            
+        return value_of_state
+
     def get_value_function(self):
         return self.value_function
     
-    def _exploit_once(self):
-        delta = 1e-10
-        for state_index, old_value_of_state in self.value_function.items():
-            value_of_state = self._get_value_of_state(state_index)
-            self.value_function[state_index] = value_of_state
-            delta = max(abs(value_of_state-old_value_of_state), delta)
-        return delta
-    
-    def _get_value_of_state(self,state_index):
-        value_of_state = 0.0
-        for action_index, probability in self.policy.policy_table[state_index].items():
-            value_of_action = self._get_value_of_action(state_index,action_index)
-            value_of_state+= probability*value_of_action
-        return value_of_state
+    def get_optimal_policy(self):
+        policy_table = {}
+        for state_index, _ in self.value_function.items():
+            v_values = self.value_function[state_index]
+            greedy_distibution = self.create_distribution_greedily(v_values)
+            policy_table[state_index] = greedy_distibution
+        table_policy = DiscreteStateValueBasedPolicy(policy_table)
+        return table_policy
+        
 
-    def _get_value_of_action(self, state_index,action_index):
-        transitions = self.model[state_index][action_index]
-        value_of_action = 0.0
-        for transition_prob, next_state_index, reward, done in transitions:  # For each next state
-            # the reward is also related to the next state
-            value_of_next_state = 0 if done else self.value_function[next_state_index]
-            value_of_action += transition_prob * (self.discount*value_of_next_state+reward)
-        return value_of_action
-
-class PolicyIterationActor(ExplorerBase):
+class PolicyIterationActor(ActorBase):
     """
-    It is trival for the actor to explore the policy by sweeping the state space. 
-    
+    It is trival for the actor to sweep the state space. 
     """
-    def __init__(self,policy,critic,transition_table,delta,discount):
+    def __init__(self,policy,critic,explorer,transition_table,critic_delta,explorer_delta,discount):
         self.policy = policy
         self.critic = critic
+        self.explorer = explorer 
         self.model   = transition_table
-        self.delta = delta
+        self.critic_delta = critic_delta
+        self.explorer_delta = explorer_delta
         self.discount = discount
-        
-    def explore(self,*args):
+
+    def act(self,env):
         while True:
-            delta = self._explore_once()
-            if delta < self.delta:
-                break
+            policy_delta = 0    
+            # evaluate the current policy 
+            while True:
+                delta = 0
+                for state_index, action_values in self.critic.get_value_function().items():
+                    for action_index in action_values:
+                        delta = max(delta,self.critic.evaluate(state_index,action_index))
+                
+                if delta < self.critic_delta:
+                    break 
 
-    def get_behavior_policy(self):
-        return self.policy
+            env.show_policy(self.critic.get_optimal_policy())
+            print("------------------------------------------")
 
-    def _explore_once(self):
-        delta = 1e-10
-        for state_index, action_distribution in self.policy.policy_table.items():
-            old_policy = copy.deepcopy(action_distribution)
-            q_values={}
-            for action_index, _ in action_distribution.items():
-                transition = self.model[state_index][action_index]
-                q_values[action_index] = self._get_value_of_action(transition,self.critic.get_value_function())
-            greedy_distibution = create_distribution_greedily()(q_values)
-            self.policy.policy_table[state_index] = greedy_distibution
-            new_old_policy_diff = {action_index: abs(old_policy[action_index]-greedy_distibution[action_index]) for action_index in greedy_distibution}
-            delta = max(max(new_old_policy_diff.values()), delta)
-        return delta    
+            for state_index, action_distribution in self.policy.policy_table.items():
+                old_policy_distribution = copy.deepcopy(action_distribution)
+                self.explorer.explore(state_index)
+                policy_distribution = self.explorer.get_behavior_policy().policy_table[state_index]
+                new_old_policy_diff = {action_index: abs(old_policy_distribution[action_index]-policy_distribution[action_index]) for action_index in policy_distribution}
+                policy_delta = max(new_old_policy_diff.values())
 
-    def _get_value_of_action(self, transitions,value_function):
-        value_of_action = 0.0
-        for transition_prob, next_state_index, reward, done in transitions:  # For each next state
-            # the reward is also related to the next state
-            value_of_next_state = 0 if done else value_function[next_state_index]
-            value_of_action += transition_prob * (self.discount*value_of_next_state+reward)
-        return value_of_action
-
-    def get_optimal_policy(self):
-        return self.policy
+            if policy_delta < self.explorer_delta:
+                return
 
 
 class PolicyIteration:
@@ -141,12 +138,17 @@ class PolicyIteration:
         on-policy 
     """
 
-    def __init__(self, critic,actor):
+    def __init__(self,env,critic_delta=1e-5, policy_delta = 1e-5, discount = 1.0):
+        self.env = env 
+        self.policy = DiscreteStateValueBasedPolicy(self.env.build_policy_table())
+        self.value_funciton = self.env.build_Q_table()
+        transition_table = env.P 
 
-        self.critic = critic
-        self.actor  = actor 
-        
-    def explore(self):
-        self.critic.exploit()
-        self.actor.explore()
-        return  self.actor.get_optimal_policy()
+        self.critic = BellmanCritic(self.policy,self.value_funciton,transition_table,discount)
+        explorer =    GreedyExplorer(self.policy,self.critic)
+        self.actor = PolicyIterationActor(self.policy,self.critic,explorer,transition_table,critic_delta,policy_delta,discount)
+    
+    def learn(self):
+        self.actor.act(self.env)
+        self.env.show_policy(self.actor.critic.get_optimal_policy())
+    

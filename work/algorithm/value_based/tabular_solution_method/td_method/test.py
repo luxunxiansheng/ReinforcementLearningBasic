@@ -19,7 +19,7 @@ from lib.plotting import EpisodeStats, plot_episode_stats
 from test_setup import get_env
 
 
-num_episodes = 2000
+num_episodes = 1000
 n_steps = 2
 
 
@@ -133,7 +133,7 @@ def test_td_control_method(env):
                         test_n_steps_sarsa_method(env),test_qlearning_method(env),test_sarsa_lambda_method(env),test_q_lambda_method(env)])
     
     """
-    plot_episode_stats([test_qlearning_method(env),test_dynaQ_method_trival(env),test_dynaQ_method_priority(env)])
+    plot_episode_stats([test_qlearning_method(env),test_sarsa_method(env),test_expected_sarsa_method(env)])
 
 real_env = get_env("CliffWalkingEnv")
 test_td_control_method(real_env)

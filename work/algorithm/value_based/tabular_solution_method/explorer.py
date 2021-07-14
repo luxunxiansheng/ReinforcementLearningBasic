@@ -43,11 +43,10 @@ class GreedyExplorer(ExplorerBase):
     def explore(self, *args):
         current_state_index = args[0]
         q_value_function = self.critic.get_value_function()
-        for state_index, _ in q_value_function.items():
-            q_values = q_value_function[state_index]
-            greedy_distibution = self.create_distribution_greedily(q_values)
-            self.behavior_policy.policy_table[current_state_index] = greedy_distibution
-
+        q_values = q_value_function[current_state_index]
+        greedy_distibution = self.create_distribution_greedily(q_values)
+        self.behavior_policy.policy_table[current_state_index] = greedy_distibution
+        
     def get_behavior_policy(self):
         return self.behavior_policy
 
