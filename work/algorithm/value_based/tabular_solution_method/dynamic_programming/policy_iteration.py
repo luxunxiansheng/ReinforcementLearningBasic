@@ -104,7 +104,7 @@ class PolicyIterationActor(ActorBase):
         self.explorer_delta = explorer_delta
         self.discount = discount
 
-    def act(self,env):
+    def act(self):
         while True:
             policy_delta = 0    
             # evaluate the current policy 
@@ -116,9 +116,6 @@ class PolicyIterationActor(ActorBase):
                 
                 if delta < self.critic_delta:
                     break 
-
-            env.show_policy(self.critic.get_optimal_policy())
-            print("------------------------------------------")
 
             for state_index, action_distribution in self.policy.policy_table.items():
                 old_policy_distribution = copy.deepcopy(action_distribution)
@@ -149,6 +146,6 @@ class PolicyIteration:
         self.actor = PolicyIterationActor(self.policy,self.critic,explorer,transition_table,critic_delta,policy_delta,discount)
     
     def learn(self):
-        self.actor.act(self.env)
+        self.actor.act()
         self.env.show_policy(self.actor.critic.get_optimal_policy())
     

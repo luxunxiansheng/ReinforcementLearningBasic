@@ -32,67 +32,76 @@
 # #### END LICENSE BLOCK #####
 #
 # /
-from common import ExplorerBase
+from policy.policy import DiscreteStateValueBasedPolicy
+from common import ActorBase, CriticBase, ExplorerBase
 from lib.utility import create_distribution_greedily
 
 
-class ValueIterationActor(ExplorerBase):
-    def __init__(self, value_function, policy,transition_table, delta=1e-8, discount=1.0):
+class BellmanOptimalCritic(CriticBase):
+    """
+    Given a policy, calculate the value of state with Jacobi-like itration method. The calculated value of state may not be 
+    very accurate, but it doesn't mattter since our goal is to find the optimal policy after all. 
+    """
+    def __init__(self,value_function,transition_table,discount):
         self.value_function = value_function
-        self.policy = policy
-        self.model = transition_table
-        self.delta = delta
+        self.transition_model = transition_table
         self.discount = discount
-    
-    def explore(self, *args):
-        while True:
-            delta = 1e-10
-            for state_index, old_value_of_state in self.value_function.items():
-                value_of_optimal_action = self._get_value_of_optimal_action(state_index)
-                self.value_function[state_index] = value_of_optimal_action
-                delta = max(delta,abs(value_of_optimal_action-old_value_of_state))
+        self.create_distribution_greedily = create_distribution_greedily()
+        
+    def evaluate(self,*args):
+        current_state_index = args[0]
+        current_action_index = args[1]
+        value_of_action = self._calculate_action_value(current_state_index, current_action_index)
+        delta = self.value_function[current_state_index][current_action_index]-value_of_action
+        self.value_function[current_state_index][current_action_index] = value_of_action
+        return delta
 
-            if delta < self.delta:
-                return 
-
-    def get_behavior_policy(self):
-        return self.policy
-    
-    def _get_value_of_optimal_action(self, state_index):
-        return max(self._get_q_values_of_state(state_index).values())
-
-    def _get_value_of_action(self, state_index, action_index):
-        transitions = self.model[state_index][action_index]
+    def _calculate_action_value(self, state_index, action_index):
         value_of_action = 0.0
+        transitions = self.transition_model[state_index][action_index]
         for transition_prob, next_state_index, reward, done in transitions:  # For each next state
             # the reward is also related to the next state
-            value_of_next_state = 0 if done else self.value_function[next_state_index]
+            if done:
+                value_of_next_state = 0
+            else:
+                value_of_next_state = self._get_value_of_optimal_action(next_state_index)            
             value_of_action += transition_prob * (self.discount*value_of_next_state+reward)
         return value_of_action
 
-    def _get_q_values_of_state(self,state_index):
-        q_values = {}
-        actions = self.policy.policy_table[state_index]
-        for action_index, _ in actions.items():
-            value_of_action = self._get_value_of_action(state_index, action_index)
-            q_values[action_index] = value_of_action
-        return q_values    
+    def _get_value_of_optimal_action(self, state_index):
+        return  max(self.value_function[state_index].values())
+    
+    def get_optimal_policy(self):
+        policy_table = {}
+        for state_index, _ in self.value_function.items():
+            v_values = self.value_function[state_index]
+            greedy_distibution = self.create_distribution_greedily(v_values)
+            policy_table[state_index] = greedy_distibution
+        table_policy = DiscreteStateValueBasedPolicy(policy_table)
+        return table_policy
     
     def get_value_function(self):
         return self.value_function
 
-    def get_optimal_policy(self):
-        for state_index, action_distribution in self.policy.policy_table.items():
-            q_values={}
-            for action_index, _ in action_distribution.items():
-                q_values[action_index] = self._get_value_of_action(state_index, action_index)
-            greedy_distibution = create_distribution_greedily()(q_values)
-            self.policy.policy_table[state_index] = greedy_distibution
-            
-        return self.policy    
-
-
-
+class ValueIterationActor(ActorBase):
+    """
+    It is trival for the actor to sweep the state space. 
+    """
+    def __init__(self,critic,transition_table,critic_delta,discount):
+        self.critic = critic
+        self.model   = transition_table
+        self.critic_delta = critic_delta
+        self.discount = discount
+    
+    def act(self):
+        while True:
+            delta = 0
+            for state_index, action_values in self.critic.get_value_function().items():
+                for action_index in action_values:
+                    delta = max(delta,self.critic.evaluate(state_index,action_index))
+                
+            if delta < self.critic_delta:
+                break 
 
 class ValueIteration:
     """
@@ -111,10 +120,19 @@ class ValueIteration:
     considered to be there, objectively. Therefore, the value iteration is a value based method.  
     """
 
-    def __init__(self, actor):
-        self.actor = actor
+    def __init__(self,env,critic_delta=1e-5, discount = 1.0):
+        self.env = env 
+        self.policy = DiscreteStateValueBasedPolicy(self.env.build_policy_table())
+        self.value_funciton = self.env.build_Q_table()
+        transition_table = env.P 
+
+        self.critic = BellmanOptimalCritic(self.value_funciton,transition_table,discount)
+        self.actor = ValueIterationActor(self.critic,transition_table,critic_delta,discount)
     
 
-    def explore(self):
-        self.actor.explore()
-        return self.actor.get_optimal_policy()
+    def learn(self):
+        self.actor.act()
+        self.env.show_policy(self.actor.critic.get_optimal_policy())
+    
+
+        

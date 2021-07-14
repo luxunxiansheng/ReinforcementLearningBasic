@@ -32,7 +32,7 @@ class GridworldEnv(PureDiscreteEnv):
     DOWN = 2
     LEFT = 3
     
-    def __init__(self, shape=[4, 4]):
+    def __init__(self, shape=[20, 20]):
         if not isinstance(shape, (list, tuple)) or not len(shape) == 2:
             raise ValueError('shape argument must be a list/tuple of length 2')
 
