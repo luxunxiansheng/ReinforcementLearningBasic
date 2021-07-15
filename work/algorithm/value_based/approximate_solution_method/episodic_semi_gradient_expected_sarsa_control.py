@@ -43,7 +43,7 @@ class ApproximationExpectedSARSACritic(CriticBase):
         self.discount = discount
         self.step_size = step_size
 
-    def exploit(self, *args):
+    def evaluate(self, *args):
         current_state_index = args[0]
         current_action_index = args[1]
         reward = args[2]

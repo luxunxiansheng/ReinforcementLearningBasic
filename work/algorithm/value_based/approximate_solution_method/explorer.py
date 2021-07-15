@@ -33,17 +33,15 @@
 #
 # /
 
-
-from common import ActorBase
+from common import ExplorerBase
 from lib.utility import (create_distribution_epsilon_greedily,create_distribution_greedily,create_distribution_boltzmann)
 
-
-class ESoftActor(ActorBase):
+class ESoftExplorer(ExplorerBase):
     def __init__(self, policy,critic,epsilon=0.1):
         self.policy = policy
         self.critic = critic
         self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(epsilon)
-        self.create_distribution_greedily = create_distribution_greedily()
+    
 
     def explore(self, *args):
         current_state_index = args[0]
@@ -60,5 +58,24 @@ class ESoftActor(ActorBase):
     def get_behavior_policy(self):
         return self.policy
 
-    def get_create_behavior_policy_fn(self):
-        return self.create_distribution_epsilon_greedily
+class BoltzmannExplorer(ExplorerBase):
+    def __init__(self, policy,critic):
+        self.policy = policy
+        self.critic = critic
+        self.create_distribution_epsilon_greedily = create_distribution_boltzmann()
+
+
+    def explore(self, *args):
+        current_state_index = args[0]
+        action_space= args[1]
+        estimator = self.critic.get_value_function()
+        
+        q_values = {}
+        for action_index in range(action_space.n):
+            q_values[action_index] = estimator.predict(current_state_index,action_index)
+
+        boltzmann_distibution = self.create_distribution_boltzmann(q_values)
+        self.policy.instant_distribution = boltzmann_distibution
+
+    def get_behavior_policy(self):
+        return self.policy

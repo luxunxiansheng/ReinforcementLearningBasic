@@ -34,7 +34,13 @@
 # /
 
 from tqdm import tqdm
+
 from common import CriticBase
+from algorithm.value_based.approximate_solution_method.actor import Actor
+from algorithm.value_based.approximate_solution_method.explorer import ESoftExplorer
+from policy.policy import ContinuousStateValueBasedPolicy
+
+
 
 
 class ApproximationQLearningCritic(CriticBase):
@@ -44,72 +50,43 @@ class ApproximationQLearningCritic(CriticBase):
         self.discount = discount
         self.step_size = step_size
 
-    def exploit(self, *args):
+    def evaluate(self, *args):
         current_state_index = args[0]
         current_action_index = args[1]
         reward = args[2]
         next_state_index = args[3]    
         
         # max action value of the next state 
-        q_values = {}
+        q_values_next_state = {}
         for action_index in range(self.env.action_space.n):
-            q_values[action_index] = self.estimator.predict(next_state_index,action_index)
-        max_value = max(q_values.values())
+            q_values_next_state[action_index] = self.estimator.predict(next_state_index,action_index)
+        max_value = max(q_values_next_state.values())
 
         # set the target 
         target = reward + self.discount * max_value
 
         # SGD fitting
         self.estimator.update(current_state_index, current_action_index, target)
-
     
     def get_value_function(self):
         return self.estimator
 
-
+    def get_optimal_policy(self):
+        pass 
 
 class EpisodicSemiGradientQLearningControl:
     """
     Q_Learning algorithm: Off-policy TD control. Finds the optimal epsilon-greedy policy with approximation of q funciton 
     """
 
-    def __init__(self, critic, actor, env, statistics, episodes,discount=1.0):
+    def __init__(self,env, estimator,statistics, episodes):
         self.env = env
-        self.discount = discount
-        self.statistics = statistics
         self.episodes = episodes
-        self.critic = critic 
-        self.actor  = actor 
 
-    def explore(self,*args):
+        self.critic =  ApproximationQLearningCritic(env,estimator) 
+        explorer    =  ESoftExplorer(ContinuousStateValueBasedPolicy(),self.critic)
+        self.actor  =  Actor(env,self.critic,explorer,statistics)
+
+    def learn(self):
         for episode in tqdm(range(0, self.episodes)):
-            self._run_one_episode(episode)
-
-    def _run_one_episode(self, episode):
-        # S
-        current_state_index = self.env.reset()
-
-        while True:
-            # A
-            self.actor.explore(current_state_index,self.env.action_space)
-            current_action_index = self.actor.get_behavior_policy().get_action(current_state_index)
-            
-            observation = self.env.step(current_action_index)
-            self.env.render()
-            # R
-            reward = observation[1]
-            done = observation[2]
-
-            self.statistics.episode_rewards[episode] += reward
-            self.statistics.episode_lengths[episode] += 1
-
-            # S'
-            next_state_index = observation[0]
-            self.critic.exploit(current_state_index,current_action_index,reward,next_state_index)
-
-            
-            if done:
-                break
-
-            current_state_index = next_state_index
-    
+            self.actor.act(episode)

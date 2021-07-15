@@ -40,7 +40,6 @@ from algorithm.value_based.tabular_solution_method.explorer import ESoftExplorer
 from algorithm.value_based.tabular_solution_method.td_method.td_actor import TDActor
 from algorithm.value_based.tabular_solution_method.td_method.td_critic import TDCritic
 
-
 class QLearningCritic(TDCritic):
     def __init__(self,value_function,step_size=0.1,discount = 1.0):
         super().__init__(value_function,step_size)
@@ -57,8 +56,6 @@ class QLearningCritic(TDCritic):
         max_value = max(q_values_next_state.values())
         target = reward + self.discount*max_value
         self.update(current_state_index,current_action_index,target)
-
-
 
 class QLearning:
     """
@@ -89,7 +86,6 @@ class QLearning:
             # A
             current_action_index = optimal_policy.get_action(current_state_index)
 
-            print("current_state_index {} current_action_index {}".format(current_state_index,current_action_index))
             observation = self.env.step(current_action_index)
         
             # R
