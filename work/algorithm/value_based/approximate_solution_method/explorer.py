@@ -33,49 +33,29 @@
 #
 # /
 
+from policy.policy import ContinuousStateValueBasedPolicy
 from common import ExplorerBase
 from lib.utility import (create_distribution_epsilon_greedily,create_distribution_greedily,create_distribution_boltzmann)
 
 class ESoftExplorer(ExplorerBase):
-    def __init__(self, policy,critic,epsilon=0.1):
-        self.policy = policy
-        self.critic = critic
-        self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(epsilon)
+    def __init__(self,critic,action_numb,epsilon=0.1):
+        self.policy = ContinuousStateValueBasedPolicy(critic.get_value_function(),action_numb,create_distribution_epsilon_greedily(epsilon))
+            
+    def explore(self, *args):
+        pass 
+
+    def get_behavior_policy(self):
+        return self.policy
     
 
-    def explore(self, *args):
-        current_state_index = args[0]
-        action_space= args[1]
-        estimator = self.critic.get_value_function()
-        
-        q_values = {}
-        for action_index in range(action_space.n):
-            q_values[action_index] = estimator.predict(current_state_index,action_index)
-
-        soft_greedy_distibution = self.create_distribution_epsilon_greedily(q_values)
-        self.policy.instant_distribution = soft_greedy_distibution
-
-    def get_behavior_policy(self):
-        return self.policy
 
 class BoltzmannExplorer(ExplorerBase):
-    def __init__(self, policy,critic):
-        self.policy = policy
-        self.critic = critic
-        self.create_distribution_epsilon_greedily = create_distribution_boltzmann()
-
+    def __init__(self,critic,action_num):
+        self.policy = ContinuousStateValueBasedPolicy(critic.get_value_function(),action_num,create_distribution_boltzmann())
 
     def explore(self, *args):
-        current_state_index = args[0]
-        action_space= args[1]
-        estimator = self.critic.get_value_function()
-        
-        q_values = {}
-        for action_index in range(action_space.n):
-            q_values[action_index] = estimator.predict(current_state_index,action_index)
-
-        boltzmann_distibution = self.create_distribution_boltzmann(q_values)
-        self.policy.instant_distribution = boltzmann_distibution
+        pass 
 
     def get_behavior_policy(self):
         return self.policy
+    
