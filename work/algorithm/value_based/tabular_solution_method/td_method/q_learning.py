@@ -31,7 +31,9 @@
 #
 # /
 
+
 from tqdm import tqdm
+
 
 from policy.policy import DiscreteStateValueBasedPolicy
 from algorithm.value_based.tabular_solution_method.explorer import ESoftExplorer
@@ -58,7 +60,7 @@ class QLearningCritic(TDCritic):
 class QLearning:
     """
     The reason that Q-learning is off-policy is that it updates its Q-values using the Q-value of the 
-    next state s' and the greedy action a' no matter what the current policy is.
+    next state s' and the greedy action a' no matter what the current policy is .
     """
     def __init__(self,env, statistics, episodes):
         self.env = env
@@ -66,6 +68,7 @@ class QLearning:
         self.critic = QLearningCritic(self.env.build_Q_table()) 
         explorer  = ESoftExplorer(DiscreteStateValueBasedPolicy(self.env.build_policy_table()),self.critic) 
         self.actor = TDActor(env,self.critic,explorer,statistics)
+
 
     def learn(self):
         for episode in tqdm(range(0, self.episodes)):

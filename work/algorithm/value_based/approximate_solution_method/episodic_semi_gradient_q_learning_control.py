@@ -41,6 +41,8 @@ from algorithm.value_based.approximate_solution_method.explorer import ESoftExpl
 from policy.policy import ContinuousStateValueBasedPolicy
 
 
+
+
 class ApproximationQLearningCritic(CriticBase):
     def __init__(self,env,estimator,step_size=0.01,discount= 1.0):
         self.env = env 
@@ -82,7 +84,7 @@ class EpisodicSemiGradientQLearningControl:
         self.episodes = episodes
 
         self.critic =  ApproximationQLearningCritic(env,estimator) 
-        explorer    =  ESoftExplorer(self.critic,self.env.action_space.n)
+        explorer    =  ESoftExplorer(ContinuousStateValueBasedPolicy(),self.critic)
         self.actor  =  Actor(env,self.critic,explorer,statistics)
 
     def learn(self):

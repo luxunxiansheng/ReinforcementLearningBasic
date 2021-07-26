@@ -180,7 +180,7 @@ class MountainCarEnv(DiscreteActionEnv):
     @property
     def observation_space(self):
         return self._observation_space
-
+  
     @property
     def observation_space_name(self):
         return self._observation_space_name
