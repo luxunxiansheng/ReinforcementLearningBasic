@@ -38,20 +38,16 @@ def test_approximation_control_expected_sarsa(env):
     observation_space = env.observation_space
 
     tile_coding_step_size = 0.3
-    q_function = TileCodingBasesQValueEstimator(tile_coding_step_size, observation_space.high[0], observation_space.low[0], observation_space.high[1], observation_space.low[1])
+    estimator = TileCodingBasesQValueEstimator(tile_coding_step_size, observation_space.high[0], observation_space.low[0], observation_space.high[1], observation_space.low[1])
 
-    continuous_state_policy = ContinuousStateValueBasedPolicy()
-    
-    q_v = plotting.QValue(env.observation_space_name[0], env.observation_space_name[1], q_function)
-    approximation_control_statistics = plotting.EpisodeStats("Expected SARSA", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=q_v)
+    q_v = plotting.QValue(env.observation_space_name[0], env.observation_space_name[1], estimator)
+    approximation_control_statistics = plotting.EpisodeStats("expected_sarsa", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=q_v)
 
-    critic = ApproximationExpectedSARSACritic(env,q_function)
-    actor  = ESoftActor(continuous_state_policy,critic)
-
-    episodicsemigradsarsacontrol = EpisodicSemiGradientExpectedSarsaControl(critic,actor,env,approximation_control_statistics,num_episodes)
-    episodicsemigradsarsacontrol.explore()
+    episodicsemigradexpectedsarsacontrol = EpisodicSemiGradientExpectedSarsaControl(env,estimator,approximation_control_statistics,num_episodes)
+    episodicsemigradexpectedsarsacontrol.learn()
 
     return approximation_control_statistics
+    
 
 def test_approximation_control_q_learning(env):
 
@@ -71,15 +67,13 @@ def test_approximation_control_q_learning(env):
 
 def test_approximation_control_method(env):
 
-    episode_stats = [test_approximation_control_sarsa(env),test_approximation_control_q_learning(env)]
+    episode_stats = [test_approximation_control_q_learning(env),test_approximation_control_sarsa(env),test_approximation_control_expected_sarsa(env)]
     
     plotting.plot_episode_stats(episode_stats)
     plotting.plot_3d_q_value(env, episode_stats)
 
 
 real_env = get_env("MountainCarEnv")
-
-#test_approximation_evaluation(real_env)
 
 test_approximation_control_method(real_env)
 

@@ -78,9 +78,9 @@ class EpisodicSemiGradientSarsaControl:
         self.env = env
         self.episodes = episodes
 
-        policy =       ContinuousStateValueBasedPolicy()
+        policy =       ContinuousStateValueBasedPolicy(estimator,self.env.action_space.n)
         self.critic =  ApproximationSARSACritic(env,estimator,policy) 
-        explorer    =  ESoftExplorer(policy,self.critic)
+        explorer    =  ESoftExplorer(policy)
         self.actor  =  Actor(env,self.critic,explorer,statistics)
 
     def learn(self):

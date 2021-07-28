@@ -79,7 +79,6 @@ class Actor(ActorBase):
         current_state_index = self.env.reset()
 
         while True:
-            self.explorer.explore(current_state_index,self.env.action_space)
             # A
             current_action_index = self.explorer.get_behavior_policy().get_action(current_state_index)
             observation = self.env.step(current_action_index)
@@ -96,7 +95,6 @@ class Actor(ActorBase):
             # S'
             next_state_index = observation[0]
             self.critic.evaluate(current_state_index,current_action_index,reward,next_state_index)
-
 
             if done:
                 break

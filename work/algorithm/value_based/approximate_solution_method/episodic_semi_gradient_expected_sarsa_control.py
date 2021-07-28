@@ -34,13 +34,17 @@
 # /
 
 from tqdm import tqdm
-from common import  CriticBase
+from common import CriticBase
+from algorithm.value_based.approximate_solution_method.actor import Actor
+from algorithm.value_based.approximate_solution_method.explorer import ESoftExplorer
+from policy.policy import ContinuousStateValueBasedPolicy
 
 class ApproximationExpectedSARSACritic(CriticBase):
-    def __init__(self,env,estimator,step_size=0.01,discount= 1.0):
+    def __init__(self,env,estimator,policy,step_size=0.01,discount= 1.0):
         self.env = env 
         self.estimator = estimator
         self.discount = discount
+        self.policy = policy
         self.step_size = step_size
 
     def evaluate(self, *args):
@@ -48,28 +52,28 @@ class ApproximationExpectedSARSACritic(CriticBase):
         current_action_index = args[1]
         reward = args[2]
         next_state_index = args[3]    
-        create_distribution_fn= args[4]
         
         q_values = {}
         for action_index in range(self.env.action_space.n):
             q_values[action_index] = self.estimator.predict(next_state_index,action_index)
 
-        distribution = create_distribution_fn(q_values)
+        next_state_distribution = self.policy.get_discrete_distribution(next_state_index)
 
         expected_q_value = 0
         for action_index in range(self.env.action_space.n):
-            expected_q_value += distribution[action_index]*q_values[action_index]
+            expected_q_value += next_state_distribution[action_index]*q_values[action_index]
 
         # set the target 
         target = reward + self.discount * expected_q_value
 
         # SGD fitting
         self.estimator.update(current_state_index, current_action_index, target)
-
     
     def get_value_function(self):
         return self.estimator
 
+    def get_optimal_policy(self):
+        pass 
 
 
 class EpisodicSemiGradientExpectedSarsaControl:
@@ -77,48 +81,15 @@ class EpisodicSemiGradientExpectedSarsaControl:
     Expected SARSA algorithm: On-policy TD control. Finds the optimal epsilon-greedy policy with approximation of q funciton 
     """
 
-    def __init__(self, critic, actor, env, statistics, episodes,discount=1.0):
+    def __init__(self,env, estimator,statistics, episodes):
         self.env = env
-        self.discount = discount
-        self.statistics = statistics
         self.episodes = episodes
-        self.critic = critic 
-        self.actor  = actor 
 
-    def explore(self,*args):
+        policy =       ContinuousStateValueBasedPolicy(estimator,self.env.action_space.n)
+        self.critic =  ApproximationExpectedSARSACritic(env,estimator,policy) 
+        explorer    =  ESoftExplorer(policy)
+        self.actor  =  Actor(env,self.critic,explorer,statistics)
+
+    def learn(self):
         for episode in tqdm(range(0, self.episodes)):
-            self._run_one_episode(episode)
-
-
-    def _run_one_episode(self, episode):
-        # S
-        current_state_index = self.env.reset()
-
-        while True:
-            # A
-            self.actor.explore(current_state_index,self.env.action_space)
-            current_action_index = self.actor.get_behavior_policy().get_action(current_state_index)
-            
-            observation = self.env.step(current_action_index)
-            self.env.render()
-            # R
-            reward = observation[1]
-            done = observation[2]
-
-            self.statistics.episode_rewards[episode] += reward
-            self.statistics.episode_lengths[episode] += 1
-
-            # S'
-            next_state_index = observation[0]
-
-            self.critic.exploit(current_state_index,current_action_index,reward,next_state_index,self.actor.get_create_behavior_policy_fn())
-
-            if done:
-                break
-
-            current_state_index = next_state_index
-
-
-
-
-
+            self.actor.act(episode)

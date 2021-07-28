@@ -52,30 +52,45 @@ class DiscreteActionPolicy(ABC):
     or lookup table, whereas in others it may involve extensive computation such as a search
     process. The policy is the core of a reinforcement learning agent in the sense that it alone
     is suficient to determine behavior. In general, policies may be stochastic.
-
     """
     @abstractmethod
     def get_discrete_distribution(self,state):
         pass   
 
+    @abstractmethod 
     def get_action(self, state):
-        distribution = self.get_discrete_distribution(state)
-        action = np.random.choice(np.arange(len(distribution)), p=distribution)
-        return action
+        pass
 
-class DiscreteStateValueBasedPolicy(DiscreteActionPolicy):
+class DiscreteStateValueBasedPolicy(Policy):
     def __init__(self,policy_table):
         self.policy_table = policy_table
 
-    def get_discrete_distribution(self, state):
-        return list(self.policy_table[state].values())
+    def get_action(self, state):
+        distribution = list(self.policy_table[state].values())
+        action = np.random.choice(np.arange(len(distribution)), p=distribution)
+        return action
 
-class ContinuousStateValueBasedPolicy(DiscreteActionPolicy):
-    def __init__(self):
-        self.instant_distribution = None
-
+class ContinuousStateValueBasedPolicy(Policy):
+    def __init__(self,value_esitmator,action_space_num,create_distribution_fn=None):
+        self.value_esitmator = value_esitmator
+        self.action_space_num = action_space_num
+        self.create_distribution_fn = create_distribution_fn
+    
+    def get_action(self, state):
+        q_values = {}
+        for action_index in range(self.action_space_num):
+            q_values[action_index] = self.value_esitmator.predict(state,action_index)
+        distribution = self.create_distribution_fn(q_values)
+        action = np.random.choice(np.arange(len(distribution)), p=list(distribution.values()))
+        return action
+    
     def get_discrete_distribution(self,state):
-        return  list(self.instant_distribution.values())
+        q_values = {}
+        for action_index in range(self.action_space_num):
+            q_values[action_index] = self.value_esitmator.predict(state,action_index)
+        distribution = self.create_distribution_fn(q_values)
+        return distribution 
+
 
 class ParameterizedPolicy(DiscreteActionPolicy):
     """

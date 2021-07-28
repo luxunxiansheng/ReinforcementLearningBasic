@@ -37,11 +37,8 @@ from tqdm import tqdm
 
 from common import CriticBase
 from algorithm.value_based.approximate_solution_method.actor import Actor
-from algorithm.value_based.approximate_solution_method.explorer import ESoftExplorer
+from algorithm.value_based.approximate_solution_method.explorer import BoltzmannExplorer, ESoftExplorer
 from policy.policy import ContinuousStateValueBasedPolicy
-
-
-
 
 class ApproximationQLearningCritic(CriticBase):
     def __init__(self,env,estimator,step_size=0.01,discount= 1.0):
@@ -84,7 +81,8 @@ class EpisodicSemiGradientQLearningControl:
         self.episodes = episodes
 
         self.critic =  ApproximationQLearningCritic(env,estimator) 
-        explorer    =  ESoftExplorer(ContinuousStateValueBasedPolicy(),self.critic)
+        behavior_policy = ContinuousStateValueBasedPolicy(estimator,self.env.action_space.n)
+        explorer    =  BoltzmannExplorer(behavior_policy)
         self.actor  =  Actor(env,self.critic,explorer,statistics)
 
     def learn(self):
