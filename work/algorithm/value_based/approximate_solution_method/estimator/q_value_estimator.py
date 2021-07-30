@@ -34,19 +34,9 @@
 # /
 
 from abc import abstractmethod
+from common import QValueEstimator
 import numpy as np
 from math import floor
-
-
-class QValueEstimator:
-    @abstractmethod
-    def predict(self, state, action):
-        pass
-
-    @abstractmethod
-    def update(self, state, action, target):
-        pass
-
 
 
 class TileCodingBasesQValueEstimator(QValueEstimator):
@@ -116,13 +106,11 @@ class TileCodingBasesQValueEstimator(QValueEstimator):
             coords.extend(action)
             tiles.append(TileCodingBasesQValueEstimator.hash_coords(coords, iht_or_size, read_only))
         return tiles
-
-
         
     # Tile coding ends
     #######################################################################
 
-    def __init__(self, step_size, x_max, x_min, y_max, y_min, num_of_tilings=8, max_size=2048):
+    def __init__(self, step_size, x_max, x_min, y_max, y_min, num_of_tilings=8, max_size=2048, discount=1.0, lamda=0.0):
         self.max_size = max_size
         self.num_of_tilings = num_of_tilings
 
@@ -144,6 +132,9 @@ class TileCodingBasesQValueEstimator(QValueEstimator):
 
         self.eligibility = 0
 
+        self.discount = discount
+        self.lamda = lamda
+
     # get indices of active tiles for given 2d state and action
     def get_active_tiles(self, state, action):
 
@@ -159,9 +150,7 @@ class TileCodingBasesQValueEstimator(QValueEstimator):
         active_tiles = self.get_active_tiles(state, action)
         return np.sum(self.weights[active_tiles])
 
-
-    def update(self,state, action, target,discount = 1.0, lamda=0.0):
-        
+    def update(self,state, action, target,*args):
         delta = target - self.predict(state,action)
         derivative_value= np.zeros_like(self.weights)
 
@@ -169,5 +158,5 @@ class TileCodingBasesQValueEstimator(QValueEstimator):
         for active_tile in active_tiles:
             derivative_value[active_tile] = 1
         
-        self.eligibility = self.eligibility*lamda*discount+derivative_value
+        self.eligibility = self.eligibility*self.lamda*self.discount+derivative_value
         self.weights += self.step_size *delta*self.eligibility

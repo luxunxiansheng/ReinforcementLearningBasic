@@ -94,3 +94,33 @@ class ActorBase(ABC):
     @abstractmethod
     def act(self,*args):
         pass 
+
+
+class QValueEstimator:
+    @abstractmethod
+    def predict(self, state, action):
+        pass
+
+    @abstractmethod
+    def update(self, state, action, target,*args):
+        pass
+
+class PolicyEstimator:
+    @abstractmethod
+    def predict(self, state):
+        pass
+
+    @abstractmethod
+    def update(self, state):
+        pass
+
+class ValueEstimator:
+    @abstractmethod
+    def predict(self, state):
+        pass
+
+    @abstractmethod
+    def update(self, state,target,*args):  
+        pass
+
+

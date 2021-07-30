@@ -34,6 +34,7 @@
 # /
 
 from abc import abstractmethod
+from common import ValueEstimator
 from math import ceil
 
 import numpy as np
@@ -46,18 +47,7 @@ import numpy as np
 # declaration at the top                                              #
 #######################################################################
 
-
-class VValueEstimator:
-    @abstractmethod
-    def predict(self, state):
-        pass
-
-    @abstractmethod
-    def update(self, alpha, state, target, discount=1.0, lamda=0.0):
-        pass
-
-
-class StateAggregationVValueEstimator(VValueEstimator):
+class StateAggregationVValueEstimator(ValueEstimator):
     def __init__(self,total_states,states_per_group):
         self.states_per_group = states_per_group 
         self.groups = ceil(total_states/states_per_group)       
@@ -68,9 +58,12 @@ class StateAggregationVValueEstimator(VValueEstimator):
     def predict(self, state):
         return self.weights[state//self.states_per_group]
     
-
-    def update(self,alpha,state, target, discount = 1.0, lamda=0.0):
+    def update(self,state, target,*args):
         delta = target-self.predict(state)
+        
+        alpha = args[0]
+        discount = args[1]
+        lamda = args[2]
 
         derivative_value = np.zeros(self.groups)
         derivative_value[state//self.states_per_group] = 1
@@ -81,13 +74,16 @@ class StateAggregationVValueEstimator(VValueEstimator):
 
 
 
-class LinearApproximationVVauleEstimator(VValueEstimator):
-    def __init__(self, order):
+class LinearApproximationVauleEstimator(ValueEstimator):
+    def __init__(self, order,discount=1.0,lamda=0.0,alpha=1.0):
         self.order = order
         self.weights = np.zeros(order + 1)
         # set up bases function
         self.bases = []
         self.eligibility = 0
+        self.discount = discount
+        self.lamda = lamda
+        self.alpha = alpha
 
     # get the value of @state
     def predict(self, state):
@@ -96,24 +92,25 @@ class LinearApproximationVVauleEstimator(VValueEstimator):
         return np.dot(self.weights, feature)
 
     
-    def update(self, alpha, state, target, discount=1.0, lamda=0.0):
+    def update(self, state, target, *args):
         delta = target - self.predict(state)
+
         # get derivative value
         derivative_value = np.asarray([func(state) for func in self.bases])
 
-        self.eligibility = self.eligibility*lamda*discount+derivative_value
+        self.eligibility = self.eligibility*self.lamda*self.discount+derivative_value
 
-        self.weights += alpha * delta * self.eligibility
+        self.weights += self.alpha * delta * self.eligibility
 
 
-class PolynomialBasesVValueEsitmator(LinearApproximationVVauleEstimator):
+class PolynomialBasesVValueEsitmator(LinearApproximationVauleEstimator):
     def __init__(self, order):
         super().__init__(order)
         for i in range(0, order + 1):
             self.bases.append(lambda s, i=i: pow(s, i))
 
 
-class FourierBasesVValueEsimator(LinearApproximationVVauleEstimator):
+class FourierBasesVValueEsimator(LinearApproximationVauleEstimator):
     def __init__(self, order):
         super().__init__(order)
         for i in range(0, order + 1):
