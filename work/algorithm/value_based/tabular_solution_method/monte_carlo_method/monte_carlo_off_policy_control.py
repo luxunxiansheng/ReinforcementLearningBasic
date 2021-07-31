@@ -40,13 +40,13 @@ import numpy as np
 from tqdm import tqdm
 
 
-from common import ActorBase
+from common import ActorBase, Agent
 from policy.policy import DiscreteStateValueTablePolicy
 from algorithm.value_based.tabular_solution_method.explorer import ESoftExplorer
 from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_critic import MonteCarloIncrementalCritic
 
 
-class MonteCarloOffPolicyControl:
+class MonteCarloOffPolicyAgent(Agent):
     """
     As described in 5.7 section of Sutton' book 
     1) Weighted importance sampling.
@@ -110,7 +110,7 @@ class MonteCarloOffPolicyControl:
 
         self.critic = MonteCarloIncrementalCritic(self.env.build_Q_table())
         explorer    = ESoftExplorer(DiscreteStateValueTablePolicy(self.env.build_policy_table()),self.critic) 
-        self.actor  = MonteCarloOffPolicyControl.MonteCarloActor(self.env,self.critic,explorer,statistics,discount)
+        self.actor  = MonteCarloOffPolicyAgent.MonteCarloActor(self.env,self.critic,explorer,statistics,discount)
 
     def learn(self):
         for episode in tqdm(range(0, self.episodes)):

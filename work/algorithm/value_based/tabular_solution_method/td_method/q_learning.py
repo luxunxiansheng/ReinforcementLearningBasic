@@ -32,6 +32,7 @@
 # /
 
 
+from common import Agent
 from tqdm import tqdm
 
 
@@ -57,7 +58,7 @@ class QLearningCritic(TDCritic):
         target = reward + self.discount*max_value
         self.update(current_state_index,current_action_index,target)
 
-class QLearning:
+class QLearningAgent(Agent):
     """
     The reason that Q-learning is off-policy is that it updates its Q-values using the Q-value of the 
     next state s' and the greedy action a' no matter what the current policy is .

@@ -34,8 +34,8 @@
 # /
 import copy
 
-from numpy.lib.function_base import piecewise
-from common import ActorBase, CriticBase
+
+from common import ActorBase, CriticBase, Agent
 from lib.utility import create_distribution_greedily
 from policy.policy import DiscreteStateValueTablePolicy
 from algorithm.value_based.tabular_solution_method.explorer import GreedyExplorer
@@ -128,7 +128,7 @@ class PolicyIterationActor(ActorBase):
                 return
 
 
-class PolicyIteration:
+class PolicyIterationAgent(Agent):
     """
     1. Policy iteration is a policy-based method.
     2. Because the previous values will be discarded once policy is explored, pollicy itration is

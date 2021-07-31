@@ -35,10 +35,11 @@
 
 
 
+
 import numpy as np
 from tqdm import tqdm
+from common import Agent
 from policy.policy import DiscreteStateValueTablePolicy
-
 from algorithm.value_based.tabular_solution_method.explorer import ESoftExplorer
 from algorithm.value_based.tabular_solution_method.td_method.td_critic import TDCritic
 from algorithm.value_based.tabular_solution_method.td_method.td_n_steps_actor import TDNStepsActor
@@ -76,7 +77,7 @@ class TDNSARSACritic(TDCritic):
                 G += np.power(self.discount, self.steps) *  self.get_value_function()[trajectory[current_timestamp][0]][trajectory[current_timestamp][1]]
             self.update(trajectory[updated_timestamp][0],trajectory[updated_timestamp][1],G)
 
-class TDNStepsSARSA:
+class TDNStepsSARSAAgent(Agent):
     def __init__(self,env,steps, statistics, episodes):
         self.env = env
         self.episodes = episodes

@@ -4,7 +4,7 @@ current_dir= os.path.dirname(os.path.realpath(__file__))
 work_folder=current_dir[:current_dir.find('algorithm')]
 sys.path.append(work_folder)
 
-from algorithm.policy_based.actor_critic.batch_actor_critic import BatchActorCritic
+from algorithm.policy_based.actor_critic.batch_actor_critic import BatchActorCriticAgent
 
 from env.mountain_car import MountainCarEnv
 
@@ -14,7 +14,7 @@ num_episodes = 500
 
 
 def test_batch_critic_actor_method(env):
-    batch_actor_actor=BatchActorCritic(env,num_episodes)
+    batch_actor_actor=BatchActorCriticAgent(env,num_episodes)
     batch_actor_actor.learn()
 
 #test_online_critic_actor_method(real_env)

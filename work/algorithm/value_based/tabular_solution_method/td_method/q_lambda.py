@@ -33,9 +33,11 @@
 
 
 
+
 from copy import deepcopy
 from tqdm import tqdm
 
+from common import Agent
 from algorithm.value_based.tabular_solution_method.explorer import ESoftExplorer
 from algorithm.value_based.tabular_solution_method.td_method.td_actor import  TDActor
 from algorithm.value_based.tabular_solution_method.td_method.td_lambda_critic import TDLambdaCritic
@@ -61,7 +63,7 @@ class QLearningLambdaCritic(TDLambdaCritic):
         self.update(current_state_index,current_action_index,target)  
 
 
-class QLambda:
+class QLambdaAgent(Agent):
     """
     Q-Learning algorithm with backward view : Off-policy TD control. Finds the optimal greedy policy
     while following an epsilon-greedy policy

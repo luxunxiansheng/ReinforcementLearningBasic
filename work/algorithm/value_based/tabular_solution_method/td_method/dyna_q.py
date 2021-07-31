@@ -39,7 +39,7 @@ from abc import abstractmethod
 import numpy as np
 from tqdm import tqdm
 
-from common import ActorBase
+from common import ActorBase, Agent
 
 from algorithm.value_based.tabular_solution_method.explorer import ESoftExplorer
 from algorithm.value_based.tabular_solution_method.td_method.q_learning import QLearningCritic
@@ -254,7 +254,7 @@ class PriorityModelActor(ActorBase):
             current_state_index = next_state_index
 
 
-class DynaQ:
+class DynaQAgent(Agent):
     
     TRIVAL = 1
     PRIORITY = 2
@@ -265,7 +265,7 @@ class DynaQ:
         self.critic = QLearningCritic(self.env.build_Q_table()) 
         explorer  = ESoftExplorer(DiscreteStateValueTablePolicy(self.env.build_policy_table()),self.critic) 
     
-        if model_type == DynaQ.TRIVAL:
+        if model_type == DynaQAgent.TRIVAL:
             self.actor = TrivalModelActor(env,self.critic,explorer,statistics)
         else:
             self.actor = PriorityModelActor(env,self.critic,explorer,statistics)

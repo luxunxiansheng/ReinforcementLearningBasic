@@ -33,7 +33,7 @@
 #
 # /
 from policy.policy import DiscreteStateValueTablePolicy
-from common import ActorBase, CriticBase, ExplorerBase
+from common import ActorBase, Agent, CriticBase
 from lib.utility import create_distribution_greedily
 
 
@@ -103,7 +103,7 @@ class ValueIterationActor(ActorBase):
             if delta < self.critic_delta:
                 break 
 
-class ValueIteration:
+class ValueIterationAgent(Agent):
     """
     One drawback of policy iteration method is each of its iterations involves policy 
     evalution, which may itself be a protracted iterative computation requiring multiple 

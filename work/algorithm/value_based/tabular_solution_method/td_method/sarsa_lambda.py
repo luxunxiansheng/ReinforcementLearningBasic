@@ -33,8 +33,10 @@
 #
 # /
 
+
 from tqdm import tqdm
 
+from common import Agent
 from policy.policy import DiscreteStateValueTablePolicy
 from algorithm.value_based.tabular_solution_method.explorer import ESoftExplorer
 from algorithm.value_based.tabular_solution_method.td_method.td_actor import TDActor
@@ -58,7 +60,7 @@ class SARSALambdaCritic(TDLambdaCritic):
         target = reward + self.discount * self.get_value_function()[next_state_index][next_action_index]
         self.update(current_state_index,current_action_index,target)
 
-class SARSALambda:
+class SARSALambdaAgent(Agent):
     """
     SARSA algorithm with backward view: On-policy TD control. Finds the optimal epsilon-greedy policy
     """

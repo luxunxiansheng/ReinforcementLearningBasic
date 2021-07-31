@@ -34,8 +34,6 @@
 # /
 
 from abc import ABC, abstractmethod
-import numpy as np
-
 
 class CriticBase(ABC):
     """
@@ -101,4 +99,8 @@ class ValueEstimator:
     def update(self, *args):  
         pass
 
+class Agent:
+    @abstractmethod
+    def learn(self):
+        pass 
 

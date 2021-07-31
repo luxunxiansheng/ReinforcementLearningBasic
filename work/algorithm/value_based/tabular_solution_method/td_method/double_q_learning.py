@@ -34,10 +34,12 @@
 # /
 
 
+
 from copy import deepcopy
 import numpy as np
 from tqdm import tqdm
 
+from common import Agent
 from algorithm.value_based.tabular_solution_method.explorer import ESoftExplorer
 from algorithm.value_based.tabular_solution_method.td_method.td_critic import TDCritic
 from algorithm.value_based.tabular_solution_method.td_method.td_actor import TDActor
@@ -84,7 +86,7 @@ class DoubleQLearningCritic(TDCritic):
         
 
 
-class DoubleQLearning:
+class DoubleQLearningAgent(Agent):
     '''
     Refer the article 'Double Q-Learning, the Easy Way'
     https://towardsdatascience.com/double-q-learning-the-easy-way-a924c4085ec3  

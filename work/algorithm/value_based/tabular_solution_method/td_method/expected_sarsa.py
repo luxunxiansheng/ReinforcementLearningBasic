@@ -33,11 +33,14 @@
 #
 # /
 
+from tqdm import tqdm
+
+from common import Agent
 from algorithm.value_based.tabular_solution_method.explorer import ESoftExplorer
 from algorithm.value_based.tabular_solution_method.td_method.td_actor import TDActor
 from algorithm.value_based.tabular_solution_method.td_method.td_critic import TDCritic
 from policy.policy import DiscreteStateValueTablePolicy
-from tqdm import tqdm
+
 
 class ExpectedSARSACritic(TDCritic):
     def __init__(self,value_table,policy,step_size=0.1,discount=1.0):
@@ -61,7 +64,7 @@ class ExpectedSARSACritic(TDCritic):
         self.update(current_state_index,current_action_index,target)
 
 
-class ExpectedSARSA:
+class ExpectedSARSAAgent(Agent):
     def __init__(self,env, statistics, episodes):
         self.env = env
         self.episodes = episodes

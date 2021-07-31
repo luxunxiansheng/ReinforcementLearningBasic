@@ -43,7 +43,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
 
-from common import ActorBase, ExplorerBase,CriticBase,PolicyEstimator, ValueEstimator
+from common import ActorBase, Agent, ExplorerBase,CriticBase,PolicyEstimator, ValueEstimator
 
 class ValueEstimator(ValueEstimator):
     class Model(nn.Module):
@@ -234,7 +234,7 @@ class Actor(ActorBase):
         return trajectory
 
 
-class BatchActorCritic:
+class BatchActorCriticAgent(Agent):
     def __init__(self,env,num_episodes):
         self.env = env 
         

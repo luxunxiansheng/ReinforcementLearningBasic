@@ -32,6 +32,7 @@
 # #### END LICENSE BLOCK #####
 #
 # /
+from common import Agent
 from tqdm import tqdm
 from policy.policy import DiscreteStateValueTablePolicy
 
@@ -59,7 +60,7 @@ class SARSACritic(TDCritic):
         target = reward + self.discount * self.get_value_function()[next_state_index][next_action_index]
         self.update(current_state_index,current_action_index,target)
 
-class SARSA:
+class SARSAAgent(Agent):
     """
     SARSA algorithm: On-policy TD control. 
     """
