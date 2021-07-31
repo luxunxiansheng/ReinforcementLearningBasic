@@ -36,7 +36,7 @@
 
 from common import CriticBase
 from lib.utility import create_distribution_greedily
-from policy.policy import DiscreteStateValueBasedPolicy
+from policy.policy import DiscreteStateValueTablePolicy
 
 
 class TDCritic(CriticBase):
@@ -73,6 +73,6 @@ class TDCritic(CriticBase):
             q_values = self.value_function[state_index]
             greedy_distibution = self.create_distribution_greedily(q_values)
             policy_table[state_index] = greedy_distibution
-        table_policy = DiscreteStateValueBasedPolicy(policy_table)
+        table_policy = DiscreteStateValueTablePolicy(policy_table)
         return table_policy
         

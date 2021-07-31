@@ -39,7 +39,7 @@ from tqdm import tqdm
 from common import CriticBase
 from algorithm.value_based.approximate_solution_method.actor import Actor
 from algorithm.value_based.approximate_solution_method.explorer import ESoftExplorer
-from policy.policy import ContinuousStateValueBasedPolicy
+from policy.policy import ContinuousStateValueTablePolicy
 
 class ApproximationSARSACritic(CriticBase):
     def __init__(self,env,estimator,policy,step_size=0.01,discount= 1.0):
@@ -78,7 +78,7 @@ class EpisodicSemiGradientSarsaControl:
         self.env = env
         self.episodes = episodes
 
-        policy =       ContinuousStateValueBasedPolicy(estimator,self.env.action_space.n)
+        policy =       ContinuousStateValueTablePolicy(estimator,self.env.action_space.n)
         self.critic =  ApproximationSARSACritic(env,estimator,policy) 
         explorer    =  ESoftExplorer(policy)
         self.actor  =  Actor(env,self.critic,explorer,statistics)

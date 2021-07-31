@@ -58,13 +58,17 @@ class StateAggregationVValueEstimator(ValueEstimator):
     def predict(self, state):
         return self.weights[state//self.states_per_group]
     
-    def update(self,state, target,*args):
+    def update(self,*args):
+        
+        state = args[0]
+        target= args[1]
+        
+        alpha = args[2]
+        discount = args[3]
+        lamda = args[4]    
+        
         delta = target-self.predict(state)
         
-        alpha = args[0]
-        discount = args[1]
-        lamda = args[2]
-
         derivative_value = np.zeros(self.groups)
         derivative_value[state//self.states_per_group] = 1
 
@@ -92,7 +96,10 @@ class LinearApproximationVauleEstimator(ValueEstimator):
         return np.dot(self.weights, feature)
 
     
-    def update(self, state, target, *args):
+    def update(self, *args):
+        state = args[0]
+        target = args[1]
+
         delta = target - self.predict(state)
 
         # get derivative value

@@ -33,7 +33,7 @@
 #
 # /
 
-from policy.policy import ContinuousStateValueBasedPolicy
+from policy.policy import ContinuousStateValueTablePolicy
 from tqdm import tqdm
 
 from common import CriticBase
@@ -82,7 +82,7 @@ class EpisodicSemiGradientQLearningControl:
         self.episodes = episodes
 
         self.critic =  ApproximationQLearningCritic(env,estimator) 
-        behavior_policy = ContinuousStateValueBasedPolicy(estimator,self.env.action_space.n)
+        behavior_policy = ContinuousStateValueTablePolicy(estimator,self.env.action_space.n)
         explorer    =  BoltzmannExplorer(behavior_policy)
         self.actor  =  Actor(env,self.critic,explorer,statistics)
 

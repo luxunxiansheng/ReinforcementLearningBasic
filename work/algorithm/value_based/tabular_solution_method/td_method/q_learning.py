@@ -35,7 +35,7 @@
 from tqdm import tqdm
 
 
-from policy.policy import DiscreteStateValueBasedPolicy
+from policy.policy import DiscreteStateValueTablePolicy
 from algorithm.value_based.tabular_solution_method.explorer import ESoftExplorer
 from algorithm.value_based.tabular_solution_method.td_method.td_actor import TDActor
 from algorithm.value_based.tabular_solution_method.td_method.td_critic import TDCritic
@@ -66,7 +66,7 @@ class QLearning:
         self.env = env
         self.episodes = episodes
         self.critic = QLearningCritic(self.env.build_Q_table()) 
-        explorer  = ESoftExplorer(DiscreteStateValueBasedPolicy(self.env.build_policy_table()),self.critic) 
+        explorer  = ESoftExplorer(DiscreteStateValueTablePolicy(self.env.build_policy_table()),self.critic) 
         self.actor = TDActor(env,self.critic,explorer,statistics)
 
 

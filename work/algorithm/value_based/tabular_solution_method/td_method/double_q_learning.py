@@ -41,7 +41,7 @@ from tqdm import tqdm
 from algorithm.value_based.tabular_solution_method.explorer import ESoftExplorer
 from algorithm.value_based.tabular_solution_method.td_method.td_critic import TDCritic
 from algorithm.value_based.tabular_solution_method.td_method.td_actor import TDActor
-from policy.policy import DiscreteStateValueBasedPolicy
+from policy.policy import DiscreteStateValueTablePolicy
 
 class DoubleQLearningCritic(TDCritic):
     """
@@ -95,7 +95,7 @@ class DoubleQLearning:
         self.episodes = episodes
         self.statistics = statistics
         self.critic = DoubleQLearningCritic(self.env.build_Q_table())
-        explorer  = ESoftExplorer(DiscreteStateValueBasedPolicy(self.env.build_policy_table()),self.critic)  
+        explorer  = ESoftExplorer(DiscreteStateValueTablePolicy(self.env.build_policy_table()),self.critic)  
         self.actor = TDActor(env,self.critic,explorer,statistics)
 
     def learn(self):

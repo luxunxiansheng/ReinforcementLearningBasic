@@ -33,6 +33,7 @@
 #
 # /
 from collections import namedtuple
+from policy.policy import Policy
 import numpy as np 
 from tqdm import tqdm
 
@@ -42,9 +43,9 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
 
-from common import ExplorerBase,CriticBase, ValueEstimator
+from common import ActorBase, ExplorerBase,CriticBase,PolicyEstimator, ValueEstimator
 
-class ValueEestimator(ValueEstimator):
+class ValueEstimator(ValueEstimator):
     class Model(nn.Module):
         def __init__(self,observation_space_size):
             super().__init__()
@@ -59,14 +60,14 @@ class ValueEestimator(ValueEstimator):
             return state_value
 
     def __init__(self,observation_space_size):
-        self.model = ValueEestimator.Model(observation_space_size)
+        self.model = ValueEstimator.Model(observation_space_size)
         self.optimizer = optim.Adam(self.model.parameters(),lr =1e-3)
         
     def predict(self,state):
         value = self.model.forward(state)
         return value
 
-    def update(self,state,target,*args):
+    def update(self,*args):
         loss = args[0]
         self.optimizer.zero_grad()
         loss.backward()
@@ -77,7 +78,7 @@ class BatchCritic(CriticBase):
         self.estimator = value_estimator
         self.discount  = discount
     
-    def exploit(self,*args):
+    def evaluate(self,*args):
         trajectory = args[0]
         episode = args[1]
         writer = args[2]
@@ -95,7 +96,7 @@ class BatchCritic(CriticBase):
             returns.insert(0,G)
 
         returns = torch.tensor(returns)
-        returns = (returns-returns.mean())/(returns.std()+BatchCriticActor.EPS)
+        returns = (returns-returns.mean())/(returns.std()+Actor.EPS)
 
         for value, G in zip(state_values,returns):
             value_losses.append(F.smooth_l1_loss(value,torch.tensor([G])))
@@ -107,8 +108,10 @@ class BatchCritic(CriticBase):
     def get_value_function(self):
         return self.estimator
 
+    def get_optimal_policy(self):
+        pass 
 
-class PolicyEsitmator:
+class PolicyEsitmator(PolicyEstimator):
     class Model(nn.Module):
         def __init__(self,observation_space_size,action_space_size):
             super().__init__()
@@ -135,8 +138,23 @@ class PolicyEsitmator:
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
+
+class ParameterizedPolicy(Policy):
+    def __init__(self,policy_estimator):
+        self.policy_estimator = policy_estimator
+    
+    def get_discrete_distribution(self, state):
+        return self.policy_estimator.predict(state).detach().numpy()
+    
+    def get_discrete_distribution_tensor(self, state):
+        return self.policy_estimator.predict(state)
+    
+    def get_action(self, state):
+        distribution= self.get_discrete_distribution(state)
+        action = np.random.choice(np.arange(len(distribution)), p=distribution)
+        return action
         
-class BatchActor(ExplorerBase):
+class PolicyGridentExplorer(ExplorerBase):
     ENTROY_BETA = 0.0
     
     def __init__(self,policy,discount=1.0):
@@ -164,45 +182,43 @@ class BatchActor(ExplorerBase):
             state_values.insert(0,state_value)
             returns.insert(0,G)
         returns = torch.tensor(returns)
-        returns = (returns-returns.mean())/(returns.std()+BatchCriticActor.EPS)
+        returns = (returns-returns.mean())/(returns.std()+Actor.EPS)
 
         for log_action_prob,state_value, G in zip(log_action_probs,state_values,returns):
             advantage = G - state_value.detach()
             policy_losses.append(-log_action_prob*advantage)
         
         total_policy_loss = torch.stack(policy_losses).sum()
-        total_loss =  total_policy_loss - BatchActor.ENTROY_BETA*torch.stack(entroys).sum()
+        total_loss =  total_policy_loss - PolicyGridentExplorer.ENTROY_BETA*torch.stack(entroys).sum()
         writer.add_scalar('policy_loss',total_policy_loss,episode)
-        self.policy.estimator.update(total_loss)
+        self.policy.policy_estimator.update(total_loss)
 
     def get_behavior_policy(self):
         return self.policy
-
-
-class BatchCriticActor:
+    
+class Actor(ActorBase):
     EPS = np.finfo(np.float32).eps.item()
     MAX_STEPS = 500000
-    def  __init__(self,critic,actor,env,num_episodes):
-        self.critic=critic 
-        self.actor= actor
+    def  __init__(self,env,critic,explorer,writer):
         self.env = env
-        self.num_episodes = num_episodes
-        self.writer = SummaryWriter()
+        self.critic=critic 
+        self.explorer= explorer
+        self.writer = writer
             
-    def explore(self):
-        for episode in tqdm(range(0,self.num_episodes)):
-            trajectory = self._run_one_episode(episode)    
-            if len(trajectory)< BatchCriticActor.MAX_STEPS:
-                self.critic.exploit(trajectory,episode,self.writer)
-                self.actor.explore(trajectory,episode,self.writer)
+    def act(self,*args):
+        episode=args[0]
+        trajectory = self._run_one_episode(episode)    
+        if len(trajectory)< Actor.MAX_STEPS:
+            self.critic.evaluate(trajectory,episode,self.writer)
+            self.explorer.explore(trajectory,episode,self.writer)
         
     def _run_one_episode(self,episode):
         trajectory = []
         current_state = self.env.reset()
         
-        for step in tqdm(range(0,BatchCriticActor.MAX_STEPS)):
-            action_index = self.actor.get_behavior_policy().get_action(current_state)
-            distribution = self.actor.get_behavior_policy().get_discrete_distribution_tensor(current_state)
+        for step in tqdm(range(0,Actor.MAX_STEPS)):
+            action_index = self.explorer.get_behavior_policy().get_action(current_state)
+            distribution = self.explorer.get_behavior_policy().get_discrete_distribution_tensor(current_state)
             entropy = torch.distributions.Categorical(distribution).entropy()
             action_prob = distribution[action_index]
             state_value  = self.critic.get_value_function().predict(current_state)
@@ -216,3 +232,24 @@ class BatchCriticActor:
                 break
             current_state = observation[0]
         return trajectory
+
+
+class BatchActorCritic:
+    def __init__(self,env,num_episodes):
+        self.env = env 
+        
+        value_esitimator = ValueEstimator(self.env.observation_space.shape[0])
+        self.critic=BatchCritic(value_esitimator)
+
+        policy_estimator = PolicyEsitmator(self.env.observation_space.shape[0],self.env.action_space.n)
+        policy= ParameterizedPolicy(policy_estimator)
+        self.explorer= PolicyGridentExplorer(policy)
+        
+        self.writer = SummaryWriter()
+        self.actor = Actor(self.env,self.critic,self.explorer,self.writer)
+
+        self.num_episodes = num_episodes
+    
+    def learn(self):
+        for episode in tqdm(range(0, self.num_episodes)):
+            self.actor.act(episode)

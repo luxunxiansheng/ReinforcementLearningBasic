@@ -43,7 +43,7 @@ from common import ActorBase
 
 from algorithm.value_based.tabular_solution_method.explorer import ESoftExplorer
 from algorithm.value_based.tabular_solution_method.td_method.q_learning import QLearningCritic
-from policy.policy import DiscreteStateValueBasedPolicy
+from policy.policy import DiscreteStateValueTablePolicy
 
 #######################################################################
 # Copyright (C)                                                       #
@@ -263,7 +263,7 @@ class DynaQ:
         self.env = env
         self.episodes = episodes
         self.critic = QLearningCritic(self.env.build_Q_table()) 
-        explorer  = ESoftExplorer(DiscreteStateValueBasedPolicy(self.env.build_policy_table()),self.critic) 
+        explorer  = ESoftExplorer(DiscreteStateValueTablePolicy(self.env.build_policy_table()),self.critic) 
     
         if model_type == DynaQ.TRIVAL:
             self.actor = TrivalModelActor(env,self.critic,explorer,statistics)

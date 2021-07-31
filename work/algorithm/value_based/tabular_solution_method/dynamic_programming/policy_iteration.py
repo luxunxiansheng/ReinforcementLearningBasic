@@ -37,7 +37,7 @@ import copy
 from numpy.lib.function_base import piecewise
 from common import ActorBase, CriticBase
 from lib.utility import create_distribution_greedily
-from policy.policy import DiscreteStateValueBasedPolicy
+from policy.policy import DiscreteStateValueTablePolicy
 from algorithm.value_based.tabular_solution_method.explorer import GreedyExplorer
 
 class BellmanCritic(CriticBase):
@@ -87,7 +87,7 @@ class BellmanCritic(CriticBase):
             v_values = self.value_function[state_index]
             greedy_distibution = self.create_distribution_greedily(v_values)
             policy_table[state_index] = greedy_distibution
-        table_policy = DiscreteStateValueBasedPolicy(policy_table)
+        table_policy = DiscreteStateValueTablePolicy(policy_table)
         return table_policy
         
 
@@ -137,7 +137,7 @@ class PolicyIteration:
 
     def __init__(self,env,critic_delta=1e-5, policy_delta = 1e-5, discount = 1.0):
         self.env = env 
-        self.policy = DiscreteStateValueBasedPolicy(self.env.build_policy_table())
+        self.policy = DiscreteStateValueTablePolicy(self.env.build_policy_table())
         self.value_funciton = self.env.build_Q_table()
         transition_table = env.P 
 

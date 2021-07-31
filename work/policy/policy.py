@@ -43,25 +43,7 @@ class Policy(ABC):
         pass
 
 
-class DiscreteActionPolicy(ABC):
-    """
-    A policy defines the learning agent's way of behaving at a given time. Roughly speaking,
-    a policy is a mapping from perceived states of the environment to actions to be taken
-    when in those states. It corresponds to what in psychology would be called a set of
-    stimulus-response rules or associations. In some cases the policy may be a simple function
-    or lookup table, whereas in others it may involve extensive computation such as a search
-    process. The policy is the core of a reinforcement learning agent in the sense that it alone
-    is suficient to determine behavior. In general, policies may be stochastic.
-    """
-    @abstractmethod
-    def get_discrete_distribution(self,state):
-        pass   
-
-    @abstractmethod 
-    def get_action(self, state):
-        pass
-
-class DiscreteStateValueBasedPolicy(Policy):
+class DiscreteStateValueTablePolicy(Policy):
     def __init__(self,policy_table):
         self.policy_table = policy_table
 
@@ -70,7 +52,7 @@ class DiscreteStateValueBasedPolicy(Policy):
         action = np.random.choice(np.arange(len(distribution)), p=distribution)
         return action
 
-class ContinuousStateValueBasedPolicy(Policy):
+class ContinuousStateValueTablePolicy(Policy):
     def __init__(self,value_esitmator,action_space_num,create_distribution_fn=None):
         self.value_esitmator = value_esitmator
         self.action_space_num = action_space_num
@@ -92,19 +74,8 @@ class ContinuousStateValueBasedPolicy(Policy):
         return distribution 
 
 
-class ParameterizedPolicy(DiscreteActionPolicy):
-    """
-    In tabular policy, the actions' probability distribution is built from the Q values. In ParameterizedPolicy, the distribution 
-    is a direct output of a parameterized differentiable  function. 
-    """
-    
-    def __init__(self,estimator):
-        self.estimator = estimator
-
-    def get_discrete_distribution(self, state):
-        return self.estimator.predict(state).detach().numpy()
-    
-    def get_discrete_distribution_tensor(self, state):
-        return self.estimator.predict(state)
 
     
+
+    
+

@@ -39,7 +39,7 @@ from tqdm import tqdm
 from algorithm.value_based.tabular_solution_method.explorer import ESoftExplorer
 from algorithm.value_based.tabular_solution_method.td_method.td_actor import  TDActor
 from algorithm.value_based.tabular_solution_method.td_method.td_lambda_critic import TDLambdaCritic
-from policy.policy import DiscreteStateValueBasedPolicy
+from policy.policy import DiscreteStateValueTablePolicy
 
 
 class QLearningLambdaCritic(TDLambdaCritic):
@@ -71,7 +71,7 @@ class QLambda:
         self.episodes = episodes
             
         self.critic = QLearningLambdaCritic(self.env.build_Q_table())
-        explorer  = ESoftExplorer(DiscreteStateValueBasedPolicy(self.env.build_policy_table()),self.critic) 
+        explorer  = ESoftExplorer(DiscreteStateValueTablePolicy(self.env.build_policy_table()),self.critic) 
         self.actor = TDActor(env,self.critic,explorer,statistics) 
 
     def learn(self):

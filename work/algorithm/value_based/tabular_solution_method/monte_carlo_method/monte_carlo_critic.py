@@ -38,7 +38,7 @@ from collections import defaultdict
 from lib.utility import create_distribution_greedily
 from common import CriticBase
 
-from policy.policy import DiscreteStateValueBasedPolicy
+from policy.policy import DiscreteStateValueTablePolicy
 
 class MonteCarloIncrementalCritic(CriticBase):
     def __init__(self, q_value_function):
@@ -78,7 +78,7 @@ class MonteCarloIncrementalCritic(CriticBase):
             q_values = self.get_value_function()[state_index]
             greedy_distibution = self.create_distribution_greedily(q_values)
             policy_table[state_index] = greedy_distibution
-        table_policy = DiscreteStateValueBasedPolicy(policy_table)
+        table_policy = DiscreteStateValueTablePolicy(policy_table)
         return table_policy
     
 class MonteCarloAverageCritic(CriticBase):
@@ -112,5 +112,5 @@ class MonteCarloAverageCritic(CriticBase):
             q_values = self.get_value_function()[state_index]
             greedy_distibution = self.create_distribution_greedily(q_values)
             policy_table[state_index] = greedy_distibution
-        table_policy = DiscreteStateValueBasedPolicy(policy_table)
+        table_policy = DiscreteStateValueTablePolicy(policy_table)
         return table_policy

@@ -36,7 +36,7 @@
 from copy import deepcopy
 
 from common import CriticBase
-from policy.policy import DiscreteStateValueBasedPolicy
+from policy.policy import DiscreteStateValueTablePolicy
 
 class TDLambdaCritic(CriticBase):
     def __init__(self,value_function,step_size=0.1,discount=1.0,lamb=0.01):
@@ -94,5 +94,5 @@ class TDLambdaCritic(CriticBase):
             q_values = self.value_function[state_index]
             greedy_distibution = self.create_distribution_greedily(q_values)
             policy_table[state_index] = greedy_distibution
-        table_policy = DiscreteStateValueBasedPolicy(policy_table)
+        table_policy = DiscreteStateValueTablePolicy(policy_table)
         return table_policy

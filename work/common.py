@@ -37,28 +37,6 @@ from abc import ABC, abstractmethod
 import numpy as np
 
 
-class PolicyBase(ABC):
-    """
-    A policy defines the learning agent's way of behaving at a given time. Roughly speaking,
-    a policy is a mapping from perceived states of the environment to actions to be taken
-    when in those states. It corresponds to what in psychology would be called a set of
-    stimulus-response rules or associations. In some cases the policy may be a simple function
-    or lookup table, whereas in others it may involve extensive computation such as a search
-    process. The policy is the core of a reinforcement learning agent in the sense that it alone
-    is suficient to determine behavior. In general, policies may be stochastic.
-
-    """
-
-    @abstractmethod
-    def _construct_distribution(self, state):
-        pass
-
-    def get_action(self, state):
-        distribution = self._construct_distribution(state)
-        action = np.random.choice(np.arange(len(distribution)), p=distribution)
-        return action
-
-
 class CriticBase(ABC):
     """
     The critic calculates the value of state or value of (state,action) pair by following target policy. 
@@ -102,7 +80,7 @@ class QValueEstimator:
         pass
 
     @abstractmethod
-    def update(self, state, action, target,*args):
+    def update(self, *args):
         pass
 
 class PolicyEstimator:
@@ -111,7 +89,7 @@ class PolicyEstimator:
         pass
 
     @abstractmethod
-    def update(self, state):
+    def update(self, *args):
         pass
 
 class ValueEstimator:
@@ -120,7 +98,7 @@ class ValueEstimator:
         pass
 
     @abstractmethod
-    def update(self, state,target,*args):  
+    def update(self, *args):  
         pass
 
 

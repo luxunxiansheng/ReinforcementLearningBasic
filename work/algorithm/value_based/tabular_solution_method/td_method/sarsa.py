@@ -33,7 +33,7 @@
 #
 # /
 from tqdm import tqdm
-from policy.policy import DiscreteStateValueBasedPolicy
+from policy.policy import DiscreteStateValueTablePolicy
 
 from algorithm.value_based.tabular_solution_method.explorer import ESoftExplorer
 from algorithm.value_based.tabular_solution_method.td_method.td_actor import TDActor
@@ -69,7 +69,7 @@ class SARSA:
         self.episodes = episodes
     
         # critic and exploler share the same policy (on-policy)
-        self.policy = DiscreteStateValueBasedPolicy(self.env.build_policy_table())
+        self.policy = DiscreteStateValueTablePolicy(self.env.build_policy_table())
         self.critic = SARSACritic(self.env.build_Q_table(),self.policy)
         explorer = ESoftExplorer(self.policy,self.critic)
         #explorer = BoltzmannExplorer(self.policy,self.critic)

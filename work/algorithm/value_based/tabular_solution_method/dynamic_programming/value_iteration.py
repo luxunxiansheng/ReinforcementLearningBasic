@@ -32,7 +32,7 @@
 # #### END LICENSE BLOCK #####
 #
 # /
-from policy.policy import DiscreteStateValueBasedPolicy
+from policy.policy import DiscreteStateValueTablePolicy
 from common import ActorBase, CriticBase, ExplorerBase
 from lib.utility import create_distribution_greedily
 
@@ -77,7 +77,7 @@ class BellmanOptimalCritic(CriticBase):
             v_values = self.value_function[state_index]
             greedy_distibution = self.create_distribution_greedily(v_values)
             policy_table[state_index] = greedy_distibution
-        table_policy = DiscreteStateValueBasedPolicy(policy_table)
+        table_policy = DiscreteStateValueTablePolicy(policy_table)
         return table_policy
     
     def get_value_function(self):
@@ -122,7 +122,7 @@ class ValueIteration:
 
     def __init__(self,env,critic_delta=1e-5, discount = 1.0):
         self.env = env 
-        self.policy = DiscreteStateValueBasedPolicy(self.env.build_policy_table())
+        self.policy = DiscreteStateValueTablePolicy(self.env.build_policy_table())
         self.value_funciton = self.env.build_Q_table()
         transition_table = env.P 
 
