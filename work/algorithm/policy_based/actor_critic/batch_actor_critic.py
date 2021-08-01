@@ -33,45 +33,17 @@
 #
 # /
 from collections import namedtuple
-from policy.policy import Policy
-import numpy as np 
+
+import numpy as np
+import torch
+import torch.nn.functional as F
+
+from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
-from torch.utils.tensorboard import SummaryWriter
+from common import (ActorBase, Agent, CriticBase,ExplorerBase)
+from algorithm.policy_based.actor_critic.actor_critic_common import (DeepPolicyEsitmator, DeepValueEstimator, ParameterizedPolicy)
 
-from common import ActorBase, Agent, ExplorerBase,CriticBase,PolicyEstimator, ValueEstimator
-
-class ValueEstimator(ValueEstimator):
-    class Model(nn.Module):
-        def __init__(self,observation_space_size):
-            super().__init__()
-            self.affine = nn.Linear(observation_space_size, 128)
-            self.dropout = nn.Dropout(p=0.6)
-            self.value_head = nn.Linear(128, 1)
-
-        def forward(self, state):
-            state = torch.from_numpy(state).float()
-            state = F.relu(self.dropout(self.affine(state)))
-            state_value = self.value_head(state)
-            return state_value
-
-    def __init__(self,observation_space_size):
-        self.model = ValueEstimator.Model(observation_space_size)
-        self.optimizer = optim.Adam(self.model.parameters(),lr =1e-3)
-        
-    def predict(self,state):
-        value = self.model.forward(state)
-        return value
-
-    def update(self,*args):
-        loss = args[0]
-        self.optimizer.zero_grad()
-        loss.backward()
-        self.optimizer.step()
 
 class BatchCritic(CriticBase):
     def __init__(self,value_estimator,discount=1.0):
@@ -96,7 +68,7 @@ class BatchCritic(CriticBase):
             returns.insert(0,G)
 
         returns = torch.tensor(returns)
-        returns = (returns-returns.mean())/(returns.std()+Actor.EPS)
+        returns = (returns-returns.mean())/(returns.std()+BatchActor.EPS)
 
         for value, G in zip(state_values,returns):
             value_losses.append(F.smooth_l1_loss(value,torch.tensor([G])))
@@ -111,48 +83,6 @@ class BatchCritic(CriticBase):
     def get_optimal_policy(self):
         pass 
 
-class PolicyEsitmator(PolicyEstimator):
-    class Model(nn.Module):
-        def __init__(self,observation_space_size,action_space_size):
-            super().__init__()
-            self.affine = nn.Linear(observation_space_size, 128)
-            self.dropout = nn.Dropout(p=0.6)
-            self.action_head = nn.Linear(128, action_space_size)
-            
-        def forward(self, state):
-            state = torch.from_numpy(state).float()
-            state = F.relu(self.dropout(self.affine(state)))
-            actions_prob = F.softmax(self.action_head(state),dim=0)
-            return actions_prob
-    
-    def __init__(self,observation_space_size,action_space_size):
-        self.model = PolicyEsitmator.Model(observation_space_size,action_space_size)
-        self.optimizer = optim.Adam(self.model.parameters(),lr =1e-3)
-    
-    def predict(self,state):
-        actions_prob=self.model.forward(state)
-        return actions_prob
-
-    def update(self,*args):
-        loss = args[0]
-        self.optimizer.zero_grad()
-        loss.backward()
-        self.optimizer.step()
-
-class ParameterizedPolicy(Policy):
-    def __init__(self,policy_estimator):
-        self.policy_estimator = policy_estimator
-    
-    def get_discrete_distribution(self, state):
-        return self.policy_estimator.predict(state).detach().numpy()
-    
-    def get_discrete_distribution_tensor(self, state):
-        return self.policy_estimator.predict(state)
-    
-    def get_action(self, state):
-        distribution= self.get_discrete_distribution(state)
-        action = np.random.choice(np.arange(len(distribution)), p=distribution)
-        return action
         
 class PolicyGridentExplorer(ExplorerBase):
     ENTROY_BETA = 0.0
@@ -182,7 +112,7 @@ class PolicyGridentExplorer(ExplorerBase):
             state_values.insert(0,state_value)
             returns.insert(0,G)
         returns = torch.tensor(returns)
-        returns = (returns-returns.mean())/(returns.std()+Actor.EPS)
+        returns = (returns-returns.mean())/(returns.std()+BatchActor.EPS)
 
         for log_action_prob,state_value, G in zip(log_action_probs,state_values,returns):
             advantage = G - state_value.detach()
@@ -196,7 +126,7 @@ class PolicyGridentExplorer(ExplorerBase):
     def get_behavior_policy(self):
         return self.policy
     
-class Actor(ActorBase):
+class BatchActor(ActorBase):
     EPS = np.finfo(np.float32).eps.item()
     MAX_STEPS = 500000
     def  __init__(self,env,critic,explorer,writer):
@@ -208,7 +138,7 @@ class Actor(ActorBase):
     def act(self,*args):
         episode=args[0]
         trajectory = self._run_one_episode(episode)    
-        if len(trajectory)< Actor.MAX_STEPS:
+        if len(trajectory)< BatchActor.MAX_STEPS:
             self.critic.evaluate(trajectory,episode,self.writer)
             self.explorer.explore(trajectory,episode,self.writer)
         
@@ -216,7 +146,7 @@ class Actor(ActorBase):
         trajectory = []
         current_state = self.env.reset()
         
-        for step in tqdm(range(0,Actor.MAX_STEPS)):
+        for step in range(0,BatchActor.MAX_STEPS):
             action_index = self.explorer.get_behavior_policy().get_action(current_state)
             distribution = self.explorer.get_behavior_policy().get_discrete_distribution_tensor(current_state)
             entropy = torch.distributions.Categorical(distribution).entropy()
@@ -238,15 +168,15 @@ class BatchActorCriticAgent(Agent):
     def __init__(self,env,num_episodes):
         self.env = env 
         
-        value_esitimator = ValueEstimator(self.env.observation_space.shape[0])
+        value_esitimator = DeepValueEstimator(self.env.observation_space.shape[0])
         self.critic=BatchCritic(value_esitimator)
 
-        policy_estimator = PolicyEsitmator(self.env.observation_space.shape[0],self.env.action_space.n)
+        policy_estimator = DeepPolicyEsitmator(self.env.observation_space.shape[0],self.env.action_space.n)
         policy= ParameterizedPolicy(policy_estimator)
         self.explorer= PolicyGridentExplorer(policy)
         
         self.writer = SummaryWriter()
-        self.actor = Actor(self.env,self.critic,self.explorer,self.writer)
+        self.actor = BatchActor(self.env,self.critic,self.explorer,self.writer)
 
         self.num_episodes = num_episodes
     
