@@ -33,11 +33,11 @@
 #
 # /
 
-from abc import ABC, abstractmethod
+from abc import ABCMeta, abstractmethod
 
 import numpy as np
 
-class Policy(ABC):
+class Policy(metaclass=ABCMeta):
     @abstractmethod
     def get_action(self,state):
         pass

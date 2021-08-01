@@ -32,58 +32,24 @@
 # #### END LICENSE BLOCK #####
 #
 # /
+from algorithm.policy_based.actor_critic.actor_critic_common import DeepPolicyEsitmator, DeepValueEstimator, ParameterizedPolicy
 from collections import namedtuple
 import numpy as np 
 from tqdm import tqdm
 
 import torch
-import torch.nn as nn
+
 import torch.nn.functional as F
-import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
+from common import ActorBase, Agent, ExplorerBase,CriticBase
 
-
-from common import ExplorerBase,CriticBase
-
-'''
-We take two networks in this case just for clarity but for 
-sure it is ok to reduce to one for efficiency.
-'''
-
-class ValueEestimator(ValueEstimator):
-    class Model(nn.Module):
-        def __init__(self,observation_space_size):
-            super().__init__()
-            self.affine = nn.Linear(observation_space_size, 128)
-            self.dropout = nn.Dropout(p=0.6)
-            self.value_head = nn.Linear(128, 1)
-
-        def forward(self, state):
-            state = torch.from_numpy(state).float()
-            state = F.relu(self.dropout(self.affine(state)))
-            state_value = self.value_head(state)
-            return state_value
-
-    def __init__(self,observation_space_size):
-        self.model = ValueEestimator.Model(observation_space_size)
-        self.optimizer = optim.Adam(self.model.parameters(),lr =1e-3)
-        
-    def predict(self,state):
-        value = self.model.forward(state)
-        return value
-
-    def update(self,*args):
-        loss = args[0]
-        self.optimizer.zero_grad()
-        loss.backward()
-        self.optimizer.step()
 
 class OnlineCritic(CriticBase):
     def __init__(self,value_estimator,discount=1.0):
         self.estimator = value_estimator
         self.discount  = discount
     
-    def exploit(self,*args):
+    def evaluate(self,*args):
         current_state_index = args[0]
         reward = args[1]
         next_state_index = args[2]    
@@ -105,39 +71,11 @@ class OnlineCritic(CriticBase):
     
     def get_value_function(self):
         return self.estimator
-
-class PolicyEsitmator:
-    class Model(nn.Module):
-        def __init__(self,observation_space_size,action_space_size):
-            super().__init__()
-            self.affine = nn.Linear(observation_space_size, 128)
-            self.dropout = nn.Dropout(p=0.6)
-            self.action_head = nn.Linear(128, action_space_size)
-            
-        def forward(self, state):
-            state = torch.from_numpy(state).float()
-            state = self.affine(state)
-            state = self.dropout(state)
-            state = F.relu(state)
-            state = self.action_head(state)
-            actions_prob = F.softmax(state,dim=0)
-            return actions_prob
     
-    def __init__(self,observation_space_size,action_space_size):
-        self.model = PolicyEsitmator.Model(observation_space_size,action_space_size)
-        self.optimizer = optim.Adam(self.model.parameters(),lr =1e-3)
-    
-    def predict(self,state):
-        actions_prob=self.model.forward(state)
-        return actions_prob
-
-    def update(self,*args):
-        loss = args[0]
-        self.optimizer.zero_grad()
-        loss.backward()
-        self.optimizer.step()
+    def get_optimal_policy(self):
+        pass 
         
-class OnlineActor(ExplorerBase):
+class PolicyGridentExplorer(ExplorerBase):
     def __init__(self,policy,critic,discount=1.0):
         self.policy = policy 
         self.discount = discount
@@ -145,45 +83,45 @@ class OnlineActor(ExplorerBase):
         
     def explore(self,*args):
         current_state_index = args[0]
-        reward = args[1]
-        action_prob = args[2]
+        current_action_index = args[1]
+        reward = args[2]
         next_state_index = args[3]
         done = args[4]
         episode =args[5]
         writer = args[6]
 
+        
+        action_prob=self.policy.get_discrete_distribution_tensor(current_state_index)[current_action_index]
         advantage = torch.tensor(reward) + self.discount* self.critic.estimator.predict(next_state_index) - self.critic.estimator.predict(current_state_index)
         policy_loss = -torch.log(torch.round(action_prob*10**3)/10**3)*advantage.detach()
     
         if done:
             writer.add_scalar('policy_loss',policy_loss.item(),episode)
 
-        self.policy.estimator.update(policy_loss)
+        self.policy.policy_estimator.update(policy_loss)
 
     def get_behavior_policy(self):
         return self.policy
 
-class OnlineCriticActor:
+class OnlineActor(ActorBase):
     EPS = np.finfo(np.float32).eps.item()
     MAX_STEPS = 500000
-    def  __init__(self,critic,actor,env,num_episodes):
-        self.critic=critic 
-        self.actor= actor
+    
+    def __init__(self,env,critic,explorer,writer):
         self.env = env
-        self.num_episodes = num_episodes
-        self.writer = SummaryWriter()
-            
-    def explore(self):
-        for episode in tqdm(range(0, self.num_episodes)):
-            self._run_one_episode(episode)
+        self.critic=critic 
+        self.explorer= explorer
+        self.writer = writer
 
-    def _run_one_episode(self, episode):
+
+    def act(self, *args):
+        episode=args[0]
         # S
         current_state_index = self.env.reset()
 
-        for _ in tqdm(range(0, OnlineCriticActor.MAX_STEPS)):
+        for _ in range(0, OnlineActor.MAX_STEPS):
             # A
-            current_action_index = self.actor.get_behavior_policy().get_action(current_state_index)
+            current_action_index = self.explorer.get_behavior_policy().get_action(current_state_index)
             observation = self.env.step(current_action_index)
             self.env.render()
 
@@ -194,13 +132,37 @@ class OnlineCriticActor:
             # S'
             next_state_index = observation[0]
 
-            self.critic.exploit(current_state_index,reward,next_state_index,done,episode,self.writer)
+            self.critic.evaluate(current_state_index,reward,next_state_index,done,episode,self.writer)
             
-            action_prob=self.actor.get_behavior_policy().get_discrete_distribution_tensor(current_state_index)[current_action_index]
-            self.actor.explore(current_state_index,reward,action_prob,next_state_index,done,episode,self.writer)
+            self.explorer.explore(current_state_index,current_action_index,reward,next_state_index,done,episode,self.writer)
 
             if done:
                 break
 
-            current_state_index = next_state_index
+            current_state_index = next_state_index        
+
+
+class OnlineCriticActorAgent(Agent):
+
+    def  __init__(self,env,num_episodes):
+        self.env = env 
+        
+        value_esitimator = DeepValueEstimator(self.env.observation_space.shape[0])
+        self.critic=OnlineCritic(value_esitimator)
+
+        policy_estimator = DeepPolicyEsitmator(self.env.observation_space.shape[0],self.env.action_space.n)
+        policy= ParameterizedPolicy(policy_estimator)
+        self.explorer= PolicyGridentExplorer(policy,self.critic)
+        
+        self.writer = SummaryWriter()
+        self.actor = OnlineActor(self.env,self.critic,self.explorer,self.writer)
+
+        self.num_episodes = num_episodes
+
+            
+    def learn(self):
+        for episode in tqdm(range(0, self.num_episodes)):
+            self.actor.act(episode)
+
+
 

@@ -33,9 +33,9 @@
 #
 # /
 
-from abc import ABC, abstractmethod
+from abc import  ABCMeta, abstractmethod
 
-class CriticBase(ABC):
+class CriticBase(metaclass=ABCMeta):
     """
     The critic calculates the value of state or value of (state,action) pair by following target policy. 
     This is essentially calculating the Bellman optimality equation approximately.
@@ -52,7 +52,7 @@ class CriticBase(ABC):
     def get_optimal_policy(self):
         pass
 
-class ExplorerBase(ABC):
+class ExplorerBase(metaclass=ABCMeta):
     """
     If the dynamics of the enviroment is hard to know, the explorer will define a behavior policy to sample data from the enviroment. 
     With constrained computing resources, the explorer 's purpose is to learn a policy which can identify those states of high value 
@@ -66,13 +66,13 @@ class ExplorerBase(ABC):
     def get_behavior_policy(self):
         pass
 
-class ActorBase(ABC):
+class ActorBase(metaclass=ABCMeta):
     @abstractmethod
     def act(self,*args):
         pass 
 
 
-class QValueEstimator:
+class QValueEstimator(metaclass=ABCMeta):
     @abstractmethod
     def predict(self, state, action):
         pass
@@ -81,7 +81,7 @@ class QValueEstimator:
     def update(self, *args):
         pass
 
-class PolicyEstimator:
+class PolicyEstimator(metaclass=ABCMeta):
     @abstractmethod
     def predict(self, state):
         pass
@@ -90,7 +90,7 @@ class PolicyEstimator:
     def update(self, *args):
         pass
 
-class ValueEstimator:
+class ValueEstimator(metaclass=ABCMeta):
     @abstractmethod
     def predict(self, state):
         pass
@@ -99,7 +99,7 @@ class ValueEstimator:
     def update(self, *args):  
         pass
 
-class Agent:
+class Agent(metaclass=ABCMeta):
     @abstractmethod
     def learn(self):
         pass 

@@ -34,17 +34,16 @@
 # /
 
 from collections import namedtuple
-from policy.policy import Policy
+
 import numpy as np 
-from tqdm import tqdm
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-
 from common import PolicyEstimator, ValueEstimator
+from policy.policy import Policy
 
 class DeepValueEstimator(ValueEstimator):
     class Model(nn.Module):
