@@ -36,7 +36,6 @@
 # http://mcneela.github.io/machine_learning/2019/09/03/Writing-Your-Own-Optimizers-In-Pytorch.html
 
 import os
-from multiprocessing.spawn import freeze_support
 from posix import environ
 
 import numpy as np
@@ -45,7 +44,7 @@ import torch.multiprocessing as mp
 import torch.nn as nn
 import torch.nn.functional as F
 from algorithm.policy_based.actor_critic.actor_critic_common import ValueEstimator
-from common import ExplorerBase, CriticBase
+from common import ActorBase, Agent, ExplorerBase, CriticBase, PolicyEstimator
 from lib.utility import SharedAdam
 from policy.policy import ParameterizedPolicy
 
@@ -76,6 +75,12 @@ class GlobalValueEestimator(ValueEstimator):
                 return
             shared_param._grad = param.grad
 
+    def predict(self, state):
+        return super().predict(state)        
+    
+    def update(self, *args):
+        return super().update(*args)
+
 class LocalValueEestimator(ValueEstimator):
     def __init__(self,observation_space_size):
         self.model = ValueModel(observation_space_size)
@@ -83,21 +88,25 @@ class LocalValueEestimator(ValueEstimator):
     def predict(self,state):
         value = self.model.forward(state)
         return value
-
-
+    
+    def update(self,*args):
+        return super().update(*args)
+        
 class LocalBatchCritic(CriticBase):
+    EPS = np.finfo(np.float32).eps.item()
     def __init__(self,local_value_estimator, global_value_estimator,discount=1.0):
         self.local_value_estimator =  local_value_estimator
         self.global_value_estimator = global_value_estimator
         self.discount  = discount
     
-    def ensure_shared_grads(self,model, global_model):
+    # sync local to global
+    def _sync_to_global(self,model, global_model):
         for param, shared_param in zip(model.parameters(),global_model.parameters()):
             if shared_param.grad is not None:
                 return
             shared_param._grad = param.grad
 
-    def exploit(self,*args): 
+    def evaluate(self,*args): 
         trajectory = args[0]
         
         state_values=[]
@@ -113,7 +122,7 @@ class LocalBatchCritic(CriticBase):
             returns.insert(0,G)
 
         returns = torch.tensor(returns)
-        returns = (returns-returns.mean())/(returns.std()+BatchA3C.EPS)
+        returns = (returns-returns.mean())/(returns.std()+LocalBatchCritic.EPS)
 
         for value, G in zip(state_values,returns):
             value_losses.append(F.smooth_l1_loss(value,torch.tensor([G])))
@@ -121,7 +130,7 @@ class LocalBatchCritic(CriticBase):
         total_loss = torch.stack(value_losses).sum()
         self.global_value_estimator.optimizer.zero_grad()
         total_loss.backward()
-        self.ensure_shared_grads(self.local_value_estimator.model,self.global_value_estimator.model)
+        self._sync_to_global(self.local_value_estimator.model,self.global_value_estimator.model)
         self.global_value_estimator.optimizer.step()
         
     def get_value_function(self):
@@ -141,23 +150,32 @@ class PolicyModel(nn.Module):
         return actions_prob
 
 
-class GlobalPolicyEsitmator:
+class GlobalPolicyEsitmator(PolicyEstimator):
     def __init__(self,observation_space_size,action_space_size):
         self.model = PolicyModel(observation_space_size,action_space_size)
         self.model.share_memory()
         self.optimizer = SharedAdam(self.model.parameters(),lr =1e-3)
         self.optimizer.share_memory()
     
-
-class LocalPolicyEsitmator:
+    def predict(self, state):
+        return super().predict(state)
+    
+    def update(self, *args):
+        return super().update(*args)
+    
+class LocalPolicyEsitmator(PolicyEstimator):
     def __init__(self,observation_space_size,action_space_size):
         self.model = PolicyModel(observation_space_size,action_space_size)
     
     def predict(self,state):
         actions_prob=self.model.forward(state)
         return actions_prob
+    
+    def update(self,*args):
+        return super().update(*args)
 
-class LocalBatchActor(ExplorerBase):
+class LocalBatchPolicyGridentExplorer(ExplorerBase):
+    EPS = np.finfo(np.float32).eps.item()
     ENTROY_BETA = 0.0
     
     def __init__(self,local_policy,global_policy,discount=1.0):
@@ -165,8 +183,7 @@ class LocalBatchActor(ExplorerBase):
         self.global_policy = global_policy
         self.discount = discount
     
-
-    def ensure_shared_grads(self,model, shared_model):
+    def _syn_to_global(self,model, shared_model):
         for param, shared_param in zip(model.parameters(),shared_model.parameters()):
             if shared_param.grad is not None:
                 return
@@ -190,53 +207,49 @@ class LocalBatchActor(ExplorerBase):
             state_values.insert(0,state_value)
             returns.insert(0,G)
         returns = torch.tensor(returns)
-        returns = (returns-returns.mean())/(returns.std()+BatchA3C.EPS)
+        returns = (returns-returns.mean())/(returns.std()+LocalBatchPolicyGridentExplorer.EPS)
 
         for log_action_prob,state_value, G in zip(log_action_probs,state_values,returns):
             advantage = G - state_value.detach()
             policy_losses.append(-log_action_prob*advantage)
         
         total_policy_loss = torch.stack(policy_losses).sum()
-        total_loss =  total_policy_loss - LocalBatchActor.ENTROY_BETA*torch.stack(entroys).sum()
+        total_loss =  total_policy_loss - LocalBatchPolicyGridentExplorer.ENTROY_BETA*torch.stack(entroys).sum()
         
         self.global_policy.estimator.optimizer.zero_grad()
         total_loss.backward()
-        self.ensure_shared_grads(self.local_policy.estimator.model,self.global_policy.estimator.model)
+        self._syn_to_global(self.local_policy.estimator.model,self.global_policy.estimator.model)
         self.global_policy.estimator.optimizer.step()
 
     def get_behavior_policy(self):
         return self.local_policy
 
-
-class BatchA3C:
+class LocalActor(ActorBase):
     EPS = np.finfo(np.float32).eps.item()
     MAX_STEPS = 500000
-    NUM_PROCESS = 8
-    def  __init__(self,gloal_value_estimator,global_policy,env,num_episodes):
-        self.gloal_value_estimator=gloal_value_estimator 
-        self.global_policy= global_policy
-        self.env = env
-        self.num_episodes = num_episodes
     
-    @staticmethod
+    def  __init__(self,env,local_critic,local_explorer):
+        self.env = env
+        self.local_critic = local_critic
+        self.local_explorer = local_explorer
+        
     def _create_env(env):
         env_class = env.__class__
         return env_class()
-    
-    @staticmethod
-    def _run_one_episode(env,local_critic,local_actor):
+
+    def _run_one_episode(self):
         trajectory = []
-        current_state = env.reset()
+        current_state = self.env.reset()
         
-        for _ in range(0,BatchA3C.MAX_STEPS):
-            action_index = local_actor.get_behavior_policy().get_action(current_state)
-            distribution = local_actor.get_behavior_policy().get_discrete_distribution_tensor(current_state)
+        for _ in range(0,LocalActor.MAX_STEPS):
+            action_index = self.local_explorer.get_behavior_policy().get_action(current_state)
+            distribution = self.local_explorer.get_behavior_policy().get_discrete_distribution_tensor(current_state)
             entropy = torch.distributions.Categorical(distribution).entropy()
             action_prob = distribution[action_index]
-            state_value  = local_critic.get_value_function().predict(current_state)
-            observation = env.step(action_index)
+            state_value  = self.local_critic.get_value_function().predict(current_state)
+            observation = self.env.step(action_index)
             reward = observation[1]
-            env.render()
+            self.env.render()
             trajectory.append((current_state,state_value,action_index,action_prob,entropy,reward))
             done = observation[2]
             if done:
@@ -244,43 +257,36 @@ class BatchA3C:
             current_state = observation[0]
         return trajectory
 
+    def act(self, *args):
+        trajectory = self._run_one_episode()    
+        if len(trajectory)< LocalActor.MAX_STEPS:
+            self.local_critic.evaluate(trajectory)
+            self.local_explorer.explore(trajectory)
 
-    @staticmethod
-    def _explore(gloal_value_estimator,global_policy,env,num_episodes):
-        local_env = BatchA3C._create_env(env)
-        local_value_estimator = LocalValueEestimator(local_env.observation_space.shape[0])
-        local_value_estimator.model.load_state_dict(gloal_value_estimator.model.state_dict())
-        local_critic = LocalBatchCritic(local_value_estimator,gloal_value_estimator)
+class BatchA3CAgent(Agent):
+    EPS = np.finfo(np.float32).eps.item()
+    NUM_PROCESS = 8
 
-        local_policy_estimator = LocalPolicyEsitmator(local_env.observation_space.shape[0],local_env.action_space.n)
-        local_policy_estimator.model.load_state_dict(global_policy.estimator.model.state_dict())
-        local_policy = ParameterizedPolicy(local_policy_estimator)
-        local_actor = LocalBatchActor(local_policy,global_policy)
+    def  __init__(self,env,num_episodes):
+        self.env = env
+        self.num_episodes = num_episodes
+        self.global_value_esitmator = GlobalValueEestimator(env.observation_space_size)
+        self.global_policy_esitmator = GlobalPolicyEsitmator(env.observation_space_size,env.action_space_size)
+        
 
-        for episode in range(0,num_episodes):
-            trajectory = BatchA3C._run_one_episode(env,local_critic,local_actor)    
-            print(len(trajectory))
-            if len(trajectory)< BatchA3C.MAX_STEPS:
-                local_critic.exploit(trajectory)
-                local_actor.explore(trajectory)
-            
+    def learn(self):
 
-
-    def explore(self):
-        freeze_support()
     
         os.environ['OMP_NUM_THREADS'] = '1'
         os.environ['CUDA_VISIBLE_DEVICES'] = ""
 
         processes = []
 
-        for _ in range(0,BatchA3C.NUM_PROCESS):
-            p = mp.Process(target=BatchA3C._explore,args=(self.gloal_value_estimator,self.global_policy,self.env,self.num_episodes))
+        for _ in range(0,BatchA3CAgent.NUM_PROCESS):
+            p = mp.Process(target=BatchA3CAgent._explore,args=(self.global_value_esitmator,self.global_policy_esitmator,self.env,self.num_episodes))
             p.start()
             processes.append(p)
         
         for p in processes:
             p.join()
-
-
 
