@@ -89,7 +89,6 @@ class PolicyGridentExplorer(ExplorerBase):
         done = args[4]
         episode =args[5]
         writer = args[6]
-
         
         action_prob=self.policy.get_discrete_distribution_tensor(current_state_index)[current_action_index]
         advantage = torch.tensor(reward) + self.discount* self.critic.estimator.predict(next_state_index) - self.critic.estimator.predict(current_state_index)

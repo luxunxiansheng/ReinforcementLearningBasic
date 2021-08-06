@@ -3,7 +3,7 @@ current_dir= os.path.dirname(os.path.realpath(__file__))
 work_folder=current_dir[:current_dir.find('algorithm')]
 sys.path.append(work_folder)
 
-from test_setup import get_env
+from env_setup import get_env
 from algorithm.value_based.tabular_solution_method.dynamic_programming.policy_iteration  import PolicyIterationAgent 
 from algorithm.value_based.tabular_solution_method.dynamic_programming.value_iteration   import ValueIterationAgent
 

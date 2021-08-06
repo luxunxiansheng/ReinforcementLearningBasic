@@ -11,7 +11,7 @@ from algorithm.value_based.approximate_solution_method.episodic_semi_gradient_q_
 from algorithm.value_based.approximate_solution_method.episodic_semi_gradient_sarsa_control import  EpisodicSemiGradientSarsaControl
 from algorithm.value_based.approximate_solution_method.estimator.q_value_estimator import TileCodingBasesQValueEstimator
 
-from test_setup import get_env
+from env_setup import get_env
 
 num_episodes = 100
 n_steps = 4

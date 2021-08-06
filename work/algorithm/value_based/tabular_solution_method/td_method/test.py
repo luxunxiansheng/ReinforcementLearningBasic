@@ -16,7 +16,7 @@ from algorithm.value_based.tabular_solution_method.td_method.td_n_steps_expected
 from algorithm.value_based.tabular_solution_method.td_method.double_q_learning import DoubleQLearningAgent
 from algorithm.value_based.tabular_solution_method.td_method.dyna_q import DynaQAgent
 from lib.plotting import EpisodeStats, plot_episode_stats
-from test_setup import get_env
+from env_setup import get_env
 
 
 num_episodes = 1000

@@ -5,7 +5,7 @@ sys.path.append(work_folder)
 
 import numpy as np 
 from lib.plotting import EpisodeStats, plot_episode_stats
-from test_setup import get_env
+from env_setup import get_env
 from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_es_control import MonteCarloESAgent
 from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_on_policy_control import MonteCarloOnPolicyAgent
 from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_off_policy_control import MonteCarloOffPolicyAgent
