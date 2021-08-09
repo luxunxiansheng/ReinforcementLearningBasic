@@ -12,7 +12,7 @@ from env.mountain_car import MountainCarEnv
 
 from env_setup import get_env
 
-num_episodes = 500
+num_episodes = 5000
 
 
 def test_batch_critic_actor_method(env):

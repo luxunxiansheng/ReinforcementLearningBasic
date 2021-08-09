@@ -36,22 +36,23 @@
 # http://mcneela.github.io/machine_learning/2019/09/03/Writing-Your-Own-Optimizers-In-Pytorch.html
 
 
-
-from env.mountain_car import MountainCarEnv
-from algorithm.value_based.approximate_solution_method.remoe_env_setup import get_env
 import numpy as np
+
 import ray
 from ray.worker import remote
-import torch
+from torch.utils.tensorboard.writer import SummaryWriter
 from tqdm import tqdm
 
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-from algorithm.policy_based.actor_critic.actor_critic_common import ParameterizedPolicy, ValueEstimator
 from common import ActorBase, Agent, ExplorerBase, CriticBase, PolicyEstimator
+from algorithm.policy_based.actor_critic.actor_critic_common import ParameterizedPolicy, ValueEstimator
+from algorithm.value_based.approximate_solution_method.remoe_env_setup import get_env
 
+import env_setup
 
 class ValueModel(nn.Module):
     def __init__(self,observation_space_size):
@@ -201,7 +202,8 @@ class GlobalPolicyEsitmator(PolicyEstimator):
         self.optimizer = optim.Adam(self.model.parameters(),lr =1e-3)
 
     def predict(self, state):
-        pass
+        actions_prob=self.model.forward(state)
+        return actions_prob
 
     def update(self, *gradients):
         summed_gradients = [
@@ -256,7 +258,6 @@ class LocalBatchPolicyGridentExplorer(ExplorerBase):
         # calculate the grident for the model of the local policy 
         total_loss.backward()
     
-
     def get_behavior_policy(self):
         return self.policy
 
@@ -266,12 +267,13 @@ class LocalActor(ActorBase):
     EPS = np.finfo(np.float32).eps.item()
     MAX_STEPS = 500000
     
-    def  __init__(self,env,id):
+    def  __init__(self,env_class_name,id):
         self.id = id 
         
         #ray.util.pdb.set_trace()
 
-        self.env = MountainCarEnv()
+        klass = getattr(env_setup, env_class_name)
+        self.env = klass()
         
         value_esitimator = LocalValueEestimator(self.env.observation_space.shape[0])
         self.local_critic=LocalBatchCritic(value_esitimator)
@@ -279,7 +281,6 @@ class LocalActor(ActorBase):
         policy_estimator = LocalPolicyEsitmator(self.env.observation_space.shape[0],self.env.action_space.n)
         policy= ParameterizedPolicy(policy_estimator)
         self.local_explorer= LocalBatchPolicyGridentExplorer(policy)
-
 
     def _run_one_episode(self):
         trajectory = []
@@ -319,9 +320,34 @@ class LocalActor(ActorBase):
         
             return self.id,self.get_grident_from_esitmator()
 
+
+class GlobalActor(ActorBase):
+    MAX_STEPS = 500000
+
+    def __init__(self,env,global_policy):
+        self.env = env
+        self.global_policy = global_policy
+        self.writer = SummaryWriter(comment="-global_actor")
+
+    def act(self, *args):
+        episode = args[0]
+        self._run_one_episode(episode)
+    
+    def _run_one_episode(self,episode):
+        current_state = self.env.reset()
+        for step in range(0,GlobalActor.MAX_STEPS):
+            action_index = self.global_policy.get_action(current_state)
+            observation = self.env.step(action_index)
+            done = observation[2]
+            if done:
+                self.writer.add_scalar('steps_to_go',step,episode)
+                break
+            current_state = observation[0]
+
+
 class BatchA3CAgent(Agent):
     EPS = np.finfo(np.float32).eps.item()
-    NUM_PROCESS = 8
+    NUM_PROCESS = 4
 
     def  __init__(self,env,num_episodes):
         self.env = env
@@ -329,6 +355,10 @@ class BatchA3CAgent(Agent):
         self.global_value_esitmator = GlobalValueEestimator(env.observation_space.shape[0])
         self.global_policy_esitmator = GlobalPolicyEsitmator(env.observation_space.shape[0],env.action_space.n)
 
+        global_policy = ParameterizedPolicy(self.global_policy_esitmator)
+        self.global_actor = GlobalActor(self.env,global_policy)
+
+        
     def update_global_model_weights(self,value_model_graident,policy_model_graident):
         self.global_value_esitmator.update(value_model_graident)
         self.global_policy_esitmator.update(policy_model_graident)
@@ -350,19 +380,25 @@ class BatchA3CAgent(Agent):
             
             # block to wait the actor result 
             done_actor, gradient_list = ray.wait(gradient_list)
-            
+
+        
             # Once one of the actor finished its job, we can get the gradient from the actor
             actor_id, grident =ray.get(done_actor)[0]
 
             # update the gloabl model weights with the lastest gradient
             self.update_global_model_weights(grident[0],grident[1])
 
+            self.global_actor.act(episode)
+
             # sync the local model weights to global model weights
             actors[actor_id].set_weights_for_esitmator.remote(self.global_value_esitmator.model.get_weights(),self.global_policy_esitmator.model.get_weights())
+
 
             # act again          
 
             gradient_list.append(actors[actor_id].act.remote())
+
+            
 
 
 
