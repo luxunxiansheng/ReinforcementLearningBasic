@@ -6,7 +6,7 @@ sys.path.append(work_folder)
 
 from algorithm.policy_based.actor_critic.batch_actor_critic import BatchActorCriticAgent
 from algorithm.policy_based.actor_critic.online_actor_critic import OnlineCriticActorAgent
-from algorithm.policy_based.actor_critic.batch_a3c_ray import BatchA3CAgent
+from algorithm.policy_based.actor_critic.batch_a3c import BatchA3CAgent
 
 from env.mountain_car import MountainCarEnv
 
