@@ -7,7 +7,7 @@ import numpy as np
 
 from lib import plotting
 from algorithm.value_based.approximate_solution_method.episodic_semi_gradient_expected_sarsa_control import EpisodicSemiGradientExpectedSarsaControl
-from algorithm.value_based.approximate_solution_method.episodic_semi_gradient_q_learning_control import  EpisodicSemiGradientQLearningControl
+from algorithm.value_based.approximate_solution_method.episodic_semi_gradient_q_learning_control import  EpisodicSemiGradientQLearningAgent
 from algorithm.value_based.approximate_solution_method.episodic_semi_gradient_sarsa_control import  EpisodicSemiGradientSarsaControl
 from algorithm.value_based.approximate_solution_method.estimator.q_value_estimator import TileCodingBasesQValueEstimator
 
@@ -57,7 +57,7 @@ def test_approximation_control_q_learning(env):
     q_v = plotting.QValue(env.observation_space_name[0], env.observation_space_name[1], estimator)
     approximation_control_statistics = plotting.EpisodeStats("Q_Learning", episode_lengths=np.zeros(num_episodes), episode_rewards=np.zeros(num_episodes), q_value=q_v)
 
-    episodicsemigradsarsacontrol = EpisodicSemiGradientQLearningControl(env,estimator,approximation_control_statistics,num_episodes)
+    episodicsemigradsarsacontrol = EpisodicSemiGradientQLearningAgent(env,estimator,approximation_control_statistics,num_episodes)
     episodicsemigradsarsacontrol.learn()
 
     return approximation_control_statistics

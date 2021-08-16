@@ -33,27 +33,22 @@
 #
 # /
 
-from common import ExplorerBase
-from lib.utility import (create_distribution_epsilon_greedily,create_distribution_boltzmann)
+import numpy as np 
+from policy.policy import Policy
 
-class ESoftExplorer(ExplorerBase):
-    def __init__(self, policy,epsilon=0.3):
-        self.policy = policy
-        self.policy.create_distribution_fn = create_distribution_epsilon_greedily(epsilon)
+class ContinuousStateValueTablePolicy(Policy):
+    def __init__(self,value_esitmator,create_distribution_fn=None):
+        self.value_esitmator = value_esitmator
+        self.create_distribution_fn = create_distribution_fn
     
-    def explore(self, *args):
-        pass 
-        
-    def get_behavior_policy(self):
-        return self.policy
+    def get_action(self, state):
+        distribution = self.get_discrete_distribution(state)
+        action = np.random.choice(np.arange(len(distribution)), p=list(distribution.values()))
+        return action
+    
+    def get_discrete_distribution(self,state):
+        q_values = self.value_esitmator.predict(state)
+        q_values = {index:q_values[index].item() for index in range(0,q_values.size())}
+        distribution = self.create_distribution_fn(q_values)
+        return distribution 
 
-class BoltzmannExplorer(ExplorerBase):
-    def __init__(self, policy):
-        self.policy = policy
-        self.policy.create_distribution_fn = create_distribution_boltzmann()
-    
-    def explore(self, *args):
-        pass 
-        
-    def get_behavior_policy(self):
-        return self.policy

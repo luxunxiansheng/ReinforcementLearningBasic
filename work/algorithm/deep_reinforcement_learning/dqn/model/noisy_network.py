@@ -33,27 +33,33 @@
 #
 # /
 
-from common import ExplorerBase
-from lib.utility import (create_distribution_epsilon_greedily,create_distribution_boltzmann)
 
-class ESoftExplorer(ExplorerBase):
-    def __init__(self, policy,epsilon=0.3):
-        self.policy = policy
-        self.policy.create_distribution_fn = create_distribution_epsilon_greedily(epsilon)
-    
-    def explore(self, *args):
-        pass 
-        
-    def get_behavior_policy(self):
-        return self.policy
+import torch
+import torch.nn as nn
 
-class BoltzmannExplorer(ExplorerBase):
-    def __init__(self, policy):
-        self.policy = policy
-        self.policy.create_distribution_fn = create_distribution_boltzmann()
-    
-    def explore(self, *args):
-        pass 
-        
-    def get_behavior_policy(self):
-        return self.policy
+from model.deep_mind_network_base import DeepMindNetworkBase
+from utils.utilis import Utilis
+from model.noisy_linear import NoisyLinear
+
+
+class NoisyNetwork(DeepMindNetworkBase):
+    '''
+    Add noise in the parameter space 
+    '''
+
+    def __init__(self, input_channels, output_size):
+        super(NoisyNetwork, self).__init__(input_channels,noisy=True)
+        self._output_size = output_size
+        self._base = super(NoisyNetwork,self)
+        self._header = nn.Sequential(
+            NoisyLinear(512, self._output_size)
+        )
+
+    def forward(self, input):
+        x = self._base.forward(input)
+        x = self._header(x)
+        return torch.squeeze(x)
+
+
+    def sigma_SNR(self):
+        return self._header[0].sigma_SNR()

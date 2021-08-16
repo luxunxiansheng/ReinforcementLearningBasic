@@ -39,7 +39,8 @@ from tqdm import tqdm
 from common import CriticBase
 from algorithm.value_based.approximate_solution_method.actor import Actor
 from algorithm.value_based.approximate_solution_method.explorer import ESoftExplorer
-from policy.policy import ContinuousStateValueTablePolicy
+from algorithm.value_based.approximate_solution_method.continuous_state_value_table_policy import ContinuousStateValueTablePolicy
+
 
 class ApproximationSARSACritic(CriticBase):
     def __init__(self,env,estimator,policy,step_size=0.01,discount= 1.0):

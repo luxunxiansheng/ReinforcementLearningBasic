@@ -33,27 +33,20 @@
 #
 # /
 
-from common import ExplorerBase
-from lib.utility import (create_distribution_epsilon_greedily,create_distribution_boltzmann)
+from algorithm.deep_reinforcement_learning.dqn.deep_q_learning import DeepQLearningAgent
+import torch
+from lib.utility import Utilis
 
-class ESoftExplorer(ExplorerBase):
-    def __init__(self, policy,epsilon=0.3):
-        self.policy = policy
-        self.policy.create_distribution_fn = create_distribution_epsilon_greedily(epsilon)
-    
-    def explore(self, *args):
-        pass 
-        
-    def get_behavior_policy(self):
-        return self.policy
 
-class BoltzmannExplorer(ExplorerBase):
-    def __init__(self, policy):
-        self.policy = policy
-        self.policy.create_distribution_fn = create_distribution_boltzmann()
-    
-    def explore(self, *args):
-        pass 
-        
-    def get_behavior_policy(self):
-        return self.policy
+# setup the GPU/CPU device
+
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+
+# prepare the Log for recording the RL procedure
+cfg = Utilis.config()
+
+def test_dqn(env,config):
+    dqn= DeepQLearningAgent(env,config,device)
+    dqn.learn()
+
+test_dqn()

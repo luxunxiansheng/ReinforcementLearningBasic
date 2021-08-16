@@ -33,12 +33,13 @@
 #
 # /
 
-from policy.policy import ContinuousStateValueTablePolicy
+
 from tqdm import tqdm
 
-from common import CriticBase
+from common import Agent, CriticBase
 from algorithm.value_based.approximate_solution_method.actor import Actor
-from algorithm.value_based.approximate_solution_method.explorer import BoltzmannExplorer, ESoftExplorer
+from algorithm.value_based.approximate_solution_method.explorer import BoltzmannExplorer 
+from algorithm.value_based.approximate_solution_method.continuous_state_value_table_policy import ContinuousStateValueTablePolicy
 
 
 class ApproximationQLearningCritic(CriticBase):
@@ -72,7 +73,7 @@ class ApproximationQLearningCritic(CriticBase):
     def get_optimal_policy(self):
         pass 
 
-class EpisodicSemiGradientQLearningControl:
+class EpisodicSemiGradientQLearningAgent(Agent):
     """
     Q_Learning algorithm: Off-policy TD control. Finds the optimal epsilon-greedy policy with approximation of q funciton 
     """

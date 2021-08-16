@@ -33,27 +33,27 @@
 #
 # /
 
-from common import ExplorerBase
-from lib.utility import (create_distribution_epsilon_greedily,create_distribution_boltzmann)
 
-class ESoftExplorer(ExplorerBase):
-    def __init__(self, policy,epsilon=0.3):
-        self.policy = policy
-        self.policy.create_distribution_fn = create_distribution_epsilon_greedily(epsilon)
-    
-    def explore(self, *args):
-        pass 
-        
-    def get_behavior_policy(self):
-        return self.policy
 
-class BoltzmannExplorer(ExplorerBase):
-    def __init__(self, policy):
-        self.policy = policy
-        self.policy.create_distribution_fn = create_distribution_boltzmann()
-    
-    def explore(self, *args):
-        pass 
-        
-    def get_behavior_policy(self):
-        return self.policy
+import torch
+import torch.nn as nn
+
+from deep_mind_network_base import DeepMindNetworkBase
+from lib.utility import Utilis
+
+class DeepMindNetwork(DeepMindNetworkBase):
+    '''
+    The newtork used by Mnih at al(2015)@deepmind in the paper "Playing Atari with Deep Reinforcement 
+    Learning". The output is Q(s,a) value.
+    '''
+
+    def __init__(self, input_channels, output_size):
+        super().__init__(input_channels)
+        self.output_size = output_size
+        self.base = super()
+        self.header = nn.Sequential(Utilis.layer_init(nn.Linear(512, self.output_size)))
+
+    def forward(self, input):
+        x = self.base.forward(input)
+        x = self.header(x)
+        return torch.squeeze(x)

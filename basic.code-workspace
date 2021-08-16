@@ -2,13 +2,12 @@
 	"folders": [
 		{
 			"path": "work"
+		},
+		{
+			"path": "../DeepDino"
 		}
 	],
 	"settings": {
-<<<<<<< HEAD
 		"python.pythonPath": "/opt/anaconda3/bin/python"
-=======
-		"python.pythonPath": "/home/ornot/anaconda3/bin/python"
->>>>>>> 00f91c6b8456819ccfec5a6171535d9aee630494
 	}
 }

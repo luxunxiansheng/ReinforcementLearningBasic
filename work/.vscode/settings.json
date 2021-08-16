@@ -1,4 +1,8 @@
 {
     "markdown.preview.fontSize": 20,
-    "python.pythonPath": "/opt/anaconda3/bin/python"
+    "python.pythonPath": "/opt/anaconda3/bin/python",
+    "python.analysis.extraPaths": [
+        "./algorithm/deep_reinforcement_learning/dqn/model",
+        "./algorithm/deep_reinforcement_learning/dqn"
+    ]
 }

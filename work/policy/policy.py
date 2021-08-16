@@ -52,27 +52,6 @@ class DiscreteStateValueTablePolicy(Policy):
         action = np.random.choice(np.arange(len(distribution)), p=distribution)
         return action
 
-class ContinuousStateValueTablePolicy(Policy):
-    def __init__(self,value_esitmator,action_space_num,create_distribution_fn=None):
-        self.value_esitmator = value_esitmator
-        self.action_space_num = action_space_num
-        self.create_distribution_fn = create_distribution_fn
-    
-    def get_action(self, state):
-        q_values = {}
-        for action_index in range(self.action_space_num):
-            q_values[action_index] = self.value_esitmator.predict(state,action_index)
-        distribution = self.create_distribution_fn(q_values)
-        action = np.random.choice(np.arange(len(distribution)), p=list(distribution.values()))
-        return action
-    
-    def get_discrete_distribution(self,state):
-        q_values = {}
-        for action_index in range(self.action_space_num):
-            q_values[action_index] = self.value_esitmator.predict(state,action_index)
-        distribution = self.create_distribution_fn(q_values)
-        return distribution 
-
 
 
     

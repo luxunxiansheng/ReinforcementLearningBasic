@@ -1,4 +1,4 @@
-# #### BEGIN LICENSE BLOCK #####
+# BEGIN LICENSE BLOCK #####
 # Version: MPL 1.1/GPL 2.0/LGPL 2.1
 #
 # The contents of this file are subject to the Mozilla Public License Version
@@ -33,27 +33,22 @@
 #
 # /
 
-from common import ExplorerBase
-from lib.utility import (create_distribution_epsilon_greedily,create_distribution_boltzmann)
+import random
+from collections import deque
 
-class ESoftExplorer(ExplorerBase):
-    def __init__(self, policy,epsilon=0.3):
-        self.policy = policy
-        self.policy.create_distribution_fn = create_distribution_epsilon_greedily(epsilon)
-    
-    def explore(self, *args):
-        pass 
-        
-    def get_behavior_policy(self):
-        return self.policy
+class Replay_Memory:
+    def __init__(self, capacity):
+        self.capacity = capacity
+        self.data = deque()
 
-class BoltzmannExplorer(ExplorerBase):
-    def __init__(self, policy):
-        self.policy = policy
-        self.policy.create_distribution_fn = create_distribution_boltzmann()
-    
-    def explore(self, *args):
-        pass 
-        
-    def get_behavior_policy(self):
-        return self.policy
+    def push(self, experience):
+        self.data.append(experience)
+        if self.size() > self.capacity:
+            self.data.popleft()
+
+    def sample(self, batch_size):
+        experience_batch = random.sample(self.data, batch_size)
+        return experience_batch
+
+    def size(self):
+        return len(self.data)
