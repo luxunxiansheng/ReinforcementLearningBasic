@@ -47,8 +47,8 @@ class ContinuousStateValueTablePolicy(Policy):
         return action
     
     def get_discrete_distribution(self,state):
-        q_values = self.value_esitmator.predict(state)
-        q_values = {index:q_values[index].item() for index in range(0,q_values.size())}
+        q_values = self.value_esitmator.predict(state,None)
+        q_values = {index:q_values[index].item() for index in range(0,len(q_values))}
         distribution = self.create_distribution_fn(q_values)
         return distribution 
 

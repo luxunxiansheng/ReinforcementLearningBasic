@@ -46,17 +46,23 @@ from env.dino.game import Game
 from algorithm.deep_reinforcement_learning.dqn.deep_q_learning import DeepQLearningAgent
 
 
-
 # setup the GPU/CPU device
-
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 # prepare the Log for recording the RL procedure
+
+app_cfg = Utilis.config('algorithm/deep_reinforcement_learning/dqn/config.ini')
 env_cfg = Utilis.config("env/dino/config.ini")
-dino_game = Game(env_cfg)
 
 def test_dqn(env,config):
-    dqn= DeepQLearningAgent(env,config,device)
-    dqn.learn()
+        dqn= DeepQLearningAgent(env,config,device)
+        dqn.learn()
 
-test_dqn()
+dino_game = None
+try:
+    dino_game = Game(env_cfg)
+    test_dqn(dino_game,app_cfg)
+
+finally:
+    if dino_game is not None:
+        dino_game.end()

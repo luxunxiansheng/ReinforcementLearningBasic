@@ -50,10 +50,9 @@ class DeepMindNetwork(DeepMindNetworkBase):
     def __init__(self, input_channels, output_size):
         super().__init__(input_channels)
         self.output_size = output_size
-        self.base = super()
         self.header = nn.Sequential(Utilis.layer_init(nn.Linear(512, self.output_size)))
 
     def forward(self, input):
-        x = self.base.forward(input)
+        x = super().forward(input)
         x = self.header(x)
-        return torch.squeeze(x)
+        return x

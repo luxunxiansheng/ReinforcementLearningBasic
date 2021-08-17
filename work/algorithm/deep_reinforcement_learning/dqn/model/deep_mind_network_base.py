@@ -43,16 +43,16 @@ class DeepMindNetworkBase(nn.Module):
     @staticmethod
     def create(network, input_channels, output_size):
         if network == 'DeepMindNetwork':
-            from deep_mind_network import DeepMindNetwork
+            from model.deep_mind_network import DeepMindNetwork
             return DeepMindNetwork(input_channels, output_size)
         if network == 'CategoricalNetwork':
-            from categorical_network import CategoricalNetwork
+            from model.categorical_network import CategoricalNetwork
             return CategoricalNetwork(input_channels, output_size)
         if network == 'NoisyNetwork':
-            from noisy_network import NoisyNetwork
+            from model.noisy_network import NoisyNetwork
             return NoisyNetwork(input_channels, output_size)
         if network == 'DuelingNetwork':
-            from dueling_network import DuelingNetwork
+            from model.dueling_network import DuelingNetwork
             return DuelingNetwork(input_channels,output_size)    
 
         return None    
@@ -82,8 +82,6 @@ class DeepMindNetworkBase(nn.Module):
             nn.ReLU()
         )
 
-        
-
         if noisy:
             self._fc1 = nn.Sequential(NoisyLinear(7*7*64, 512),
             nn.ReLU()
@@ -104,4 +102,4 @@ class DeepMindNetworkBase(nn.Module):
 
         x = self._fc1(x)
 
-        return x
+        return torch.squeeze(x)
