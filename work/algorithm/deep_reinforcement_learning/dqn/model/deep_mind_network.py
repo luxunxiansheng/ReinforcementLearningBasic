@@ -38,7 +38,7 @@
 import torch
 import torch.nn as nn
 
-from deep_mind_network_base import DeepMindNetworkBase
+from model.deep_mind_network_base import DeepMindNetworkBase
 from lib.utility import Utilis
 
 class DeepMindNetwork(DeepMindNetworkBase):

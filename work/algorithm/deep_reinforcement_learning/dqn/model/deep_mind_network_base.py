@@ -37,7 +37,7 @@ import torch
 import torch.nn as nn
 
 from lib.utility import Utilis
-from noisy_linear import NoisyLinear
+from model.noisy_linear import NoisyLinear
 
 class DeepMindNetworkBase(nn.Module):
     @staticmethod
@@ -94,8 +94,6 @@ class DeepMindNetworkBase(nn.Module):
                 nn.ReLU()
             )
         
-  
-    
     def forward(self, input):
         x = torch.transpose(input, 0, 1)
         x = self._conv1(x)

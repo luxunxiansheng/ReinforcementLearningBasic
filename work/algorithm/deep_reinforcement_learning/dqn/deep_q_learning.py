@@ -41,7 +41,8 @@ from torchvision import transforms
 
 
 from common import Agent, CriticBase, ExplorerBase, QValueEstimator,ActorBase
-from deep_mind_network_base import DeepMindNetworkBase
+from model.deep_mind_network_base import DeepMindNetworkBase
+
 from lib.replay_memory import Replay_Memory
 from lib.utility import create_distribution_boltzmann
 from algorithm.deep_reinforcement_learning.dqn.continuous_state_value_table_policy import ContinuousStateValueTablePolicy
@@ -94,7 +95,7 @@ class DeepQLearningCritic(CriticBase):
         
             the_optimal_q_value_of_next_state = torch.max(self.target_estimator.predict(next_state))
 
-            target_values[sample_index][int(action)] = reward if terminal else reward + self.discount*the_optimal_q_value_of_next_state.item()
+            target_values[sample_index][int(action)] = reward if terminal else reward + self.discount*the_optimal_q_value_of_next_state
             
             q_values[sample_index][int(action)] = self.policy_estimator.predict(state)[int(action)]
         
@@ -103,7 +104,7 @@ class DeepQLearningCritic(CriticBase):
     def sync_target_model_with_policy_model(self):
         self.target_estimator.model.load_state_dict(self.policy_estimator.model.state_dict())
         self.target_estimator.model.eval()
-
+    
 
 class BoltzmannExplorer(ExplorerBase):
     def __init__(self, policy):
@@ -117,7 +118,7 @@ class BoltzmannExplorer(ExplorerBase):
         return self.policy
 
 class DeepQLearningActor(ActorBase):
-    def __init__(self,env,critic,explorer,relay_memory_capaticy,img_rows,img_columns,init_observations):
+    def __init__(self,env,critic,explorer,relay_memory_capaticy,img_rows,img_columns,init_observations,sync_frequency):
         self.env = env
         self.critic = critic
         self.explorer = explorer
@@ -125,8 +126,8 @@ class DeepQLearningActor(ActorBase):
         self.img_rows = img_rows 
         self.img_columns = img_columns
         self.init_observations = init_observations
+        self.sync_frequency = sync_frequency
 
-    
     def _preprocess_snapshot(self, screenshot):
         transform = transforms.Compose([transforms.CenterCrop((150, 600)),
                                         transforms.Resize((self.img_rows, self.img_columns)),
@@ -149,6 +150,7 @@ class DeepQLearningActor(ActorBase):
     def act(self, *args):
         self.critic.sync_target_model_with_policy_model()
         
+        time_step = 0 
         current_state = self._env_reset()
         while (True):
             action_index = self.explorer.get_behavior_policy().get_action(current_state)
@@ -159,9 +161,14 @@ class DeepQLearningActor(ActorBase):
             self.relay_memory.push((current_state, action_index, reward, next_state, done))
             if self.relay_memory.size() > self.init_observations:
                 self.critic.evaluate(self.relay_memory.sample())
+
+                if time_step % self.sync_frequency == 0:
+                    self.critic.sync_target_model_with_policy_model()
+
             if done:
                 break
             current_state = next_state
+            time_step += 1
 
 class DeepQLearningAgent(Agent):
     def __init__(self,env,config,device):
@@ -183,7 +190,7 @@ class DeepQLearningAgent(Agent):
         self.weight_decay = config['DQN'].getfloat('weight_decay')
 
         self.replay_memory_capacity = config['DQN'].getint('replay_memory_capacity')
-        self.update_target_interval = config['DQN'].getint('update_target_interval')
+        self.sync_frequency = config['DQN'].getint('sync_frequency')
 
         self.init_observations = config['DQN'].getint('init_observations')
         
@@ -191,12 +198,12 @@ class DeepQLearningAgent(Agent):
         policy_estimator = DeepQValueEstimator(self.image_stack_size,self.action_space,self.lr,self.momentum,self.weight_decay,self.device)
         target_estimator = DeepQValueEstimator(self.image_stack_size,self.action_space,self.lr,self.momentum,self.weight_decay,self.device)
         
-        self.critic = DeepQLearningCritic(policy_estimator,target_estimator)
+        self.critic = DeepQLearningCritic(policy_estimator,target_estimator,self.batch_size,self.action_space,self.discount)
         policy = ContinuousStateValueTablePolicy(policy_estimator)
         self.explorer = BoltzmannExplorer(policy)
 
-        self.act = DeepQLearningActor(self.env,self.critic,self.explorer)
-        self.relay_memory_capacity = 100000
+        self.act = DeepQLearningActor(self.env,self.critic,self.explorer,self.replay_memory_capacity,self.img_rows,self.img_columns,self.init_observations,self.sync_frequency)
+        
 
     def learn(self):
         self.act.act()
