@@ -37,7 +37,7 @@
 import torch
 import torch.nn as nn  
 import torch.optim as optim
-from torch.utils.tensorboard import SummaryWriter, writer
+from torch.utils.tensorboard import SummaryWriter
 
 from torchvision import transforms
 from PIL.Image import init
@@ -106,7 +106,7 @@ class DeepQLearningCritic(CriticBase):
             next_state = samples[sample_index][3]
             terminal = samples[sample_index][4]
         
-            the_optimal_q_value_of_next_state = torch.max(self.target_estimator.predict(next_state,None))
+            the_optimal_q_value_of_next_state = torch.max(self.target_estimator.predict(next_state,None).detach())
 
             target_values[sample_index][int(action)] = reward if terminal else reward + self.discount*the_optimal_q_value_of_next_state
             
@@ -154,7 +154,7 @@ class BoltzmannExplorer(ExplorerBase):
         self.policy.create_distribution_fn = create_distribution_boltzmann()
     
     def explore(self, *args):
-        pass 
+        return self.policy.get_action(args[0])
         
     def get_behavior_policy(self):
         return self.policy
@@ -198,17 +198,18 @@ class DeepQLearningActor(ActorBase):
         current_state = self._env_reset()
         while (True):
             action_index = self.explorer.explore(current_state)
-                
             observation = self._env_step(current_state,action_index)
             next_state = observation[0]
             reward = observation[1]
             done = observation[2]
+            score = observation[3]
             self.relay_memory.push((current_state, action_index, reward, next_state, done))
             if self.relay_memory.size() > self.init_observations:
                 self.critic.evaluate(self.relay_memory.sample(self.batch_size),done,episode,self.writer)
                 if time_step % self.sync_frequency == 0:
                     self.critic.sync_target_model_with_policy_model()
             if done:
+                self.writer.add_scalar('episode_score',score,episode)
                 break
             current_state = next_state
             time_step += 1
@@ -247,10 +248,11 @@ class DeepQLearningAgent(Agent):
         
         self.critic = DeepQLearningCritic(policy_estimator,target_estimator,self.batch_size,self.action_space,self.discount)
         policy = ContinuousStateValueTablePolicy(policy_estimator)
-        self.explorer = ESoftExplorer(policy,self.init_epsilon,self.final_epsilon,self.epsilon_decay_rate)
+        #self.explorer = ESoftExplorer(policy,self.init_epsilon,self.final_epsilon,self.epsilon_decay_rate)
+        self.explorer = BoltzmannExplorer(policy)
 
         self.act = DeepQLearningActor(self.env,self.critic,self.explorer,self.replay_memory_capacity,self.img_rows,self.img_columns,self.init_observations,self.sync_frequency,self.batch_size)
-        self.writer = SummaryWriter()
+        
 
 
     def learn(self):
