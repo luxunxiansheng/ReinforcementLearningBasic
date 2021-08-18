@@ -47,7 +47,7 @@ from common import Agent, CriticBase, ExplorerBase, QValueEstimator,ActorBase
 from model.deep_mind_network_base import DeepMindNetworkBase
 
 from lib.replay_memory import Replay_Memory
-from lib.utility import create_distribution_boltzmann
+from lib.utility import create_distribution_boltzmann, create_distribution_epsilon_greedily
 from algorithm.deep_reinforcement_learning.dqn.continuous_state_value_table_policy import ContinuousStateValueTablePolicy
 
 
@@ -125,6 +125,29 @@ class DeepQLearningCritic(CriticBase):
         return self.policy_estimator
     
 
+class ESoftExplorer(ExplorerBase):
+    def __init__(self, policy,init_epsilon,final_epsilon,decay_rate):
+        self.policy = policy
+        self.init_epsilon = init_epsilon
+        self.final_epsilon = final_epsilon
+        self.decay_rate = decay_rate
+        self.epsilon = self.init_epsilon
+        self.policy.create_distribution_fn = create_distribution_epsilon_greedily(init_epsilon)
+    
+    def explore(self, *args):
+        state = args[0]
+        action_index =self.policy.get_action(state)
+        
+        # reduced the epsilon (exploration parameter) gradually
+        if self.epsilon > self.final_epsilon:
+            self.epsilon -= (self.init_epsilon - self.final_epsilon) * self.decay_rate
+        self.policy.create_distribution_fn = create_distribution_epsilon_greedily(self.epsilon)
+
+        return action_index
+
+    def get_behavior_policy(self):
+        return self.policy
+
 class BoltzmannExplorer(ExplorerBase):
     def __init__(self, policy):
         self.policy = policy
@@ -174,7 +197,8 @@ class DeepQLearningActor(ActorBase):
         time_step = 0 
         current_state = self._env_reset()
         while (True):
-            action_index = self.explorer.get_behavior_policy().get_action(current_state)
+            action_index = self.explorer.explore(current_state)
+                
             observation = self._env_step(current_state,action_index)
             next_state = observation[0]
             reward = observation[1]
@@ -212,6 +236,10 @@ class DeepQLearningAgent(Agent):
         self.replay_memory_capacity = config['DQN'].getint('replay_memory_capacity')
         self.sync_frequency = config['DQN'].getint('sync_frequency')
 
+        self.init_epsilon = config['DQN'].getfloat('init_epsilon')
+        self.final_epsilon = config['DQN'].getfloat('final_epsilon')
+        self.epsilon_decay_rate = config['DQN'].getfloat('epsilon_decay_rate')
+
         self.init_observations = config['DQN'].getint('init_observations')
             
         policy_estimator = DeepQValueEstimator(self.image_stack_size,self.action_space,self.lr,self.momentum,self.weight_decay,self.device)
@@ -219,7 +247,7 @@ class DeepQLearningAgent(Agent):
         
         self.critic = DeepQLearningCritic(policy_estimator,target_estimator,self.batch_size,self.action_space,self.discount)
         policy = ContinuousStateValueTablePolicy(policy_estimator)
-        self.explorer = BoltzmannExplorer(policy)
+        self.explorer = ESoftExplorer(policy,self.init_epsilon,self.final_epsilon,self.epsilon_decay_rate)
 
         self.act = DeepQLearningActor(self.env,self.critic,self.explorer,self.replay_memory_capacity,self.img_rows,self.img_columns,self.init_observations,self.sync_frequency,self.batch_size)
         self.writer = SummaryWriter()

@@ -69,7 +69,7 @@ class Game(object):
         self.driver = webdriver.Chrome(executable_path=os.path.join(Path(__file__).parent, config['GAME'].get('chrome_driver_path')), desired_capabilities=self._CAPA)
         self.driver.set_window_position(x=-10, y=0)
 
-        self.wait = WebDriverWait(self.driver, 20)
+        self.wait = WebDriverWait(self.driver, 60)
         self.driver.get(config['GAME'].get('game_url'))
 
         self.wait.until(EC.presence_of_all_elements_located((By.ID, "socialbutts")))
@@ -129,7 +129,7 @@ class Game(object):
 
     
     def reset(self):
-        self.driver.execute_script("Runner.instance_.play()") 
+        self.restart()
         return self._grab_screen()    
 
     def pause(self):
