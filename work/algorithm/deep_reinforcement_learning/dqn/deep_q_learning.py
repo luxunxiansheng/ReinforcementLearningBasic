@@ -47,7 +47,7 @@ from common import Agent, CriticBase, ExplorerBase, QValueEstimator,ActorBase
 from model.deep_mind_network_base import DeepMindNetworkBase
 
 from lib.replay_memory import Replay_Memory
-from lib.utility import create_distribution_boltzmann, create_distribution_epsilon_greedily
+from lib.utility import Utilis, create_distribution_boltzmann, create_distribution_epsilon_greedily
 from algorithm.deep_reinforcement_learning.dqn.continuous_state_value_table_policy import ContinuousStateValueTablePolicy
 
 
@@ -124,7 +124,7 @@ class DeepQLearningCritic(CriticBase):
     def get_value_function(self):
         return self.policy_estimator
     
-
+    
 class ESoftExplorer(ExplorerBase):
     def __init__(self, policy,init_epsilon,final_epsilon,decay_rate):
         self.policy = policy
@@ -223,6 +223,8 @@ class DeepQLearningAgent(Agent):
         self.init_epsilon = config['GLOBAL'].getfloat('init_epsilon')
         self.discount = config['GLOBAL'].getfloat('discount') 
         self.episodes = config['GLOBAL'].getint('episodes')
+        self.check_point_path = config['GLOBAL'].get('check_point_path')
+        self.check_frequency = config['GLOBAL'].getint('check_frequency')
 
         self.image_stack_size = config['DQN'].getint('image_stack_size')
         self.action_space = config['DQN'].getint('action_space')
@@ -242,7 +244,8 @@ class DeepQLearningAgent(Agent):
         self.epsilon_decay_rate = config['DQN'].getfloat('epsilon_decay_rate')
 
         self.init_observations = config['DQN'].getint('init_observations')
-            
+
+
         policy_estimator = DeepQValueEstimator(self.image_stack_size,self.action_space,self.lr,self.momentum,self.weight_decay,self.device)
         target_estimator = DeepQValueEstimator(self.image_stack_size,self.action_space,self.lr,self.momentum,self.weight_decay,self.device)
         
@@ -251,11 +254,21 @@ class DeepQLearningAgent(Agent):
         #self.explorer = ESoftExplorer(policy,self.init_epsilon,self.final_epsilon,self.epsilon_decay_rate)
         self.explorer = BoltzmannExplorer(policy)
 
-        self.act = DeepQLearningActor(self.env,self.critic,self.explorer,self.replay_memory_capacity,self.img_rows,self.img_columns,self.init_observations,self.sync_frequency,self.batch_size)
-        
-
+        self.actor = DeepQLearningActor(self.env,self.critic,self.explorer,self.replay_memory_capacity,self.img_rows,self.img_columns,self.init_observations,self.sync_frequency,self.batch_size)
 
     def learn(self):
-        for episode in tqdm(range(0, self.episodes)):
-            self.act.act(episode)
-
+        elapsed_episode = 0
+        checkpoint = Utilis.load_checkpoint(self.__class__.__name__,self.check_point_path)
+        if checkpoint is not None:
+            self.actor.critic.policy_estimator.model.load_state_dict(checkpoint['policy_value_model_state_dict'])
+            self.actor.critic.policy_estimator.optimizer.load_state_dict(checkpoint['policy_value_optimizer_state_dict'])
+            elapsed_episode = checkpoint['episode']
+        
+        for episode in tqdm(range(elapsed_episode, self.episodes)):
+            self.actor.act(episode)
+            if episode % self.check_frequency == 0:
+                checkpoint = {'episode': episode,
+                                'policy_value_model_state_dict': self.actor.critic.policy_estimator.model.state_dict(),
+                                'policy_value_optimizer_state_dict': self.actor.critic.policy_estimator.optimizer.state_dict()}
+                Utilis.save_checkpoint(checkpoint,self.__class__.__name__,self.check_point_path)
+                    

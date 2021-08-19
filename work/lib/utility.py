@@ -1,6 +1,7 @@
 
 import os
 import math
+import errno
 from configparser import ConfigParser
 from pathlib import Path
 
@@ -142,3 +143,30 @@ class Utilis(object):
         nn.init.constant_(layer.bias.data, 0)
         return layer
     
+    # Taken from https://stackoverflow.com/a/600612/119527
+    @staticmethod
+    def mkdir_p(path):
+        try:
+            os.makedirs(path)
+        except OSError as exc: # Python >2.5
+            if exc.errno == errno.EEXIST and os.path.isdir(path):
+                pass
+            else:
+                raise
+
+
+    @staticmethod
+    def save_checkpoint(checkpoint, agentname,checkpointpathname='checkpoint'):
+        checkpoint_file_path=  os.path.join(Path(__file__).parents[1],checkpointpathname,agentname)    
+        Utilis.mkdir_p(checkpoint_file_path)
+        checkfile=os.path.join(checkpoint_file_path,'checkpoint.pth.tar')
+        torch.save(checkpoint, checkfile)
+        
+    
+    @staticmethod
+    def load_checkpoint(agentname, checkpointpathname='checkpoint'):
+        checkpoint_file=  os.path.join(Path(__file__).parents[1],checkpointpathname,agentname,'checkpoint.pth.tar')    
+        if os.path.isfile(checkpoint_file):
+            return torch.load(checkpoint_file)
+        else:
+            return None
