@@ -36,7 +36,7 @@ import copy
 
 
 from common import ActorBase, CriticBase, Agent
-from lib.utility import create_distribution_greedily
+from lib.distribution import create_distribution_greedily
 from policy.policy import DiscreteStateValueTablePolicy
 from algorithm.value_based.tabular_solution_method.explorer import GreedyExplorer
 

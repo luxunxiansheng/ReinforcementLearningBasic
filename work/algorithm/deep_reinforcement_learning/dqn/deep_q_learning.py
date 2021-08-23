@@ -47,7 +47,8 @@ from common import Agent, CriticBase, ExplorerBase, QValueEstimator,ActorBase
 from model.deep_mind_network_base import DeepMindNetworkBase
 
 from lib.replay_memory import Replay_Memory
-from lib.utility import Utilis, create_distribution_boltzmann, create_distribution_epsilon_greedily
+from lib.utility import  load_checkpoint, save_checkpoint
+from lib.distribution import create_distribution_boltzmann, create_distribution_epsilon_greedily
 from algorithm.deep_reinforcement_learning.dqn.continuous_state_value_table_policy import ContinuousStateValueTablePolicy
 
 
@@ -257,7 +258,7 @@ class DeepQLearningAgent(Agent):
 
     def learn(self):
         elapsed_episode = 0
-        checkpoint = Utilis.load_checkpoint(self.__class__.__name__,self.check_point_path)
+        checkpoint = load_checkpoint(self.__class__.__name__,self.check_point_path)
         if checkpoint is not None:
             self.actor.critic.policy_estimator.model.load_state_dict(checkpoint['policy_value_model_state_dict'])
             self.actor.critic.policy_estimator.optimizer.load_state_dict(checkpoint['policy_value_optimizer_state_dict'])
@@ -272,5 +273,5 @@ class DeepQLearningAgent(Agent):
                             'epsilon': self.actor.explorer.epsilon,
                                 'policy_value_model_state_dict': self.actor.critic.policy_estimator.model.state_dict(),
                                 'policy_value_optimizer_state_dict': self.actor.critic.policy_estimator.optimizer.state_dict()}
-                Utilis.save_checkpoint(checkpoint,self.__class__.__name__,self.check_point_path)
+                save_checkpoint(checkpoint,self.__class__.__name__,self.check_point_path)
                     

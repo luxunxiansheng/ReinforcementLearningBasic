@@ -1,7 +1,7 @@
 
 import os
-import math
 import errno
+import math 
 from configparser import ConfigParser
 from pathlib import Path
 
@@ -11,48 +11,76 @@ import torch
 from torch import optim
 import torch.nn as nn
 
+import logging
+import sys
+from logging.handlers import TimedRotatingFileHandler
+FORMATTER = logging.Formatter("%(asctime)s — %(name)s — %(levelname)s — %(message)s")
+LOG_FILE = "my_app.log"
 
-def create_distribution_greedily():
-    def fn(dict_values):
-        best_action_index = max(dict_values, key=dict_values.get)
-        probs = {}
-        for index, _ in dict_values.items():
-            probs[index] = 0.0
-        probs[best_action_index] = 1.0
-        return probs
-    return fn
+def get_console_handler():
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setFormatter(FORMATTER)
+    return console_handler
+
+def get_file_handler():
+    file_handler = TimedRotatingFileHandler(LOG_FILE, when='midnight')
+    file_handler.setFormatter(FORMATTER)
+    return file_handler
+
+def get_logger(logger_name):
+    logger = logging.getLogger(logger_name)
+    logger.setLevel(logging.DEBUG) # better to have too much log than not enough
+    logger.addHandler(get_console_handler())
+
+    # with this pattern, it's rarely necessary to propagate the error up to parent
+    logger.propagate = False
+    return logger
 
 
-def create_distribution_randomly():
-    def fn(dict_values):
-        probs = {}
-        num_values = len(dict_values)
-        for index, _ in dict_values.items():
-            probs[index] = 1.0/num_values
-        return probs
-    return fn
+def gpu_id_with_max_memory():
+        os.system('nvidia-smi -q -d Memory|grep -A4 GPU|grep Free > dump')
+        memory_available = [int(x.split()[2]) for x in open('dump', 'r').readlines()]
+        os.system('rm ./dump')
+        return np.argmax(memory_available)
 
-def create_distribution_boltzmann():
-    def fn(dict_values):
-        probs = {}
-        z = sum([math.exp(x) for x in dict_values.values()])
-        for index, _ in dict_values.items():
-            probs[index] = math.exp(dict_values[index])/z 
-        return probs
-    return fn
 
-def create_distribution_epsilon_greedily(epsilon):
-    def fn(dict_values):
-        probs = {}
-        num_values = len(dict_values)
-        for index, _ in dict_values.items():
-            probs[index] = epsilon/num_values
+def config(config_file="config.ini"):
+        # parser config
+        config = ConfigParser()
+        config.read(os.path.join(Path(__file__).parents[1], config_file))
+        return config
+
+
+def layer_init(layer, w_scale=1.0):
+        nn.init.orthogonal_(layer.weight.data)
+        layer.weight.data.mul_(w_scale)
+        nn.init.constant_(layer.bias.data, 0)
+        return layer
+    
+    # Taken from https://stackoverflow.com/a/600612/119527
+def mkdir_p(path):
+        try:
+            os.makedirs(path)
+        except OSError as exc: # Python >2.5
+            if exc.errno == errno.EEXIST and os.path.isdir(path):
+                pass
+            else:
+                raise
+
+def save_checkpoint(checkpoint, agentname,checkpointpathname='checkpoint'):
+        checkpoint_file_path=  os.path.join(Path(__file__).parents[1],checkpointpathname,agentname)    
+        mkdir_p(checkpoint_file_path)
+        checkfile=os.path.join(checkpoint_file_path,'checkpoint.pth.tar')
+        torch.save(checkpoint, checkfile)
         
-        best_action_index = max(dict_values, key=dict_values.get)
-        probs[best_action_index] += (1.0 - epsilon)
-        return probs
-    return fn
+    
 
+def load_checkpoint(agentname, checkpointpathname='checkpoint'):
+        checkpoint_file=  os.path.join(Path(__file__).parents[1],checkpointpathname,agentname,'checkpoint.pth.tar')    
+        if os.path.isfile(checkpoint_file):
+            return torch.load(checkpoint_file)
+        else:
+            return None
 
 class SharedAdam(optim.Adam):
     """Implements Adam algorithm with shared states.
@@ -119,54 +147,3 @@ class SharedAdam(optim.Adam):
                 p.data.addcdiv_(exp_avg, denom, value=-step_size)
 
         return loss
-
-
-class Utilis(object):
-    @staticmethod
-    def gpu_id_with_max_memory():
-        os.system('nvidia-smi -q -d Memory|grep -A4 GPU|grep Free > dump')
-        memory_available = [int(x.split()[2]) for x in open('dump', 'r').readlines()]
-        os.system('rm ./dump')
-        return np.argmax(memory_available)
-
-    @staticmethod
-    def config(config_file="config.ini"):
-        # parser config
-        config = ConfigParser()
-        config.read(os.path.join(Path(__file__).parents[1], config_file))
-        return config
-
-    @staticmethod
-    def layer_init(layer, w_scale=1.0):
-        nn.init.orthogonal_(layer.weight.data)
-        layer.weight.data.mul_(w_scale)
-        nn.init.constant_(layer.bias.data, 0)
-        return layer
-    
-    # Taken from https://stackoverflow.com/a/600612/119527
-    @staticmethod
-    def mkdir_p(path):
-        try:
-            os.makedirs(path)
-        except OSError as exc: # Python >2.5
-            if exc.errno == errno.EEXIST and os.path.isdir(path):
-                pass
-            else:
-                raise
-
-
-    @staticmethod
-    def save_checkpoint(checkpoint, agentname,checkpointpathname='checkpoint'):
-        checkpoint_file_path=  os.path.join(Path(__file__).parents[1],checkpointpathname,agentname)    
-        Utilis.mkdir_p(checkpoint_file_path)
-        checkfile=os.path.join(checkpoint_file_path,'checkpoint.pth.tar')
-        torch.save(checkpoint, checkfile)
-        
-    
-    @staticmethod
-    def load_checkpoint(agentname, checkpointpathname='checkpoint'):
-        checkpoint_file=  os.path.join(Path(__file__).parents[1],checkpointpathname,agentname,'checkpoint.pth.tar')    
-        if os.path.isfile(checkpoint_file):
-            return torch.load(checkpoint_file)
-        else:
-            return None

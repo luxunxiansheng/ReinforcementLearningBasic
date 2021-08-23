@@ -32,7 +32,7 @@
 # /
 
 from common import ExplorerBase  
-from lib.utility import (create_distribution_epsilon_greedily,create_distribution_greedily,create_distribution_boltzmann)
+from lib.distribution import (create_distribution_epsilon_greedily,create_distribution_greedily,create_distribution_boltzmann)
 
 class GreedyExplorer(ExplorerBase):
     def __init__(self,behavior_policy,critic):

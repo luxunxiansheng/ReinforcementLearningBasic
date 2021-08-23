@@ -35,7 +35,7 @@
 
 
 from common import CriticBase
-from lib.utility import create_distribution_greedily
+from lib.distribution import create_distribution_greedily
 from policy.policy import DiscreteStateValueTablePolicy
 
 

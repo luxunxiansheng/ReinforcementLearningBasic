@@ -34,7 +34,7 @@
 # /
 from policy.policy import DiscreteStateValueTablePolicy
 from common import ActorBase, Agent, CriticBase
-from lib.utility import create_distribution_greedily
+from lib.distribution import create_distribution_greedily
 
 
 class BellmanOptimalCritic(CriticBase):
