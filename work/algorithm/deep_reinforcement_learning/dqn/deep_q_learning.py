@@ -47,9 +47,11 @@ from common import Agent, CriticBase, ExplorerBase, QValueEstimator,ActorBase
 from model.deep_mind_network_base import DeepMindNetworkBase
 
 from lib.replay_memory import Replay_Memory
-from lib.utility import  load_checkpoint, save_checkpoint
+from lib.utility import  get_logger, load_checkpoint, save_checkpoint
 from lib.distribution import create_distribution_boltzmann, create_distribution_epsilon_greedily
 from algorithm.deep_reinforcement_learning.dqn.continuous_state_value_table_policy import ContinuousStateValueTablePolicy
+
+dqn_logger = get_logger("DeepQLearning")
 
 
 class DeepQValueEstimator(QValueEstimator):
@@ -172,6 +174,7 @@ class DeepQLearningActor(ActorBase):
         self.sync_frequency = sync_frequency
         self.batch_size = batch_size
         self.writer = SummaryWriter()
+        self.time_step = 0
 
     def _preprocess_snapshot(self, screenshot):
         transform = transforms.Compose([transforms.CenterCrop((150, 600)),
@@ -194,7 +197,11 @@ class DeepQLearningActor(ActorBase):
 
     def act(self, *args):
         episode = args[0]
-        self.critic.sync_target_model_with_policy_model() 
+
+        if episode % self.sync_frequency == 0:
+            dqn_logger.debug("Sync target model episode:{} and timestep:{}".format(episode,self.time_step))
+            self.critic.sync_target_model_with_policy_model()
+                
         current_state = self._env_reset()
         while (True):
             action_index = self.explorer.explore(current_state)
@@ -206,15 +213,17 @@ class DeepQLearningActor(ActorBase):
             self.relay_memory.push((current_state, action_index, reward, next_state, done))
             if self.relay_memory.size() > self.init_observations:
                 self.critic.evaluate(self.relay_memory.sample(self.batch_size),done,episode,self.writer)
-                if episode % self.sync_frequency == 0:
-                    self.critic.sync_target_model_with_policy_model()
             if done:
                 self.writer.add_scalar('episode_score',score,episode)
                 break
             current_state = next_state
+
+            self.time_step += 1
             
 
 class DeepQLearningAgent(Agent):
+    check_point_file_name = "DeepQLearningAgent"
+    
     def __init__(self,env,config,device):
         self.env = env
         self.device = device
@@ -258,20 +267,19 @@ class DeepQLearningAgent(Agent):
 
     def learn(self):
         elapsed_episode = 0
-        checkpoint = load_checkpoint(self.__class__.__name__,self.check_point_path)
+        checkpoint = load_checkpoint(DeepQLearningAgent.check_point_file_name,self.check_point_path)
         if checkpoint is not None:
             self.actor.critic.policy_estimator.model.load_state_dict(checkpoint['policy_value_model_state_dict'])
             self.actor.critic.policy_estimator.optimizer.load_state_dict(checkpoint['policy_value_optimizer_state_dict'])
             self.actor.explorer.epsilon = checkpoint['epsilon']
             elapsed_episode = checkpoint['episode']
 
-        
         for episode in tqdm(range(elapsed_episode, self.episodes)):
-            self.actor.act(episode)
+            self.actor.act(episode) 
             if episode % self.check_frequency == 0:
                 checkpoint = {'episode': episode,
                             'epsilon': self.actor.explorer.epsilon,
                                 'policy_value_model_state_dict': self.actor.critic.policy_estimator.model.state_dict(),
                                 'policy_value_optimizer_state_dict': self.actor.critic.policy_estimator.optimizer.state_dict()}
-                save_checkpoint(checkpoint,self.__class__.__name__,self.check_point_path)
+                save_checkpoint(checkpoint,DeepQLearningAgent.check_point_file_name,self.check_point_path)
                     

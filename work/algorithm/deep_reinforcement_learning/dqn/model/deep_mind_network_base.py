@@ -33,10 +33,12 @@
 #
 # /
 
+
 import torch
 import torch.nn as nn
 
-from lib.utility import Utilis
+from lib.utility import layer_init
+
 from model.noisy_linear import NoisyLinear
 
 class DeepMindNetworkBase(nn.Module):
@@ -68,17 +70,17 @@ class DeepMindNetworkBase(nn.Module):
         self.input_channels = input_channels
     
         self._conv1 = nn.Sequential(
-            Utilis.layer_init(nn.Conv2d(self.input_channels, 32, kernel_size=8, stride=4)),
+            layer_init(nn.Conv2d(self.input_channels, 32, kernel_size=8, stride=4)),
             nn.ReLU()
         )
 
         self._conv2 = nn.Sequential(
-            Utilis.layer_init(nn.Conv2d(32, 64, kernel_size=4, stride=2)),
+            layer_init(nn.Conv2d(32, 64, kernel_size=4, stride=2)),
             nn.ReLU()
         )
 
         self._conv3 = nn.Sequential(
-            Utilis.layer_init(nn.Conv2d(64, 64, kernel_size=3, stride=1)),
+            layer_init(nn.Conv2d(64, 64, kernel_size=3, stride=1)),
             nn.ReLU()
         )
 
@@ -88,7 +90,7 @@ class DeepMindNetworkBase(nn.Module):
             )  
         else:
             self._fc1 = nn.Sequential(
-                Utilis.layer_init(nn.Linear(7*7*64, 512)),
+                layer_init(nn.Linear(7*7*64, 512)),
                 nn.ReLU()
             )
         

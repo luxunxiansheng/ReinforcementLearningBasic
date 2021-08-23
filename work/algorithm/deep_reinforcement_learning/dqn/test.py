@@ -33,6 +33,7 @@
 #
 # /
 
+
 import sys,os
 current_dir= os.path.dirname(os.path.realpath(__file__))
 work_folder=current_dir[:current_dir.find('algorithm')]
@@ -41,7 +42,8 @@ sys.path.append(work_folder)
 
 import torch
 
-from lib.utility import Utilis
+from lib.utility import config
+
 from env.dino.game import Game
 from algorithm.deep_reinforcement_learning.dqn.deep_q_learning import DeepQLearningAgent
 
@@ -51,8 +53,8 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 # prepare the Log for recording the RL procedure
 
-app_cfg = Utilis.config('algorithm/deep_reinforcement_learning/dqn/config.ini')
-env_cfg = Utilis.config("env/dino/config.ini")
+app_cfg = config('algorithm/deep_reinforcement_learning/dqn/config.ini')
+env_cfg = config("env/dino/config.ini")
 
 def test_dqn(env,config):
         dqn= DeepQLearningAgent(env,config,device)

@@ -35,11 +35,13 @@
 
 
 
+
 import torch
 import torch.nn as nn
 
+from lib.utility import layer_init
 from model.deep_mind_network_base import DeepMindNetworkBase
-from lib.utility import Utilis
+
 
 class DeepMindNetwork(DeepMindNetworkBase):
     '''
@@ -50,7 +52,7 @@ class DeepMindNetwork(DeepMindNetworkBase):
     def __init__(self, input_channels, output_size):
         super().__init__(input_channels)
         self.output_size = output_size
-        self.header = nn.Sequential(Utilis.layer_init(nn.Linear(512, self.output_size)))
+        self.header = nn.Sequential(layer_init(nn.Linear(512, self.output_size)))
 
     def forward(self, input):
         x = super().forward(input)
