@@ -51,7 +51,7 @@ from lib.utility import  get_logger, load_checkpoint, save_checkpoint
 from lib.distribution import create_distribution_boltzmann, create_distribution_epsilon_greedily
 from algorithm.deep_reinforcement_learning.dqn.continuous_state_value_table_policy import ContinuousStateValueTablePolicy
 
-dqn_logger = get_logger("DeepQLearning")
+dqn_logger = get_logger("DeepQLearning_debug")
 
 
 class DeepQValueEstimator(QValueEstimator):
@@ -273,7 +273,7 @@ class DeepQLearningAgent(Agent):
             self.actor.critic.policy_estimator.optimizer.load_state_dict(checkpoint['policy_value_optimizer_state_dict'])
             self.actor.explorer.epsilon = checkpoint['epsilon']
             elapsed_episode = checkpoint['episode']
-
+            dqn_logger.debug("Checkpoint loaded!")
         for episode in tqdm(range(elapsed_episode, self.episodes)):
             self.actor.act(episode) 
             if episode % self.check_frequency == 0:
@@ -282,4 +282,5 @@ class DeepQLearningAgent(Agent):
                                 'policy_value_model_state_dict': self.actor.critic.policy_estimator.model.state_dict(),
                                 'policy_value_optimizer_state_dict': self.actor.critic.policy_estimator.optimizer.state_dict()}
                 save_checkpoint(checkpoint,DeepQLearningAgent.check_point_file_name,self.check_point_path)
+                dqn_logger.debug("Checkpoint saved at {}!".format(episode))
                     
