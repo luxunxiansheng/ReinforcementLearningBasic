@@ -84,9 +84,9 @@ class DeepQValueEstimator(QValueEstimator):
         self.optimizer.step()
 
 class DeepQLearningCritic(CriticBase):
-    def __init__(self,policy_estimator,target_estimator,action_space,discount):
-        self.policy_estimator = policy_estimator
-        self.target_estimator = target_estimator
+    def __init__(self,q_value_estimator,q_value_target_estimator,action_space,discount):
+        self.Q_value_estimator = q_value_estimator
+        self.Q_value_target_estimator = q_value_target_estimator
         self.action_space = action_space
         self.discount = discount 
 
@@ -107,23 +107,23 @@ class DeepQLearningCritic(CriticBase):
             next_state = samples[sample_index][3]
             terminal = samples[sample_index][4]
         
-            the_optimal_q_value_of_next_state = torch.max(self.target_estimator.predict(next_state,None).detach())
+            the_optimal_q_value_of_next_state = torch.max(self.Q_value_target_estimator.predict(next_state,None).detach())
 
             target_values[sample_index][int(action)] = reward if terminal else reward + self.discount*the_optimal_q_value_of_next_state
             
-            q_values[sample_index][int(action)] = self.policy_estimator.predict(state,int(action))
+            q_values[sample_index][int(action)] = self.Q_value_estimator.predict(state,int(action))
         
-        self.policy_estimator.update(q_values,target_values,done,episode,writer)
+        self.Q_value_estimator.update(q_values,target_values,done,episode,writer)
 
     def sync_target_model_with_policy_model(self):
-        self.target_estimator.model.load_state_dict(self.policy_estimator.model.state_dict())
-        self.target_estimator.model.eval()
+        self.Q_value_target_estimator.model.load_state_dict(self.Q_value_estimator.model.state_dict())
+        self.Q_value_target_estimator.model.eval()
     
     def get_optimal_policy(self):
         pass 
     
     def get_value_function(self):
-        return self.policy_estimator
+        return self.Q_value_estimator
     
     
 class ESoftExplorer(ExplorerBase):
@@ -232,11 +232,11 @@ class DeepQLearningAgent(Agent):
         self.init_observations = config['DQN'].getint('init_observations')
 
 
-        policy_estimator = DeepQValueEstimator(self.image_stack_size,self.action_space,self.lr,self.momentum,self.weight_decay,self.device)
-        target_estimator = DeepQValueEstimator(self.image_stack_size,self.action_space,self.lr,self.momentum,self.weight_decay,self.device)
+        q_value_estimator = DeepQValueEstimator(self.image_stack_size,self.action_space,self.lr,self.momentum,self.weight_decay,self.device)
+        q_value_target_estimator = DeepQValueEstimator(self.image_stack_size,self.action_space,self.lr,self.momentum,self.weight_decay,self.device)
         
-        self.critic = DeepQLearningCritic(policy_estimator,target_estimator,self.action_space,self.discount)
-        policy = ContinuousStateValueTablePolicy(policy_estimator)
+        self.critic = DeepQLearningCritic(q_value_estimator,q_value_target_estimator,self.action_space,self.discount)
+        policy = ContinuousStateValueTablePolicy(q_value_estimator)
         self.explorer = ESoftExplorer(policy,self.init_epsilon,self.final_epsilon,self.epsilon_decay_rate)
         #self.explorer = BoltzmannExplorer(policy)
 
@@ -246,8 +246,8 @@ class DeepQLearningAgent(Agent):
         elapsed_episode = 0
         checkpoint = load_checkpoint(DeepQLearningAgent.check_point_file_name,self.check_point_path)
         if checkpoint is not None:
-            self.actor.critic.policy_estimator.model.load_state_dict(checkpoint['policy_value_model_state_dict'])
-            self.actor.critic.policy_estimator.optimizer.load_state_dict(checkpoint['policy_value_optimizer_state_dict'])
+            self.actor.critic.Q_value_estimator.model.load_state_dict(checkpoint['policy_value_model_state_dict'])
+            self.actor.critic.Q_value_estimator.optimizer.load_state_dict(checkpoint['policy_value_optimizer_state_dict'])
             self.actor.explorer.epsilon = checkpoint['epsilon']
             elapsed_episode = checkpoint['episode']
             dqn_logger.debug("Checkpoint loaded!")
@@ -256,8 +256,8 @@ class DeepQLearningAgent(Agent):
             if episode % self.check_frequency == 0:
                 checkpoint = {'episode': episode,
                             'epsilon': self.actor.explorer.epsilon,
-                                'policy_value_model_state_dict': self.actor.critic.policy_estimator.model.state_dict(),
-                                'policy_value_optimizer_state_dict': self.actor.critic.policy_estimator.optimizer.state_dict()}
+                                'policy_value_model_state_dict': self.actor.critic.Q_value_estimator.model.state_dict(),
+                                'policy_value_optimizer_state_dict': self.actor.critic.Q_value_estimator.optimizer.state_dict()}
                 save_checkpoint(checkpoint,DeepQLearningAgent.check_point_file_name,self.check_point_path)
                 dqn_logger.debug("Checkpoint saved at {}!".format(episode))
                     

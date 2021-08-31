@@ -33,11 +33,18 @@
 #
 # /
 
+from genericpath import samefile
+from logging import setLoggerClass
+
+from torch.utils.tensorboard import writer
+from policy.policy import Policy
 import numpy as np 
 
 import torch
 from torch import nn
+from torch.utils.tensorboard.writer import SummaryWriter
 from common import ActorBase, CriticBase, ExplorerBase, PolicyEstimator, QValueEstimator
+from lib.replay_memory import Replay_Memory
 
 class DeepQValueEstimator(QValueEstimator):
     def __init__(self,model,learning_rate,device):
@@ -53,76 +60,89 @@ class DeepQValueEstimator(QValueEstimator):
     def update(self, *args):
         q_values = args[0].to(self.device)
         target_values = args[1].to(self.device)
-        done = args[2]
-        episode = args[3]
-        writer = args[4]
-
+    
         loss = self.criterion(q_values,target_values)
-
-        if done:
-            writer.add_scalar('loss', loss, episode)
 
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
         
-        
-class DeepQLearningCritic(CriticBase):
-    def __init__(self,policy_estimator,target_estimator,action_space,discount):
-        self.policy_estimator = policy_estimator
-        self.target_estimator = target_estimator
-        self.action_space = action_space
+class DDPGCritic(CriticBase):
+    def __init__(self,q_value_estimator,q_value_target_estimator,target_policy,discount):
+        self.Q_value_estimator = q_value_estimator
+        self.Q_value_target_estimator = q_value_target_estimator
+        self.target_policy = target_policy
         self.discount = discount 
 
-    def evaluate(self,*args):
-        samples = args[0]
-        done = args[1]
-        episode = args[2]
-        writer = args[3]
-        batch_size = len(samples)
-        
-        q_values = torch.zeros(batch_size, self.action_space)
-        target_values = torch.zeros(batch_size, self.action_space)
+    def evaluate(self, *args):
+        samples = np.array(args[0])
 
-        for sample_index in range(0, batch_size):
-            state = samples[sample_index][0]
-            action = samples[sample_index][1]
-            reward = samples[sample_index][2]
-            next_state = samples[sample_index][3]
-            terminal = samples[sample_index][4]
-        
-            the_optimal_q_value_of_next_state = torch.max(self.target_estimator.predict(next_state,None).detach())
+        current_state_indices = samples[:,0]
+        current_action_indices = samples[:,1]
+        q_values = self.Q_value_estimator.predict(current_state_indices,current_action_indices)
 
-            target_values[sample_index][int(action)] = reward if terminal else reward + self.discount*the_optimal_q_value_of_next_state
-            
-            q_values[sample_index][int(action)] = self.policy_estimator.predict(state,int(action))
-        
-        self.policy_estimator.update(q_values,target_values,done,episode,writer)
+        rewards = samples[:,2]
+        next_state_indices = samples[:,3]
+        next_action_indices = self.target_policy.policy_estimator.predict(next_state_indices)
+        q_value_of_next_states = self.Q_value_target_estimator.predict(next_state_indices,next_action_indices)
+
+        target_values = rewards + self.discount * q_value_of_next_states
+
+        self.Q_value_estimator.update(q_values,target_values)
+
 
     def sync_target_model_with_policy_model(self):
-        self.target_estimator.model.load_state_dict(self.policy_estimator.model.state_dict())
-        self.target_estimator.model.eval()
+        self.Q_value_target_estimator.model.load_state_dict(self.Q_value_estimator.model.state_dict())
+        self.Q_value_target_estimator.model.eval()
     
     def get_optimal_policy(self):
         pass 
     
     def get_value_function(self):
-        return self.policy_estimator
+        return self.Q_value_estimator
 
 
-class PolicyGridentExplorer(ExplorerBase):
-    def explore(self,*args):
-        pass 
+class DDPGExplorer(ExplorerBase):
+    def __init__(self,policy,target_policy,critic,discount=1.0):
+        self.policy = policy 
+        self.discount = discount
+        self.critic = critic
+
+
+    def explore(self, *args):
+        samples = np.array(args[0])
+        done = args[1]
+        episode = args[2]
+        writer = args[3]
+            
+        state_indices = samples[:,0]
+
+        action_indices = self.policy.policy_estimator.predict(state_indices)
+        policy_loss = - self.critic.estimator.predict(state_indices,action_indices)
+
+        if done:
+            writer.add_scalar('policy_loss',policy_loss.item(),episode)
+        
+        self.policy.policy_estimator.update(policy_loss)
+
+    def get_behavior_policy(self):
+        return self.policy
 
 class DDPGActor(ActorBase):
     EPS = np.finfo(np.float32).eps.item()
     MAX_STEPS = 500000
 
-    def __init__(self,env,critic,explorer,writer):
+    def __init__(self,env,critic,explorer,relay_memory_capaticy,init_observations,sync_frequency,batch_size):
         self.env = env
-        self.critic=critic 
-        self.explorer= explorer
-        self.writer = writer
+        self.critic = critic
+        self.explorer = explorer
+        self.relay_memory = Replay_Memory(relay_memory_capaticy)
+        
+        self.init_observations = init_observations
+        self.sync_frequency = sync_frequency
+        self.batch_size = batch_size
+        self.writer = SummaryWriter()
+        self.time_step = 0
     
     def act(self, *args):
         episode = args[0]
@@ -130,6 +150,21 @@ class DDPGActor(ActorBase):
         current_state_index = self.env.reset()
         for _ in range(0,DDPGActor.MAX_STEPS):
             current_action_index = self.explorer.get_behavior_policy().get_action(current_state_index)  
-            observation = self.env.step(current_action_index)
-                  
+            observation = self.env.step(current_state_index,current_action_index)
+            next_state_index = observation[0]
+            reward = observation[1]
+            done = observation[2]
+            score = observation[3]
+            self.relay_memory.push((current_state_index, current_action_index, reward, next_state_index, done))
+            if self.relay_memory.size() > self.init_observations:
+                self.critic.evaluate(self.relay_memory.sample(self.batch_size))
+                self.explorer.explore(self.relay_memory.sample(self.batch_size))
+            if done:
+                self.writer.add_scalar('episode_score',score,episode)
+                break
+            current_state_index = next_state_index
+
+            self.time_step += 1
+
+                
     

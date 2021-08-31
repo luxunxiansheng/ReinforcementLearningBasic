@@ -33,7 +33,28 @@
 #
 # /
 
+
+from torch import nn
+
+from common import PolicyEstimator
 from policy.policy import Policy
+
+
+class DeepPolicyEstimator(PolicyEstimator):
+    def __init__(self,model,learning_rate,device):
+        self.device = device
+        self.model = model
+        self.optimizer = nn.optim.Adam(self.model.parameters(), learning_rate)
+
+    def predict(self, state):
+        return self.model(state)
+    
+    def update(self, *args):
+        loss = args[0]
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step() 
+
 
 
 class ContinuousStateValueContinuousActionPolicy(Policy):
