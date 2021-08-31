@@ -39,7 +39,6 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
 
-from torchvision import transforms
 from PIL.Image import init
 from tqdm import tqdm
 
@@ -62,7 +61,6 @@ class DeepQValueEstimator(QValueEstimator):
         self.optimizer = optim.RMSprop(self.model.parameters(),learning_rate,momentum,weight_decay)
         
     def predict(self, state, action=None):
-    
         return self.model(state.to(self.device))[action] if action is not None  else self.model(state.to(self.device))
     
     def update(self, *args):
@@ -163,37 +161,17 @@ class BoltzmannExplorer(ExplorerBase):
         return self.policy
 
 class DeepQLearningActor(ActorBase):
-    def __init__(self,env,critic,explorer,relay_memory_capaticy,img_rows,img_columns,init_observations,sync_frequency,batch_size):
+    def __init__(self,env,critic,explorer,relay_memory_capaticy,init_observations,sync_frequency,batch_size):
         self.env = env
         self.critic = critic
         self.explorer = explorer
         self.relay_memory = Replay_Memory(relay_memory_capaticy)
-        self.img_rows = img_rows 
-        self.img_columns = img_columns
+        
         self.init_observations = init_observations
         self.sync_frequency = sync_frequency
         self.batch_size = batch_size
         self.writer = SummaryWriter()
         self.time_step = 0
-
-    def _preprocess_snapshot(self, screenshot):
-        transform = transforms.Compose([transforms.CenterCrop((150, 600)),
-                                        transforms.Resize((self.img_rows, self.img_columns)),
-                                        transforms.Grayscale(),
-                                        transforms.ToTensor()])
-        return transform(screenshot)
-
-    def _env_reset(self):
-        init_screentshot= self._preprocess_snapshot(self.env.reset())
-        return torch.stack((init_screentshot,init_screentshot,init_screentshot,init_screentshot))
-    
-    def _env_step(self,current_state,action):
-        screen_shot, reward, terminal, score = self.env.step(action)
-        preprocessed_snapshot = self._preprocess_snapshot(screen_shot)
-        next_state = current_state.clone()
-        next_state[0:-1] = current_state[1:]
-        next_state[-1] = preprocessed_snapshot
-        return next_state, torch.tensor(reward), torch.tensor(terminal), score
 
     def act(self, *args):
         episode = args[0]
@@ -202,10 +180,10 @@ class DeepQLearningActor(ActorBase):
             dqn_logger.debug("Sync target model episode:{} and timestep:{}".format(episode,self.time_step))
             self.critic.sync_target_model_with_policy_model()
                 
-        current_state = self._env_reset()
+        current_state = self.env.reset()
         while (True):
             action_index = self.explorer.explore(current_state)
-            observation = self._env_step(current_state,action_index)
+            observation = self.env.step(current_state,action_index)
             next_state = observation[0]
             reward = observation[1]
             done = observation[2]
@@ -237,8 +215,7 @@ class DeepQLearningAgent(Agent):
 
         self.image_stack_size = config['DQN'].getint('image_stack_size')
         self.action_space = config['DQN'].getint('action_space')
-        self.img_rows = config['DQN'].getint('img_rows')
-        self.img_columns = config['DQN'].getint('img_columns')
+
 
         self.batch_size = config['DQN'].getint('batch')
         self.momentum = config['DQN'].getfloat('momentum')
@@ -263,7 +240,7 @@ class DeepQLearningAgent(Agent):
         self.explorer = ESoftExplorer(policy,self.init_epsilon,self.final_epsilon,self.epsilon_decay_rate)
         #self.explorer = BoltzmannExplorer(policy)
 
-        self.actor = DeepQLearningActor(self.env,self.critic,self.explorer,self.replay_memory_capacity,self.img_rows,self.img_columns,self.init_observations,self.sync_frequency,self.batch_size)
+        self.actor = DeepQLearningActor(self.env,self.critic,self.explorer,self.replay_memory_capacity,self.init_observations,self.sync_frequency,self.batch_size)
 
     def learn(self):
         elapsed_episode = 0

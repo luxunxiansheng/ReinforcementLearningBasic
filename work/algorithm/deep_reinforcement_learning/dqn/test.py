@@ -34,6 +34,7 @@
 # /
 
 
+
 import sys,os
 current_dir= os.path.dirname(os.path.realpath(__file__))
 work_folder=current_dir[:current_dir.find('algorithm')]
@@ -44,7 +45,7 @@ import torch
 
 from lib.utility import config
 
-from env.dino.game import Game
+from env.dino.game_wrapper import GameWrapper
 from algorithm.deep_reinforcement_learning.dqn.deep_q_learning import DeepQLearningAgent
 
 
@@ -62,7 +63,7 @@ def test_dqn(env,config):
 
 dino_game = None
 try:
-    dino_game = Game(env_cfg)
+    dino_game = GameWrapper(env_cfg)
     test_dqn(dino_game,app_cfg)
 
 finally:

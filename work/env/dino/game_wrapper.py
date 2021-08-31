@@ -11,10 +11,10 @@
 # for the specific language governing rights and limitations under the
 # License.
 #
-#   
-# Contributor(s): 
-# 
-#    Bin.Li (ornot2008@yahoo.com) 
+#
+# Contributor(s):
+#
+#    Bin.Li (ornot2008@yahoo.com)
 #
 #
 # Alternatively, the contents of this file may be used under the terms of
@@ -31,38 +31,40 @@
 #
 # #### END LICENSE BLOCK #####
 #
-#/  
+# /
 
 import torch
-import torch.nn.functional as F
-from torch import nn
+from torchvision import transforms
+
+from env.dino.game import Game
 
 
-class QValueNetwork(nn.Module):
-    def __init__(self,input_size,hidden_size,output_size):
-        super().__init__()
-        self.fc1 = nn.Linear(input_size,hidden_size)
-        self.fc2 = nn.Linear(hidden_size,hidden_size)
-        self.fc3 = nn.Linear(hidden_size,output_size)
+class GameWrapper:
+    def __init__(self,config):
+        self.game = Game(config)
+        self.img_rows = config['GAME'].getint("img_rows")
+        self.img_columns = config['GAME'].getint("img_columns")
     
-    def forward(self,state,action):
-        x = torch.cat([state,action],1)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
-        
-        return x
+    def _preprocess_snapshot(self, screenshot):
+        transform = transforms.Compose([transforms.CenterCrop((150, 600)),
+                                        transforms.Resize((self.img_rows, self.img_columns)),
+                                        transforms.Grayscale(),
+                                        transforms.ToTensor()])
+        return transform(screenshot)
 
-class PolicyNetwork(nn.Module):
-    def __init__(self,input_size,hidden_size,output_size):
-        super().__init__()
-        self.fc1 = nn.Linear(input_size,hidden_size)
-        self.fc2 = nn.Linear(hidden_size,hidden_size)
-        self.fc3 = nn.Linear(hidden_size,output_size)
+    def reset(self):
+        init_screentshot= self._preprocess_snapshot(self.game.reset())
+        return torch.stack((init_screentshot,init_screentshot,init_screentshot,init_screentshot))
+    
+    def step(self,current_state,action):
+        screen_shot, reward, terminal, score = self.game.step(action)
+        preprocessed_snapshot = self._preprocess_snapshot(screen_shot)
+        next_state = current_state.clone()
+        next_state[0:-1] = current_state[1:]
+        next_state[-1] = preprocessed_snapshot
+        return next_state, torch.tensor(reward), torch.tensor(terminal), score
 
-    def forward(self,state):
-        x = F.relu(self.fc1(state))
-        x = F.relu(self.fc2(x))
-        x = F.tanh(self.fc3(x))
+    def end(self):
+        self.game.end()
         
-        return x
+    

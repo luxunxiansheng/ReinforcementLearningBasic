@@ -33,19 +33,18 @@
 #
 # /
 
+import numpy as np 
+
 import torch
 from torch import nn
-from common import CriticBase, PolicyEstimator, QValueEstimator
-
+from common import ActorBase, CriticBase, ExplorerBase, PolicyEstimator, QValueEstimator
 
 class DeepQValueEstimator(QValueEstimator):
-
     def __init__(self,model,learning_rate,device):
-        self.model = model
         self.device = device
+        self.model = model
         self.criterion = nn.MSELoss()
         self.optimizer = nn.optim.Adam(self.model.parameters(), learning_rate)
-
 
     def predict(self, state, action=None):
         assert action is None
@@ -65,7 +64,6 @@ class DeepQValueEstimator(QValueEstimator):
 
         self.optimizer.zero_grad()
         loss.backward()
-
         self.optimizer.step()
         
         
@@ -112,4 +110,26 @@ class DeepQLearningCritic(CriticBase):
         return self.policy_estimator
 
 
-class DeepPolicyEstimator(PolicyEstimator):
+class PolicyGridentExplorer(ExplorerBase):
+    def explore(self,*args):
+        pass 
+
+class DDPGActor(ActorBase):
+    EPS = np.finfo(np.float32).eps.item()
+    MAX_STEPS = 500000
+
+    def __init__(self,env,critic,explorer,writer):
+        self.env = env
+        self.critic=critic 
+        self.explorer= explorer
+        self.writer = writer
+    
+    def act(self, *args):
+        episode = args[0]
+
+        current_state_index = self.env.reset()
+        for _ in range(0,DDPGActor.MAX_STEPS):
+            current_action_index = self.explorer.get_behavior_policy().get_action(current_state_index)  
+            observation = self.env.step(current_action_index)
+                  
+    
