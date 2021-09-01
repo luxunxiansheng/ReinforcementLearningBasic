@@ -45,7 +45,7 @@ from mpl_toolkits.mplot3d import Axes3D
 class PureDiscreteEnv(discrete.DiscreteEnv):
     """
     Both the state space and the action space are discrete
- 
+
     """
 
     @abstractmethod

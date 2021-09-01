@@ -66,12 +66,16 @@ class DeepQValueEstimator(QValueEstimator):
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
-        
+
 class DDPGCritic(CriticBase):
-    def __init__(self,q_value_estimator,q_value_target_estimator,target_policy,discount):
+    '''
+    The policy is assumed optimal so we can evaluate the optimal value function     
+    '''
+    def __init__(self,q_value_estimator,q_value_target_estimator,target_policy,policy,discount):
         self.Q_value_estimator = q_value_estimator
         self.Q_value_target_estimator = q_value_target_estimator
         self.target_policy = target_policy
+        self.policy = policy 
         self.discount = discount 
 
     def evaluate(self, *args):
@@ -84,16 +88,20 @@ class DDPGCritic(CriticBase):
         rewards = samples[:,2]
         next_state_indices = samples[:,3]
         next_action_indices = self.target_policy.policy_estimator.predict(next_state_indices)
-        q_value_of_next_states = self.Q_value_target_estimator.predict(next_state_indices,next_action_indices)
+        q_value_of_next_states = self.Q_value_target_estimator.predict(next_state_indices,next_action_indices).detach()
 
         target_values = rewards + self.discount * q_value_of_next_states
 
         self.Q_value_estimator.update(q_values,target_values)
 
 
-    def sync_target_model_with_policy_model(self):
+    def sync_target_model(self):
         self.Q_value_target_estimator.model.load_state_dict(self.Q_value_estimator.model.state_dict())
         self.Q_value_target_estimator.model.eval()
+
+        self.target_policy.policy_estimator.model.load_state_dict(self.policy.policy_estimator.model.state_dict())
+        self.target_policy.policy_estimator.model.eval()
+        
     
     def get_optimal_policy(self):
         pass 
@@ -103,39 +111,70 @@ class DDPGCritic(CriticBase):
 
 
 class DDPGExplorer(ExplorerBase):
-    def __init__(self,policy,target_policy,critic,discount=1.0):
+    '''
+    The policy will be optimal asymptotically with grident accent. 
+
+    '''
+    
+    def __init__(self,policy,critic,discount=1.0):
         self.policy = policy 
         self.discount = discount
         self.critic = critic
 
-
     def explore(self, *args):
         samples = np.array(args[0])
-        done = args[1]
-        episode = args[2]
-        writer = args[3]
             
         state_indices = samples[:,0]
-
         action_indices = self.policy.policy_estimator.predict(state_indices)
-        policy_loss = - self.critic.estimator.predict(state_indices,action_indices)
 
-        if done:
-            writer.add_scalar('policy_loss',policy_loss.item(),episode)
+        # we take the mean of the q_values as the policy gain (and increase the policy grident to make it better)
+        policy_loss = -self.critic.estimator.predict(state_indices,action_indices).mean()
         
         self.policy.policy_estimator.update(policy_loss)
 
     def get_behavior_policy(self):
         return self.policy
 
+
+
 class DDPGActor(ActorBase):
     EPS = np.finfo(np.float32).eps.item()
     MAX_STEPS = 500000
+
+    class OUNoise(object):
+        def __init__(self, action_space, mu=0.0, theta=0.15, max_sigma=0.3, min_sigma=0.3, decay_period=100000):
+            self.mu           = mu
+            self.theta        = theta
+            self.sigma        = max_sigma
+            self.max_sigma    = max_sigma
+            self.min_sigma    = min_sigma
+            self.decay_period = decay_period
+            self.action_dim   = action_space.shape[0]
+            self.low          = action_space.low
+            self.high         = action_space.high
+            self.reset()
+            
+        def reset(self):
+            self.state = np.ones(self.action_dim) * self.mu
+            
+        def evolve_state(self):
+            x  = self.state
+            dx = self.theta * (self.mu - x) + self.sigma * np.random.randn(self.action_dim)
+            self.state = x + dx
+            return self.state
+        
+        def get_action(self, action, t=0): 
+            ou_state = self.evolve_state()
+            self.sigma = self.max_sigma - (self.max_sigma - self.min_sigma) * min(1.0, t / self.decay_period)
+            return np.clip(action + ou_state, self.low, self.high)
 
     def __init__(self,env,critic,explorer,relay_memory_capaticy,init_observations,sync_frequency,batch_size):
         self.env = env
         self.critic = critic
         self.explorer = explorer
+        
+        self.noise = DDPGActor.OUNoise(self.env.action_space)
+
         self.relay_memory = Replay_Memory(relay_memory_capaticy)
         
         self.init_observations = init_observations
@@ -147,9 +186,12 @@ class DDPGActor(ActorBase):
     def act(self, *args):
         episode = args[0]
 
+        if episode % self.sync_frequency == 0:
+            self.critic.sync_target_model()
+
         current_state_index = self.env.reset()
-        for _ in range(0,DDPGActor.MAX_STEPS):
-            current_action_index = self.explorer.get_behavior_policy().get_action(current_state_index)  
+        for step in range(0,DDPGActor.MAX_STEPS):
+            current_action_index = self.noise.get_action(self.explorer.get_behavior_policy().get_action(current_state_index),step)  
             observation = self.env.step(current_state_index,current_action_index)
             next_state_index = observation[0]
             reward = observation[1]
