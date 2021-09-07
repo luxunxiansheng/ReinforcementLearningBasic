@@ -33,6 +33,7 @@
 #
 # /
 
+from gym import spaces
 import torch
 from torchvision import transforms
 
@@ -44,6 +45,7 @@ class GameWrapper:
         self.game = Game(config)
         self.img_rows = config['GAME'].getint("img_rows")
         self.img_columns = config['GAME'].getint("img_columns")
+        self.action_space = spaces.Discrete(3)
     
     def _preprocess_snapshot(self, screenshot):
         transform = transforms.Compose([transforms.CenterCrop((150, 600)),
@@ -64,7 +66,7 @@ class GameWrapper:
         next_state[-1] = preprocessed_snapshot
         return next_state, torch.tensor(reward), torch.tensor(terminal), score
 
-    def end(self):
+    def close(self):
         self.game.end()
         
     

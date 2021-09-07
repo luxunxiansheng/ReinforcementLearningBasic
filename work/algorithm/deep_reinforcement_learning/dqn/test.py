@@ -35,6 +35,7 @@
 
 
 
+
 import sys,os
 current_dir= os.path.dirname(os.path.realpath(__file__))
 work_folder=current_dir[:current_dir.find('algorithm')]
@@ -45,6 +46,7 @@ import torch
 
 from lib.utility import config
 
+from env.mountain_car import MountainCarEnv
 from env.dino.game_wrapper import GameWrapper
 from algorithm.deep_reinforcement_learning.dqn.deep_q_learning import DeepQLearningAgent
 
@@ -58,14 +60,24 @@ app_cfg = config('algorithm/deep_reinforcement_learning/dqn/config.ini')
 env_cfg = config("env/dino/config.ini")
 
 def test_dqn(env,config):
+        
+        
         dqn= DeepQLearningAgent(env,config,device)
         dqn.learn()
 
-dino_game = None
-try:
-    dino_game = GameWrapper(env_cfg)
-    test_dqn(dino_game,app_cfg)
+def dino_game_test():
+    dino_game = None
+    try:
+        dino_game = GameWrapper(env_cfg)
+        test_dqn(dino_game,app_cfg)
 
-finally:
-    if dino_game is not None:
-        dino_game.end()
+    finally:
+        if dino_game is not None:
+            dino_game.close()
+
+
+
+
+if __name__ == '__main__':
+    dino_game_test()
+

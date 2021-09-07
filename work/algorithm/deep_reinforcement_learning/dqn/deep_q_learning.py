@@ -33,13 +33,12 @@
 #
 # /
 
-
 import torch
 import torch.nn as nn  
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
 
-from PIL.Image import init
+
 from tqdm import tqdm
 
 from common import Agent, CriticBase, ExplorerBase, QValueEstimator,ActorBase
@@ -51,7 +50,6 @@ from lib.distribution import create_distribution_boltzmann, create_distribution_
 from algorithm.deep_reinforcement_learning.dqn.continuous_state_value_table_policy import ContinuousStateValueTablePolicy
 
 dqn_logger = get_logger("DeepQLearning_debug")
-
 
 class DeepQValueEstimator(QValueEstimator):
     def __init__(self,input_channels,output_size,momentum,learning_rate,weight_decay,device):
@@ -200,9 +198,9 @@ class DeepQLearningActor(ActorBase):
             
 
 class DeepQLearningAgent(Agent):
-    check_point_file_name = "DeepQLearningAgent"
-    
     def __init__(self,env,config,device):
+        self.check_point_file_name = env.__class__.__name__ + ".pt"
+        
         self.env = env
         self.device = device
     
@@ -214,9 +212,7 @@ class DeepQLearningAgent(Agent):
         self.check_frequency = config['GLOBAL'].getint('check_frequency')
 
         self.image_stack_size = config['DQN'].getint('image_stack_size')
-        self.action_space = config['DQN'].getint('action_space')
-
-
+        
         self.batch_size = config['DQN'].getint('batch')
         self.momentum = config['DQN'].getfloat('momentum')
         self.lr = config['DQN'].getfloat('learning_rate')
@@ -231,11 +227,13 @@ class DeepQLearningAgent(Agent):
 
         self.init_observations = config['DQN'].getint('init_observations')
 
+        self.action_space = self.env.action_space
 
-        q_value_estimator = DeepQValueEstimator(self.image_stack_size,self.action_space,self.lr,self.momentum,self.weight_decay,self.device)
-        q_value_target_estimator = DeepQValueEstimator(self.image_stack_size,self.action_space,self.lr,self.momentum,self.weight_decay,self.device)
+
+        q_value_estimator = DeepQValueEstimator(self.image_stack_size,self.action_space.n,self.lr,self.momentum,self.weight_decay,self.device)
+        q_value_target_estimator = DeepQValueEstimator(self.image_stack_size,self.action_space.n,self.lr,self.momentum,self.weight_decay,self.device)
         
-        self.critic = DeepQLearningCritic(q_value_estimator,q_value_target_estimator,self.action_space,self.discount)
+        self.critic = DeepQLearningCritic(q_value_estimator,q_value_target_estimator,self.action_space.n,self.discount)
         policy = ContinuousStateValueTablePolicy(q_value_estimator)
         self.explorer = ESoftExplorer(policy,self.init_epsilon,self.final_epsilon,self.epsilon_decay_rate)
         #self.explorer = BoltzmannExplorer(policy)
@@ -244,7 +242,7 @@ class DeepQLearningAgent(Agent):
 
     def learn(self):
         elapsed_episode = 0
-        checkpoint = load_checkpoint(DeepQLearningAgent.check_point_file_name,self.check_point_path)
+        checkpoint = load_checkpoint(self.check_point_file_name,self.check_point_path)
         if checkpoint is not None:
             self.actor.critic.Q_value_estimator.model.load_state_dict(checkpoint['policy_value_model_state_dict'])
             self.actor.critic.Q_value_estimator.optimizer.load_state_dict(checkpoint['policy_value_optimizer_state_dict'])
@@ -258,6 +256,6 @@ class DeepQLearningAgent(Agent):
                             'epsilon': self.actor.explorer.epsilon,
                                 'policy_value_model_state_dict': self.actor.critic.Q_value_estimator.model.state_dict(),
                                 'policy_value_optimizer_state_dict': self.actor.critic.Q_value_estimator.optimizer.state_dict()}
-                save_checkpoint(checkpoint,DeepQLearningAgent.check_point_file_name,self.check_point_path)
+                save_checkpoint(checkpoint,self.check_point_file_name,self.check_point_path)
                 dqn_logger.debug("Checkpoint saved at {}!".format(episode))
                     
