@@ -42,7 +42,8 @@ from algorithm.value_based.tabular_solution_method.td_method.td_critic import TD
 
 
 """
-It is certainly ok to implement SRASA with N_Step_SARSA as long as to set the Setps to 1.  We keep sarsa just for tutorial 
+It is certainly ok to implement SRASA with N_Step_SARSA as long
+as to set the Setps to 1.  We keep sarsa just for tutorial 
 """
 class SARSACritic(TDCritic):
     def __init__(self,value_function,policy,step_size=0.1,discount=1.0):
@@ -56,7 +57,8 @@ class SARSACritic(TDCritic):
         reward = args[2]
         next_state_index = args[3]
         next_action_index = self.target_policy.get_action(next_state_index)
-        # To calculate the target, it is necessary to know what is the next action for the next state according to current policy (On Policy)
+        # To calculate the target, it is necessary to know what is the next action for the next 
+        # state according to current policy (On Policy)
         target = reward + self.discount * self.get_value_function()[next_state_index][next_action_index]
         self.update(current_state_index,current_action_index,target)
 

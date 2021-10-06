@@ -46,6 +46,7 @@ from algorithm.value_based.tabular_solution_method.explorer import ESoftExplorer
 from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_critic import MonteCarloIncrementalCritic
 
 
+# TODO: Not follow the critic-explorer-actor patten very well. 
 class MonteCarloOffPolicyAgent(Agent):
     """
     As described in 5.7 section of Sutton' book 

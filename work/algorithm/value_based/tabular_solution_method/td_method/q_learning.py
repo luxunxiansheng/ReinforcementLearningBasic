@@ -42,6 +42,9 @@ from algorithm.value_based.tabular_solution_method.td_method.td_actor import TDA
 from algorithm.value_based.tabular_solution_method.td_method.td_critic import TDCritic
 
 class QLearningCritic(TDCritic):
+    """
+    Solve the Bellman optimal equation 
+    """ 
     def __init__(self,value_function,step_size=0.1,discount = 1.0):
         super().__init__(value_function,step_size)
         self.discount = discount

@@ -40,7 +40,7 @@ from torch.utils.tensorboard import writer
 from policy.policy import Policy
 import numpy as np 
 
-import torch
+
 from torch import nn
 from torch.utils.tensorboard.writer import SummaryWriter
 from common import ActorBase, CriticBase, ExplorerBase, PolicyEstimator, QValueEstimator
@@ -208,5 +208,5 @@ class DDPGActor(ActorBase):
 
             self.time_step += 1
 
-                
-    
+
+
