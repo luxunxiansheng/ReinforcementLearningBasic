@@ -34,10 +34,10 @@
 # /
 
 from lib.distribution import create_distribution_boltzmann, create_distribution_epsilon_greedily
-from common import ExplorerBase
+from common import ImproverBase
 
 
-class ESoftExplorer(ExplorerBase):
+class ESoftExplorer(ImproverBase):
     def __init__(self, policy,epsilon=0.3):
         self.policy = policy
         self.policy.create_distribution_fn = create_distribution_epsilon_greedily(epsilon)
@@ -45,10 +45,10 @@ class ESoftExplorer(ExplorerBase):
     def explore(self, *args):
         pass 
         
-    def get_behavior_policy(self):
+    def get_target_policy(self):
         return self.policy
 
-class BoltzmannExplorer(ExplorerBase):
+class BoltzmannExplorer(ImproverBase):
     def __init__(self, policy):
         self.policy = policy
         self.policy.create_distribution_fn = create_distribution_boltzmann()
@@ -56,5 +56,5 @@ class BoltzmannExplorer(ExplorerBase):
     def explore(self, *args):
         pass 
         
-    def get_behavior_policy(self):
+    def get_target_policy(self):
         return self.policy

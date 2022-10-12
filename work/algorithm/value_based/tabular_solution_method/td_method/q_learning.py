@@ -37,7 +37,7 @@ from tqdm import tqdm
 
 
 from policy.policy import DiscreteStateValueTablePolicy
-from algorithm.value_based.tabular_solution_method.explorer import ESoftExplorer
+from work.algorithm.value_based.tabular_solution_method.improver import ESoftImprover
 from algorithm.value_based.tabular_solution_method.td_method.td_actor import TDActor
 from algorithm.value_based.tabular_solution_method.td_method.td_critic import TDCritic
 
@@ -70,7 +70,7 @@ class QLearningAgent(Agent):
         self.env = env
         self.episodes = episodes
         self.critic = QLearningCritic(self.env.build_Q_table()) 
-        explorer  = ESoftExplorer(DiscreteStateValueTablePolicy(self.env.build_policy_table()),self.critic) 
+        explorer  = ESoftImprover(DiscreteStateValueTablePolicy(self.env.build_policy_table()),self.critic) 
         self.actor = TDActor(env,self.critic,explorer,statistics)
 
 
@@ -81,7 +81,7 @@ class QLearningAgent(Agent):
     def test(self):
         # S
         current_state_index = self.env.reset()
-        optimal_policy = self.critic.get_optimal_policy()
+        optimal_policy = self.critic.get_greedy_policy()
 
         steps =  0
         returns = 0 

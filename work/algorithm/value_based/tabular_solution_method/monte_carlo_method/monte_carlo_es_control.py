@@ -38,7 +38,7 @@ from tqdm import tqdm
 
 from common import ActorBase, Agent
 from policy.policy import DiscreteStateValueTablePolicy
-from algorithm.value_based.tabular_solution_method.explorer import GreedyExplorer
+from work.algorithm.value_based.tabular_solution_method.improver import GreedyImprover
 from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_critic import MonteCarloAverageCritic
 
 
@@ -84,14 +84,14 @@ class MonteCarloESAgent(Agent):
         self.env = env
         self.episodes = episodes
         self.critic =   MonteCarloAverageCritic(self.env.build_Q_table())
-        explorer    =   GreedyExplorer(DiscreteStateValueTablePolicy(self.env.build_policy_table()),self.critic) 
+        explorer    =   GreedyImprover(DiscreteStateValueTablePolicy(self.env.build_policy_table()),self.critic) 
         self.actor  =   MonteCarloESAgent.MonteCarloActor(env,self.critic,explorer,statistics,discount)
 
     def learn(self):
         for episode in tqdm(range(0, self.episodes)):
             self.actor.act(episode)
         
-        self.env.show_policy(self.critic.get_optimal_policy())
+        self.env.show_policy(self.critic.get_greedy_policy())
 
 
 

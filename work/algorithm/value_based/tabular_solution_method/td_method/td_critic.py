@@ -67,7 +67,7 @@ class TDCritic(CriticBase):
     def get_value_function(self):
         return self.value_function
 
-    def get_optimal_policy(self):
+    def get_greedy_policy(self):
         policy_table = {}
         for state_index, _ in self.value_function.items():
             q_values = self.value_function[state_index]

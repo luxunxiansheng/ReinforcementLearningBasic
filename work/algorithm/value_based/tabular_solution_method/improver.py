@@ -31,28 +31,28 @@
 #
 # /
 
-from common import ExplorerBase  
+from common import ImproverBase  
 from lib.distribution import (create_distribution_epsilon_greedily,create_distribution_greedily,create_distribution_boltzmann)
 
-class GreedyExplorer(ExplorerBase):
-    def __init__(self,behavior_policy,critic):
-        self.behavior_policy = behavior_policy
+class GreedyImprover(ImproverBase):
+    def __init__(self,target_policy,critic):
+        self.target_policy = target_policy
         self.critic = critic
         self.create_distribution_greedily = create_distribution_greedily()
 
-    def explore(self, *args):
+    def improve(self, *args):
         current_state_index = args[0]
         q_value_function = self.critic.get_value_function()
         q_values = q_value_function[current_state_index]
         greedy_distibution = self.create_distribution_greedily(q_values)
-        self.behavior_policy.policy_table[current_state_index] = greedy_distibution
+        self.target_policy.policy_table[current_state_index] = greedy_distibution
         
-    def get_behavior_policy(self):
-        return self.behavior_policy
+    def get_target_policy(self):
+        return self.target_policy
 
-class ESoftExplorer(ExplorerBase):
-    def __init__(self, behavior_policy,critic,epsilon=0.01):
-        self.behavior_policy = behavior_policy
+class ESoftImprover(ImproverBase):
+    def __init__(self, target_policy,critic,epsilon=0.01):
+        self.target_policy = target_policy
         self.critic = critic
         self.create_distribution_epsilon_greedily = create_distribution_epsilon_greedily(epsilon)
 
@@ -61,13 +61,13 @@ class ESoftExplorer(ExplorerBase):
         q_value_function = self.critic.get_value_function()
         q_values = q_value_function[current_state_index]
         soft_greedy_distibution = self.create_distribution_epsilon_greedily(q_values)
-        self.behavior_policy.policy_table[current_state_index] = soft_greedy_distibution
+        self.target_policy.policy_table[current_state_index] = soft_greedy_distibution
 
-    def get_behavior_policy(self):
-        return self.behavior_policy
+    def get_target_policy(self):
+        return self.target_policy
 
 
-class BoltzmannExplorer(ExplorerBase):
+class BoltzmannExplorer(ImproverBase):
     def __init__(self, behavior_policy,critic):
         self.behavior_policy = behavior_policy
         self.critic = critic
@@ -80,5 +80,5 @@ class BoltzmannExplorer(ExplorerBase):
         boltzmann_distibution = self.create_distribution_boltzmann(q_values)
         self.behavior_policy.policy_table[current_state_index] = boltzmann_distibution
 
-    def get_behavior_policy(self):
+    def get_target_policy(self):
         return self.behavior_policy

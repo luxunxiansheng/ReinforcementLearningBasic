@@ -38,7 +38,7 @@ from tqdm import tqdm
 
 from common import Agent
 from policy.policy import DiscreteStateValueTablePolicy
-from algorithm.value_based.tabular_solution_method.explorer import ESoftExplorer
+from work.algorithm.value_based.tabular_solution_method.improver import ESoftImprover
 from algorithm.value_based.tabular_solution_method.td_method.td_actor import TDActor
 from algorithm.value_based.tabular_solution_method.td_method.td_lambda_critic import TDLambdaCritic
 
@@ -71,7 +71,7 @@ class SARSALambdaAgent(Agent):
         # critic and exploler share the same policy (on-policy)
         self.policy = DiscreteStateValueTablePolicy(self.env.build_policy_table())    
         self.critic = SARSALambdaCritic(self.env.build_Q_table(),self.policy)
-        explorer  = ESoftExplorer(self.policy,self.critic) 
+        explorer  = ESoftImprover(self.policy,self.critic) 
         self.actor = TDActor(env,self.critic,explorer,statistics) 
 
     def learn(self):

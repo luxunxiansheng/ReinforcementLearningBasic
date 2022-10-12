@@ -41,7 +41,7 @@ import torch
 
 import torch.nn.functional as F
 from torch.utils.tensorboard import SummaryWriter
-from common import ActorBase, Agent, ExplorerBase,CriticBase
+from common import ActorBase, Agent, ImproverBase,CriticBase
 
 
 class OnlineCritic(CriticBase):
@@ -72,10 +72,10 @@ class OnlineCritic(CriticBase):
     def get_value_function(self):
         return self.estimator
     
-    def get_optimal_policy(self):
+    def get_greedy_policy(self):
         pass 
         
-class PolicyGridentExplorer(ExplorerBase):
+class PolicyGridentExplorer(ImproverBase):
     def __init__(self,policy,critic,discount=1.0):
         self.policy = policy 
         self.discount = discount
@@ -99,7 +99,7 @@ class PolicyGridentExplorer(ExplorerBase):
 
         self.policy.policy_estimator.update(policy_loss)
 
-    def get_behavior_policy(self):
+    def get_target_policy(self):
         return self.policy
 
 class OnlineActor(ActorBase):

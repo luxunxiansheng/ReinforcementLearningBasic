@@ -36,7 +36,7 @@
 from tqdm import tqdm
 
 from common import Agent
-from algorithm.value_based.tabular_solution_method.explorer import ESoftExplorer
+from work.algorithm.value_based.tabular_solution_method.improver import ESoftImprover
 from algorithm.value_based.tabular_solution_method.td_method.td_actor import TDActor
 from algorithm.value_based.tabular_solution_method.td_method.td_critic import TDCritic
 from policy.policy import DiscreteStateValueTablePolicy
@@ -72,7 +72,7 @@ class ExpectedSARSAAgent(Agent):
         
         self.policy = DiscreteStateValueTablePolicy(self.env.build_policy_table())
         self.critic = ExpectedSARSACritic(self.env.build_Q_table(),self.policy)
-        explorer = ESoftExplorer(self.policy,self.critic)
+        explorer = ESoftImprover(self.policy,self.critic)
         self.actor = TDActor(env,self.critic,explorer,statistics)
 
     def learn(self):

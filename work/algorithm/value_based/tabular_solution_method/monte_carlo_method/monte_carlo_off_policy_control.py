@@ -42,7 +42,7 @@ from tqdm import tqdm
 
 from common import ActorBase, Agent
 from policy.policy import DiscreteStateValueTablePolicy
-from algorithm.value_based.tabular_solution_method.explorer import ESoftExplorer
+from work.algorithm.value_based.tabular_solution_method.improver import ESoftImprover
 from algorithm.value_based.tabular_solution_method.monte_carlo_method.monte_carlo_critic import MonteCarloIncrementalCritic
 
 
@@ -110,14 +110,14 @@ class MonteCarloOffPolicyAgent(Agent):
         self.episodes =episodes
 
         self.critic = MonteCarloIncrementalCritic(self.env.build_Q_table())
-        explorer    = ESoftExplorer(DiscreteStateValueTablePolicy(self.env.build_policy_table()),self.critic) 
+        explorer    = ESoftImprover(DiscreteStateValueTablePolicy(self.env.build_policy_table()),self.critic) 
         self.actor  = MonteCarloOffPolicyAgent.MonteCarloActor(self.env,self.critic,explorer,statistics,discount)
 
     def learn(self):
         for episode in tqdm(range(0, self.episodes)):
             self.actor.act(episode)
 
-        self.env.show_policy(self.critic.get_optimal_policy())
+        self.env.show_policy(self.critic.get_greedy_policy())
 
 
 

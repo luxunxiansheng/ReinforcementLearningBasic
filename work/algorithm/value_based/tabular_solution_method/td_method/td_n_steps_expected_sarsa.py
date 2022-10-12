@@ -40,7 +40,7 @@ from tqdm import tqdm
 from policy.policy import DiscreteStateValueTablePolicy
 
 from common import Agent
-from algorithm.value_based.tabular_solution_method.explorer import ESoftExplorer
+from work.algorithm.value_based.tabular_solution_method.improver import ESoftImprover
 from algorithm.value_based.tabular_solution_method.td_method.td_critic import TDCritic
 from algorithm.value_based.tabular_solution_method.td_method.td_n_steps_actor import TDNStepsActor
 
@@ -81,7 +81,7 @@ class TDNStepsExpectedSARSAAgent(Agent):
 
         self.policy = DiscreteStateValueTablePolicy(self.env.build_policy_table())
         self.critic = TDNExpectedSARSACritic(self.env.build_Q_table(),self.policy,steps)
-        exloper = ESoftExplorer(self.policy,self.critic)
+        exloper = ESoftImprover(self.policy,self.critic)
         self.actor  = TDNStepsActor(env,steps,self.critic,exloper,statistics)
 
     def learn(self):

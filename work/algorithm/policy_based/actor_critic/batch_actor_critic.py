@@ -41,7 +41,7 @@ import torch.nn.functional as F
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
-from common import (ActorBase, Agent, CriticBase,ExplorerBase)
+from common import (ActorBase, Agent, CriticBase,ImproverBase)
 from algorithm.policy_based.actor_critic.actor_critic_common import (DeepPolicyEsitmator, DeepValueEstimator, ParameterizedPolicy)
 
 
@@ -80,11 +80,11 @@ class BatchCritic(CriticBase):
     def get_value_function(self):
         return self.estimator
 
-    def get_optimal_policy(self):
+    def get_greedy_policy(self):
         pass 
 
         
-class PolicyGridentExplorer(ExplorerBase):
+class PolicyGridentExplorer(ImproverBase):
     ENTROY_BETA = 0.0
     
     def __init__(self,policy,discount=1.0):
@@ -123,7 +123,7 @@ class PolicyGridentExplorer(ExplorerBase):
         writer.add_scalar('policy_loss',total_policy_loss,episode)
         self.policy.policy_estimator.update(total_loss)
 
-    def get_behavior_policy(self):
+    def get_target_policy(self):
         return self.policy
     
 class BatchActor(ActorBase):

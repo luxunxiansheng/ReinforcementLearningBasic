@@ -38,7 +38,7 @@ from copy import deepcopy
 from tqdm import tqdm
 
 from common import Agent
-from algorithm.value_based.tabular_solution_method.explorer import ESoftExplorer
+from work.algorithm.value_based.tabular_solution_method.improver import ESoftImprover
 from algorithm.value_based.tabular_solution_method.td_method.td_actor import  TDActor
 from algorithm.value_based.tabular_solution_method.td_method.td_lambda_critic import TDLambdaCritic
 from policy.policy import DiscreteStateValueTablePolicy
@@ -73,7 +73,7 @@ class QLambdaAgent(Agent):
         self.episodes = episodes
             
         self.critic = QLearningLambdaCritic(self.env.build_Q_table())
-        explorer  = ESoftExplorer(DiscreteStateValueTablePolicy(self.env.build_policy_table()),self.critic) 
+        explorer  = ESoftImprover(DiscreteStateValueTablePolicy(self.env.build_policy_table()),self.critic) 
         self.actor = TDActor(env,self.critic,explorer,statistics) 
 
     def learn(self):
@@ -83,7 +83,7 @@ class QLambdaAgent(Agent):
     def test(self):
         # S
         current_state_index = self.env.reset()
-        optimal_policy = self.critic.get_optimal_policy()
+        optimal_policy = self.critic.get_greedy_policy()
 
         steps =  0
         returns = 0 

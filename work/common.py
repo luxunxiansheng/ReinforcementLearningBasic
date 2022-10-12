@@ -49,21 +49,21 @@ class CriticBase(metaclass=ABCMeta):
         pass 
 
     @abstractmethod
-    def get_optimal_policy(self):
+    def get_greedy_policy(self):
         pass
 
-class ExplorerBase(metaclass=ABCMeta):
+class ImproverBase(metaclass=ABCMeta):
     """
     If the dynamics of the enviroment is hard to know, the explorer will define a behavior policy to sample data from the enviroment. 
     With constrained computing resources, the explorer 's purpose is to learn a policy which can identify those states of high value 
     rather than accuratly calculate value of those states. 
     """
     @abstractmethod
-    def explore(self,*args): 
+    def improve(self,*args): 
         pass
     
     @abstractmethod
-    def get_behavior_policy(self):
+    def get_target_policy(self):
         pass
 
 class ActorBase(metaclass=ABCMeta):

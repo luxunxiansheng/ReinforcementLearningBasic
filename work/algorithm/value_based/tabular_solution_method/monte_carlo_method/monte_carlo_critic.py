@@ -72,7 +72,7 @@ class MonteCarloIncrementalCritic(CriticBase):
     def get_value_function(self):
         return self.q_value_function
 
-    def get_optimal_policy(self):
+    def get_greedy_policy(self):
         policy_table = {}
         for state_index, _ in self.get_value_function().items():
             q_values = self.get_value_function()[state_index]
@@ -106,7 +106,7 @@ class MonteCarloAverageCritic(CriticBase):
                 state_count[state_index][action_index] = (0, 0.0)
         return state_count
 
-    def get_optimal_policy(self):
+    def get_greedy_policy(self):
         policy_table = {}
         for state_index, _ in self.get_value_function().items():
             q_values = self.get_value_function()[state_index]

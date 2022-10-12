@@ -45,7 +45,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-from common import ActorBase, Agent, ExplorerBase, CriticBase, PolicyEstimator
+from common import ActorBase, Agent, ImproverBase, CriticBase, PolicyEstimator
 from algorithm.policy_based.actor_critic.actor_critic_common import ParameterizedPolicy, ValueEstimator
 from algorithm.value_based.approximate_solution_method.remoe_env_setup import get_env
 
@@ -148,7 +148,7 @@ class LocalBatchCritic(CriticBase):
     def get_value_function(self):
         return self.value_estimator
     
-    def get_optimal_policy(self):
+    def get_greedy_policy(self):
         pass 
     
 class PolicyModel(nn.Module):
@@ -216,7 +216,7 @@ class GlobalPolicyEsitmator(PolicyEstimator):
 
 
 
-class LocalBatchPolicyGridentExplorer(ExplorerBase):
+class LocalBatchPolicyGridentExplorer(ImproverBase):
     EPS = np.finfo(np.float32).eps.item()
     ENTROY_BETA = 0.0
     
@@ -255,7 +255,7 @@ class LocalBatchPolicyGridentExplorer(ExplorerBase):
         # calculate the grident for the model of the local policy 
         total_loss.backward()
     
-    def get_behavior_policy(self):
+    def get_target_policy(self):
         return self.policy
 
 
@@ -284,8 +284,8 @@ class LocalActor(ActorBase):
         current_state = self.env.reset()
         
         for _ in range(0,LocalActor.MAX_STEPS):
-            action_index = self.local_explorer.get_behavior_policy().get_action(current_state)
-            distribution = self.local_explorer.get_behavior_policy().get_discrete_distribution_tensor(current_state)
+            action_index = self.local_explorer.get_target_policy().get_action(current_state)
+            distribution = self.local_explorer.get_target_policy().get_discrete_distribution_tensor(current_state)
             entropy = torch.distributions.Categorical(distribution).entropy()
             action_prob = distribution[action_index]
             state_value  = self.local_critic.get_value_function().predict(current_state)

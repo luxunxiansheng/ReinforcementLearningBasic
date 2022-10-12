@@ -38,7 +38,7 @@ import copy
 from common import ActorBase, CriticBase, Agent
 from lib.distribution import create_distribution_greedily
 from policy.policy import DiscreteStateValueTablePolicy
-from algorithm.value_based.tabular_solution_method.explorer import GreedyExplorer
+from work.algorithm.value_based.tabular_solution_method.improver import GreedyImprover
 
 class BellmanCritic(CriticBase):
     """
@@ -82,7 +82,7 @@ class BellmanCritic(CriticBase):
     def get_value_function(self):
         return self.value_function
     
-    def get_optimal_policy(self):
+    def get_greedy_policy(self):
         policy_table = {}
         for state_index, _ in self.value_function.items():
             v_values = self.value_function[state_index]
@@ -143,10 +143,10 @@ class PolicyIterationAgent(Agent):
         transition_table = env.P 
 
         self.critic = BellmanCritic(self.policy,self.value_funciton,transition_table,discount)
-        explorer =    GreedyExplorer(self.policy,self.critic)
+        explorer =    GreedyImprover(self.policy,self.critic)
         self.actor = PolicyIterationActor(self.policy,self.critic,explorer,transition_table,critic_delta,policy_delta,discount)
     
     def learn(self):
         self.actor.act()
-        self.env.show_policy(self.actor.critic.get_optimal_policy())
+        self.env.show_policy(self.actor.critic.get_greedy_policy())
     

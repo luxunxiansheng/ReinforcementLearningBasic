@@ -71,7 +71,7 @@ class BellmanOptimalCritic(CriticBase):
     def _get_value_of_optimal_action(self, state_index):
         return  max(self.value_function[state_index].values())
     
-    def get_optimal_policy(self):
+    def get_greedy_policy(self):
         policy_table = {}
         for state_index, _ in self.value_function.items():
             v_values = self.value_function[state_index]
@@ -132,7 +132,7 @@ class ValueIterationAgent(Agent):
 
     def learn(self):
         self.actor.act()
-        self.env.show_policy(self.actor.critic.get_optimal_policy())
+        self.env.show_policy(self.actor.critic.get_greedy_policy())
     
 
         

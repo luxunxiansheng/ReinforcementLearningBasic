@@ -41,7 +41,7 @@ from tqdm import tqdm
 
 from common import ActorBase, Agent
 
-from algorithm.value_based.tabular_solution_method.explorer import ESoftExplorer
+from work.algorithm.value_based.tabular_solution_method.improver import ESoftImprover
 from algorithm.value_based.tabular_solution_method.td_method.q_learning import QLearningCritic
 from policy.policy import DiscreteStateValueTablePolicy
 
@@ -263,7 +263,7 @@ class DynaQAgent(Agent):
         self.env = env
         self.episodes = episodes
         self.critic = QLearningCritic(self.env.build_Q_table()) 
-        explorer  = ESoftExplorer(DiscreteStateValueTablePolicy(self.env.build_policy_table()),self.critic) 
+        explorer  = ESoftImprover(DiscreteStateValueTablePolicy(self.env.build_policy_table()),self.critic) 
     
         if model_type == DynaQAgent.TRIVAL:
             self.actor = TrivalModelActor(env,self.critic,explorer,statistics)

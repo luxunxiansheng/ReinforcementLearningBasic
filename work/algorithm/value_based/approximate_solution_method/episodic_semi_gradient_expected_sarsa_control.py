@@ -73,7 +73,7 @@ class ApproximationExpectedSARSACritic(CriticBase):
     def get_value_function(self):
         return self.estimator
 
-    def get_optimal_policy(self):
+    def get_greedy_policy(self):
         pass 
 
 

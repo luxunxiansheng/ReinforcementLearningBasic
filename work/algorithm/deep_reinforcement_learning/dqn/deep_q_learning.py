@@ -41,7 +41,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from tqdm import tqdm
 
-from common import Agent, CriticBase, ExplorerBase, QValueEstimator,ActorBase
+from common import Agent, CriticBase, ImproverBase, QValueEstimator,ActorBase
 from model.deep_mind_network_base import DeepMindNetworkBase
 
 from lib.replay_memory import Replay_Memory
@@ -117,14 +117,14 @@ class DeepQLearningCritic(CriticBase):
         self.Q_value_target_estimator.model.load_state_dict(self.Q_value_estimator.model.state_dict())
         self.Q_value_target_estimator.model.eval()
     
-    def get_optimal_policy(self):
+    def get_greedy_policy(self):
         pass 
     
     def get_value_function(self):
         return self.Q_value_estimator
     
     
-class ESoftExplorer(ExplorerBase):
+class ESoftExplorer(ImproverBase):
     def __init__(self, policy,init_epsilon,final_epsilon,decay_rate):
         self.policy = policy
         self.init_epsilon = init_epsilon
@@ -144,10 +144,10 @@ class ESoftExplorer(ExplorerBase):
 
         return action_index
 
-    def get_behavior_policy(self):
+    def get_target_policy(self):
         return self.policy
 
-class BoltzmannExplorer(ExplorerBase):
+class BoltzmannExplorer(ImproverBase):
     def __init__(self, policy):
         self.policy = policy
         self.policy.create_distribution_fn = create_distribution_boltzmann()
@@ -155,7 +155,7 @@ class BoltzmannExplorer(ExplorerBase):
     def explore(self, *args):
         return self.policy.get_action(args[0])
         
-    def get_behavior_policy(self):
+    def get_target_policy(self):
         return self.policy
 
 class DeepQLearningActor(ActorBase):

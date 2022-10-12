@@ -43,7 +43,7 @@ import numpy as np
 
 from torch import nn
 from torch.utils.tensorboard.writer import SummaryWriter
-from common import ActorBase, CriticBase, ExplorerBase, PolicyEstimator, QValueEstimator
+from common import ActorBase, CriticBase, ImproverBase, PolicyEstimator, QValueEstimator
 from lib.replay_memory import Replay_Memory
 
 class DeepQValueEstimator(QValueEstimator):
@@ -103,14 +103,14 @@ class DDPGCritic(CriticBase):
         self.target_policy.policy_estimator.model.eval()
         
     
-    def get_optimal_policy(self):
+    def get_greedy_policy(self):
         pass 
     
     def get_value_function(self):
         return self.Q_value_estimator
 
 
-class DDPGExplorer(ExplorerBase):
+class DDPGExplorer(ImproverBase):
     '''
     The policy will be optimal asymptotically with grident accent. 
 
@@ -132,7 +132,7 @@ class DDPGExplorer(ExplorerBase):
         
         self.policy.policy_estimator.update(policy_loss)
 
-    def get_behavior_policy(self):
+    def get_target_policy(self):
         return self.policy
 
 
